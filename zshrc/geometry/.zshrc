@@ -68,7 +68,7 @@ ZSH_THEME="geometry/geometry"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git web-search zsh-autosuggestions)
+plugins=(git web-search zsh-autosuggestions colored-man-pages zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -102,12 +102,11 @@ source $ZSH/oh-my-zsh.sh
 source $(brew --prefix)/share/antigen/antigen.zsh
 
 # Aliasses
-alias norminette+="python ~/norminette+/run.py"
 alias vscode="/Applications/Visual\ Studio\ Code.app/contents/Resources/app/bin/code"
 alias vim="nvim"
 alias v="nvim"
 
 # funtions
-gh () {
+gho () {
     open `git remote -v | grep "fetch" | cut -f2 | awk  '{print $1}' | rev | cut -d "." -f2- | rev | head -n1`
 }

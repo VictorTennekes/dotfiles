@@ -14,8 +14,12 @@ Plug	'airblade/vim-gitgutter'
 Plug	'nathanaelkane/vim-indent-guides'
 Plug	'ryanoasis/vim-devicons'
 Plug	'ycm-core/YouCompleteMe'
+Plug	'christoomey/vim-tmux-navigator'
 
 call plug#end()
+
+" Enable mouse
+set mouse=a
 
 " NeoVim and Lightline theme
 let g:lightline = { 'colorscheme': 'onedark' }
@@ -42,12 +46,13 @@ let g:indent_guides_sart_level = 2
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 
-" Make it possible to close NERDTree when it's the only vim screen left
-autocmd bufenter * if (winnr("$") == 2 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+" NERDTree visuals
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
 
 " Keymaps
 " Mapping Rainbow to Ctrl+r
 map <C-r> :RainbowToggle<CR>
 
-" Mapping NERDTree to Ctrl+n
+" Mapping NERDTreeFocus
 map <C-n> :NERDTreeToggle<CR>

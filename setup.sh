@@ -1,6 +1,7 @@
 # Error checking
 if [ $# -eq 0 ] ; then
-    echo 'Error: specify a installation mode'
+    echo "Error: specify a installation mode"
+	echo "Available modes: 1. Spaceship 2. Geometry"
     exit 0
 fi
 

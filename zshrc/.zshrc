@@ -8,7 +8,10 @@ export ZSH="/Users/victor/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="geometry/geometry"
+
+#ZSH_THEME="geometry/geometry"
+
+ZSH_THEME="spaceship"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -68,7 +71,10 @@ ZSH_THEME="geometry/geometry"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git web-search zsh-autosuggestions colored-man-pages zsh-syntax-highlighting)
+plugins=(git 
+	zsh-autosuggestions 
+	colored-man-pages 
+	zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -105,8 +111,35 @@ source $(brew --prefix)/share/antigen/antigen.zsh
 alias vscode="/Applications/Visual\ Studio\ Code.app/contents/Resources/app/bin/code"
 alias vim="nvim"
 alias v="nvim"
+alias c="clear"
+
+alias minikill="minikube delete"
+alias ministop="minikube stop"
 
 # funtions
 gho () {
-    open `git remote -v | grep "fetch" | cut -f2 | awk  '{print $1}' | rev | cut -d "." -f2- | rev | head -n1`
+    gh repo view -w
 }
+
+SPACESHIP_PROMPT_ORDER=(
+	user		# Username section
+	dir		# Current directory section
+	char		# Character that indicates where to type
+	host		# Hostname section
+	exit_code	# Exit code section
+)
+
+SPACESHIP_RPROMPT_ORDER=(
+	git
+)
+
+SPACESHIP_PROMPT_ADD_NEWLINE=false
+SPACESHIP_PROMPT_SEPARATE_LINE=false
+SPACESHIP_DIR_PREFIX=""
+SPACESHIP_CHAR_SYMBOL="❯"
+SPACESHIP_CHAR_SUFFIX=" "
+SPACESHIP_DIR_COLOR=blue
+SPACESHIP_GIT_SYMBOL=""
+SPACESHIP_GIT_BRANCH_COLOR=grey
+SPACESHIP_GIT_STATUS_COLOR=red
+

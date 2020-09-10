@@ -1,6 +1,8 @@
 " Installing plugins
-call plug#begin('~/.vim/plugged')
+call plug#begin('~/.config/nvim/plugged')
 
+Plug	'mhinz/vim-startify'
+Plug	'liuchengxu/vim-which-key'
 Plug	'sheerun/vim-polyglot'
 Plug	'joshdick/onedark.vim'
 Plug	'itchyny/lightline.vim'
@@ -11,12 +13,15 @@ Plug	'preservim/nerdtree'
 Plug	'preservim/nerdcommenter'
 Plug	'jiangmiao/auto-pairs'
 Plug	'airblade/vim-gitgutter'
-Plug	'nathanaelkane/vim-indent-guides'
 Plug	'ryanoasis/vim-devicons'
-Plug	'ycm-core/YouCompleteMe'
-Plug	'christoomey/vim-tmux-navigator'
+Plug	'justinmk/vim-sneak'
+Plug	'neoclide/coc.nvim', {'branch': 'release'}
 
 call plug#end()
+
+set wildmenu
+set number relativenumber
+let g:sneak#label = 1
 
 " Enable mouse
 set mouse=a
@@ -25,6 +30,15 @@ set mouse=a
 let g:lightline = { 'colorscheme': 'onedark' }
 let g:onedark_termcolors=256
 set termguicolors
+
+if (has("autocmd") && !has("gui_running"))
+  augroup colorset
+    autocmd!
+    let s:white = { "gui": "#ABB2BF", "cterm": "145", "cterm16" : "7" }
+    autocmd ColorScheme * call onedark#set_highlight("Normal", { "fg": s:white }) " `bg` will not be styled since there is no `bg` setting
+  augroup END
+endif
+
 colorscheme onedark
 
 " Make clipboard word interchangable between applications and vim
@@ -38,13 +52,7 @@ set number
 filetype plugin on
 
 " Indent guides
-let g:indent_guides_color_change_percent = 3
-let g:indent_guides_enable_on_vim_startup = 1
-let g:indent_guides_sart_level = 2
-
-" Open NERDTree when no files specified
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+set list lcs=tab:\|\ 
 
 " NERDTree visuals
 let NERDTreeMinimalUI = 1
@@ -56,3 +64,11 @@ map <C-r> :RainbowToggle<CR>
 
 " Mapping NERDTreeFocus
 map <C-n> :NERDTreeToggle<CR>
+
+" Remapping the leader key to space
+:let mapleader = " "
+
+" Mapping leader without anything else to whichkey
+nnoremap <silent> <leader> :WhichKey '<Space>'<CR>
+
+map <leader>f :FZF<CR>

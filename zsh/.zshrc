@@ -7,7 +7,7 @@ source ${ZDOTDIR}/config/completions.zsh
 source ${ZDOTDIR}/config/functions.zsh
 source ${ZDOTDIR}/config/integrations.zsh
 
-source ${ZDOTDIR}/work/work.zsh
+source ${ZDOTDIR}/work/init.zsh
 
 . "$HOME/.local/bin/env"
 

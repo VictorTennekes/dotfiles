@@ -6,7 +6,6 @@ alias g='git'
 alias gho='gh repo view -w'
 alias kn='kubens'
 alias kx='kubectx'
-alias ls='lsd'
 alias tf="terraform"
 alias v='nvim'
 alias vf='nvim $(prev)'

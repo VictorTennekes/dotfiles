@@ -20,13 +20,12 @@ clean:
 	@rm -rf $(XDG_CACHE_HOME:-$(HOME)/.cache)/zsh
 	@rm -rf $(XDG_CONFIG_HOME)/ghostty
 	@rm -rf $(XDG_CONFIG_HOME)/k9s
-	@rm -rf $(XDG_CONFIG_HOME)/lsd
 	@rm -rf $(XDG_CONFIG_HOME)/nvim
 	@rm -rf $(XDG_CONFIG_HOME)/zsh
 	@rm -f $(HOME)/.zshenv
 	@echo "🧼 Clean complete."
 
-install: homebrew brew git ghostty bat k9s lsd nvim zsh
+install: homebrew brew git ghostty bat k9s nvim zsh
 	@echo "✅ All installations completed!"
 
 
@@ -109,33 +108,6 @@ $(K9S_SKIN_SENTINEL):
 	@mkdir -p $(K9S_SKINS_DIR) || (echo "Error: Failed to create local k9s skins directory" && exit 1)
 	@curl -L https://github.com/catppuccin/k9s/archive/main.tar.gz | tar xz -C $(K9S_SKINS_DIR) --strip-components=2 k9s-main/dist || (echo "Error: Failed to download k9s skins" && exit 1)
 
-# --- LSD ---
-LSD_SOURCE_DIR := $(CURRENT_DIR)/lsd
-LSD_COLOR_FILE := $(LSD_SOURCE_DIR)/colors.yml
-LSD_CONFIG_FILE := $(LSD_SOURCE_DIR)/config.yml
-
-# The main target the user will call, e.g., `make lsd`
-# This depends on the symlinks being correctly in place.
-lsd: $(XDG_CONFIG_HOME)/lsd/config.yml $(XDG_CONFIG_HOME)/lsd/colors.yml
-	@echo "✅ LSD configuration is set up."
-
-# This rule creates the symlinks in the config directory.
-# It depends on the source files existing in your dotfiles repo.
-# The '$<' is the source file, and '$@' is the target symlink.
-$(XDG_CONFIG_HOME)/lsd/%: $(LSD_SOURCE_DIR)/%
-	@echo "🔗 Symlinking LSD config file: $*..."
-	@mkdir -p $(XDG_CONFIG_HOME)/lsd
-	@ln -fhs "$<" "$@"
-
-# This rule defines how to get the colors.yml file if it doesn't exist.
-# It will only run if the file is missing.
-$(LSD_COLOR_FILE):
-	@echo "🎨 Downloading Catppuccin theme for LSD..."
-	@mkdir -p $(LSD_SOURCE_DIR)
-	@# Use curl to download the raw YAML file directly.
-	@curl -fL "https://raw.githubusercontent.com/catppuccin/lsd/main/theme/catppuccin-mocha.yaml" -o "$(LSD_COLOR_FILE)" || \
-		(echo "Error: Failed to download lsd theme" && exit 1)
-
 # --- Neovim ---
 nvim: $(CURRENT_DIR)/nvim/init.lua
 	@echo "🖋️ Symlinking Neovim config..."
@@ -157,4 +129,4 @@ zsh:
 # PHONY TARGETS
 # ==============================================================================
 # Prevents conflicts with any files that might have the same name as a target.
-.PHONY: bat brew clean git ghostty homebrew install k9s lsd nvim zsh
+.PHONY: bat brew clean git ghostty homebrew install k9s nvim zsh

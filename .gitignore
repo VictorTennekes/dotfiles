@@ -1,0 +1,16 @@
+# Homebrew
+.brew_install.sh
+Brewfile.lock.json
+
+# K9S
+k9s/benchmarks
+k9s/clusters
+k9s/screen-dumps
+k9s/skins
+
+# Nvim
+lazy-lock.json
+
+# Zsh
+zsh_plugins.zsh
+zsh/work

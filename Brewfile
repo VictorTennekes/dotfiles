@@ -48,7 +48,6 @@ cask "rectangle-pro"
 
 # macOS Maintenance
 cask "appcleaner"
-cask "onyx"
 
 # Productivity Applications
 cask "1password"
@@ -57,7 +56,6 @@ cask "chatgpt"
 cask "keyboardcleantool"
 cask "nordvpn"
 cask "obsidian"
-cask "octarine"
 brew "mas"
 
 # Other Applications

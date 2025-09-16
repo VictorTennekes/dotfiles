@@ -70,10 +70,31 @@ $(BATTHEMES_DIR):
 	@mkdir -p $(BATTHEMES_DIR) || (echo "Error: Failed to create Bat themes directory" && exit 1)
 
 # --- Ghostty ---
-ghostty: $(CURRENT_DIR)/ghostty/config
-	@echo "👻 Symlinking Ghostty config..."
+GHOSTTY_SOURCE_DIR := $(CURRENT_DIR)/ghostty
+GHOSTTY_THEMES_DIR := $(GHOSTTY_SOURCE_DIR)/themes
+GHOSTTY_THEME_FILE := $(GHOSTTY_THEMES_DIR)/catppuccin-mocha.conf
+GHOSTTY_CONFIG_DEST := $(XDG_CONFIG_HOME)/ghostty
+
+# The main `ghostty` target now depends on the config directory being symlinked.
+# The symlink rule, in turn, depends on the theme file existing locally.
+ghostty: $(GHOSTTY_CONFIG_DEST)
+	@echo "✅ Ghostty configuration and theme are set up."
+
+# This rule symlinks the entire source config directory.
+# It depends on a `config` file existing and the theme file having been downloaded.
+$(GHOSTTY_CONFIG_DEST): $(GHOSTTY_SOURCE_DIR)/config $(GHOSTTY_THEME_FILE)
+	@echo "👻 Symlinking Ghostty config directory..."
 	@mkdir -p $(XDG_CONFIG_HOME)
-	@ln -fhs $(CURRENT_DIR)/ghostty $(XDG_CONFIG_HOME)/ghostty || (echo "Error: Failed to symlink Ghostty config" && exit 1)
+	@# Symlinking the whole directory makes the themes available automatically.
+	@ln -fhs $(GHOSTTY_SOURCE_DIR) $(GHOSTTY_CONFIG_DEST) || (echo "Error: Failed to symlink Ghostty config" && exit 1)
+
+# This rule downloads the theme file, but only if it doesn't already exist.
+$(GHOSTTY_THEME_FILE):
+	@echo "🎨 Downloading Catppuccin theme for Ghostty..."
+	@mkdir -p $(GHOSTTY_THEMES_DIR)
+	@curl -fL "https://raw.githubusercontent.com/catppuccin/ghostty/main/themes/catppuccin-mocha.conf" -o "$@" || \
+		(echo "Error: Failed to download Ghostty theme" && exit 1)
+
 
 # --- Git ---
 GITCONFIG_SOURCE_PATH := $(CURRENT_DIR)/git/gitconfig

@@ -1,6 +1,9 @@
 [alias]
 	br = branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate
 	ci = commit
+	d = "!f() { \
+	    git diff --name-only --relative --diff-filter=d -z | xargs -0 bat --diff; \
+	}; f"
 	st = status
 	cm = commit -m
 	sw = switch

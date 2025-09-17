@@ -14,4 +14,4 @@ alias vscode="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/co
 # System replacements
 alias cat='bat'
 alias cd='z'
-alias ls='eza'
+alias ls='eza --icons --group-directories-first'

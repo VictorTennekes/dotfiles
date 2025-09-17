@@ -8,3 +8,4 @@ font-family = Maple Mono NF
 font-size = 13
 
 macos-titlebar-style=tabs
+macos-option-as-alt=true

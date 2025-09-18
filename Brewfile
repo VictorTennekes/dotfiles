@@ -48,6 +48,7 @@ cask "rectangle-pro"
 
 # macOS Maintenance
 cask "appcleaner"
+cask "pearcleaner"
 
 # Productivity Applications
 cask "1password"

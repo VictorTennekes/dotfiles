@@ -5,7 +5,12 @@ window-padding-x = 5
 window-padding-balance = true
 
 font-family = Maple Mono NF
-font-size = 13
+font-size = 14
 
 macos-titlebar-style=tabs
 macos-option-as-alt=true
+
+keybind = ctrl+h=goto_split:left
+keybind = ctrl+j=goto_split:bottom
+keybind = ctrl+k=goto_split:top
+keybind = ctrl+l=goto_split:right

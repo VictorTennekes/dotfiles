@@ -11,3 +11,6 @@ vim.keymap.set('n', '<C-l>', '<C-w>l', opts)
 -- Leader keybindings for splits
 vim.keymap.set('n', '<leader>vs', ':vsplit<CR>', opts)
 vim.keymap.set('n', '<leader>hs', ':split<CR>', opts)
+
+-- Leader + e to re-focus on nvim-tree
+vim.keymap.set('n', '<leader>e', ':NvimTreeFocus<CR>', opts)

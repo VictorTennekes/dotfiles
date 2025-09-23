@@ -22,7 +22,7 @@ require("nvim-tree").setup({
   },
   git = {
     enable = true,
-    ignore = false, -- dim gitignored files instead of hiding
+    ignore = true, -- dim gitignored files instead of hiding
   },
 })
 

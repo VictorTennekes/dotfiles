@@ -11,6 +11,9 @@ alias v='nvim'
 alias vf='nvim $(prev)'
 alias vscode="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
 
+# File explorer
+alias f="fzf --preview 'bat --color=always {}' --preview-window '~3'"
+
 # System replacements
 alias cat='bat'
 alias cd='z'

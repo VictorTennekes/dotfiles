@@ -4,6 +4,7 @@ let mapleader = ' '
 syntax enable
 
 set number
+set relativenumber
 set foldcolumn=1
 
 set ruler

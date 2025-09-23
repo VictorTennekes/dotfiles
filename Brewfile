@@ -13,7 +13,10 @@ cask "ghostty"
 
 # Terminal Tools (CLI Utilities)
 brew "bat"
+brew "bat-extras"
+brew "cmake"
 brew "eza"
+brew "fd"
 brew "fzf"
 brew "gh"
 brew "git"
@@ -21,6 +24,7 @@ brew "gnutls"
 brew "neovim"
 brew "node"
 brew "openssh"
+brew "ripgrep"
 brew "watch"
 brew "wget"
 
@@ -57,6 +61,7 @@ cask "chatgpt"
 cask "keyboardcleantool"
 cask "nordvpn"
 cask "obsidian"
+cask "zed"
 brew "mas"
 
 # Other Applications

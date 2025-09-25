@@ -9,7 +9,13 @@ k9s/screen-dumps
 k9s/skins
 
 # Nvim
-lazy-lock.json
+nvim/lazy-lock.json
+nvim/tags
+nvim/test.sh
+nvim/.luarc.json
+nvim/nvim
+nvim/spell/
+
 
 # Zsh
 zsh_plugins.zsh

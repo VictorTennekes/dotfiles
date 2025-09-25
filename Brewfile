@@ -21,12 +21,16 @@ brew "fzf"
 brew "gh"
 brew "git"
 brew "gnutls"
-brew "neovim"
 brew "node"
 brew "openssh"
 brew "ripgrep"
 brew "watch"
 brew "wget"
+
+# Neovim
+brew "neovim"
+brew "tree-sitter"
+brew "tree-sitter-cli"
 
 # Shell Enhancements
 brew "antidote"
@@ -89,7 +93,6 @@ if hostname.start_with?('PC-')
   brew "hashicorp/tap/terraform"
 
   # Docker & Kubernetes
-  cask "docker-desktop"
   brew "helm"
   brew "krew"
   brew "kubectx"

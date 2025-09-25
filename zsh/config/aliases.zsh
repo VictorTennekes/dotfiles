@@ -7,9 +7,11 @@ alias gho='gh repo view -w'
 alias kn='kubens'
 alias kx='kubectx'
 alias tf="terraform"
-alias v='nvim'
 alias vf='nvim $(prev)'
 alias vscode="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+
+# Neovim
+alias v='nvim'
 
 # File explorer
 alias f="fzf --preview 'bat --color=always {}' --preview-window '~3'"

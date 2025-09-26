@@ -1,113 +1,131 @@
-# Core Configuration
+# ==============================================================================
+# PREAMBLE - Get hostname for conditional installs
+# ==============================================================================
 hostname = `hostname`.strip
 
-# Fonts
-cask "font-commit-mono-nerd-font"
-cask "font-jetbrains-mono-nerd-font"
-cask "font-monaspace"
-cask "font-maple-mono-nf"
-cask "font-maple-mono-normal-nf"
 
-# Terminals
-cask "ghostty"
+# ==============================================================================
+# CORE SYSTEM & COMMAND-LINE INTERFACE (CLI) TOOLS
+# ==============================================================================
+# Essential utilities for file management, searching, and development.
 
-# Terminal Tools (CLI Utilities)
-brew "bat"
-brew "bat-extras"
-brew "cmake"
-brew "eza"
-brew "fd"
-brew "fzf"
-brew "gh"
-brew "git"
-brew "gnutls"
-brew "node"
-brew "openssh"
-brew "ripgrep"
-brew "vivid"
-brew "watch"
-brew "wget"
+brew "bat"               # A cat(1) clone with wings.
+brew "bat-extras"        # Extra scripts for bat.
+brew "cmake"             # Cross-platform build system.
+brew "eza"               # A modern replacement for 'ls'.
+brew "fd"                # A simple, fast and user-friendly alternative to 'find'.
+brew "fzf"               # A command-line fuzzy finder.
+brew "gh"                # GitHub's official command-line tool.
+brew "git"               # Distributed revision control system.
+brew "gnutls"            # A secure communications library implementing SSL, TLS and DTLS.
+brew "node"              # JavaScript runtime.
+brew "openssh"           # OpenBSD's Secure Shell server.
+brew "ripgrep"           # A line-oriented search tool that recursively searches your current directory.
+brew "vivid"             # A generator for LS_COLORS with themes.
+brew "watch"             # Executes a program periodically, showing output fullscreen.
+brew "wget"              # A free utility for non-interactive download of files from the Web.
 
-# Neovim
+
+# ==============================================================================
+# TERMINAL & SHELL ENHANCEMENTS
+# ==============================================================================
+# Terminals, shells, and tools that improve the command-line experience.
+
+cask "ghostty"           # A modern GPU-accelerated terminal emulator.
+
+brew "antidote"          # A Zsh plugin manager.
+brew "atuin"             # Magical shell history.
+brew "btop"              # A modern resource monitor.
+brew "fastfetch"         # A neofetch-like tool for fetching system information.
+brew "pyenv"             # Python version management.
+brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
+brew "zoxide"            # A smarter cd command.
+
+
+# ==============================================================================
+# DEVELOPMENT & EDITORS
+# ==============================================================================
+# Code editors, fonts, and related development tools.
+
+# --- Editors ---
 brew "neovim"
+cask "zed"
+
+# --- Editor Dependencies ---
 brew "tree-sitter"
 brew "tree-sitter-cli"
 
-# Shell Enhancements
-brew "antidote"
-brew "atuin"
-brew "starship"
-brew "zoxide"
-brew "pyenv"
+# --- Fonts ---
+cask "font-commit-mono-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-maple-mono-nf"
+cask "font-monaspace"
 
-# Browsers
-cask "zen"
 
-# macOS Utilities
-cask "alfred"
-cask "jordanbaird-ice"
-cask "karabiner-elements"
-cask "keka"
+# ==============================================================================
+# DESKTOP APPLICATIONS & UTILITIES
+# ==============================================================================
 
-# Security
-cask "lulu"
-
-# Window Management
-cask "rectangle-pro"
-
-# macOS Maintenance
-cask "appcleaner"
-cask "pearcleaner"
-
-# Productivity Applications
+# --- Productivity ---
 cask "1password"
 cask "1password-cli"
 cask "chatgpt"
 cask "keyboardcleantool"
 cask "nordvpn"
 cask "obsidian"
-cask "zed"
-brew "mas"
 
-# Other Applications
+# --- macOS Utilities ---
+cask "alfred"
+cask "appcleaner"
+cask "jordanbaird-ice"      # A modern menu bar manager for macOS.
+cask "karabiner-elements"   # A powerful and stable keyboard customizer.
+cask "keka"                 # A free file archiver for macOS.
+cask "lulu"                 # A free macOS firewall.
+cask "pearcleaner"
+cask "rectangle-pro"        # Window management.
+
+# --- Entertainment ---
 cask "philips-hue-sync"
 cask "spotify"
 cask "steam"
 
-# Mac App Store Applications
+# --- Mac App Store Apps ---
+brew "mas" # Command-line interface for the Mac App Store.
 mas "Startup Manager", id: 1296723195
 mas "Telegram", id: 747648890
 mas "WhatsApp", id: 310633997
 
-# Work-Specific Packages
-if hostname.start_with?('PC-')
-  # Security / Cryptography
-  brew "gnupg"
-  brew "pinentry-mac"
 
-  # DBT
+# ==============================================================================
+# WORK-SPECIFIC SETUP
+# ==============================================================================
+# These packages will only be installed on machines with a hostname
+# starting with 'PC-'.
+
+if hostname.start_with?('PC-')
+  # --- Developer Tools ---
   tap "dbt-labs/dbt-cli"
   brew "dbt-labs/dbt-cli/dbt"
-
-  # Terraform
   tap "hashicorp/tap"
   brew "hashicorp/tap/terraform"
-
-  # Docker & Kubernetes
-  brew "helm"
-  brew "krew"
-  brew "kubectx"
-  brew "k9s"
-
-  # Tools
   brew "pre-commit"
   brew "ruff"
   brew "uv"
 
-  # Google Cloud
+  # --- Security / Cryptography ---
+  brew "gnupg"
+  brew "pinentry-mac"
+
+  # --- Docker & Kubernetes ---
+  brew "helm"
+  brew "k9s"
+  brew "krew"
+  brew "kubectx"
+
+  # --- Google Cloud ---
   cask "gcloud-cli"
 
-  # Work Apps - Mac App Store
+  # --- Work Apps (Mac App Store) ---
   mas "Bitwarden", id: 1352778147
   mas "Slack", id: 803453959
 end

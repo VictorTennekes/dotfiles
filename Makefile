@@ -18,6 +18,7 @@ clean:
 	@rm -f $(HOME)/.vimrc
 	@rm -f $(shell bat --config-dir 2>/dev/null)/themes/Catppuccin_Mocha.tmTheme
 	@rm -rf $(XDG_CACHE_HOME:-$(HOME)/.cache)/zsh
+	@rm -rf $(XDG_CONFIG_HOME)/btop
 	@rm -rf $(XDG_CONFIG_HOME)/ghostty
 	@rm -rf $(XDG_CONFIG_HOME)/k9s
 	@rm -rf $(XDG_CONFIG_HOME)/nvim
@@ -25,7 +26,7 @@ clean:
 	@rm -f $(HOME)/.zshenv
 	@echo "🧼 Clean complete."
 
-install: homebrew brew git ghostty bat k9s nvim zsh
+install: homebrew brew git ghostty bat btop k9s nvim zsh
 	@echo "✅ All installations completed!"
 
 
@@ -68,6 +69,11 @@ $(THEME_FILE): $(BATTHEMES_DIR)
 $(BATTHEMES_DIR):
 	@echo "Creating Bat themes directory..."
 	@mkdir -p $(BATTHEMES_DIR) || (echo "Error: Failed to create Bat themes directory" && exit 1)
+
+# --- Btop ---
+btop: $(CURRENT_DIR)/btop
+	@echo "💻 Symlinking btop config..."
+	@ln -fhs $(CURRENT_DIR)/btop $(XDG_CONFIG_HOME)/btop || (echo "Error: Failed to symlink btop config" && exit 1)
 
 # --- Ghostty ---
 GHOSTTY_SOURCE_DIR := $(CURRENT_DIR)/ghostty
@@ -150,4 +156,4 @@ zsh:
 # PHONY TARGETS
 # ==============================================================================
 # Prevents conflicts with any files that might have the same name as a target.
-.PHONY: bat brew clean git ghostty homebrew install k9s nvim zsh
+.PHONY: bat brew btop clean git ghostty homebrew install k9s nvim zsh

@@ -24,6 +24,7 @@ brew "gnutls"
 brew "node"
 brew "openssh"
 brew "ripgrep"
+brew "vivid"
 brew "watch"
 brew "wget"
 

@@ -7,5 +7,6 @@ window-padding-balance = true
 font-family = Maple Mono NF
 font-size = 15
 
-macos-titlebar-style=tabs
+macos-titlebar-style=transparent
 macos-option-as-alt=true
+macos-titlebar-proxy-icon=hidden

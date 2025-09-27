@@ -16,6 +16,7 @@ brew "eza"               # A modern replacement for 'ls'.
 brew "fd"                # A simple, fast and user-friendly alternative to 'find'.
 brew "fzf"               # A command-line fuzzy finder.
 brew "gh"                # GitHub's official command-line tool.
+brew "glab"				 # GitLab's official command-line tool.
 brew "git"               # Distributed revision control system.
 brew "gnutls"            # A secure communications library implementing SSL, TLS and DTLS.
 brew "node"              # JavaScript runtime.
@@ -65,6 +66,9 @@ cask "font-monaspace"
 # ==============================================================================
 # DESKTOP APPLICATIONS & UTILITIES
 # ==============================================================================
+
+# --- Browsers ---
+cask "zen"
 
 # --- Productivity ---
 cask "1password"

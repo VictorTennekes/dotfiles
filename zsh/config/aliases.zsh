@@ -4,6 +4,7 @@ alias cdf='cd $(fzf)'
 alias dots="cd ~/.dotfiles"
 alias g='git'
 alias gho='gh repo view -w'
+alias glo='glab repo view -w'
 alias kn='kubens'
 alias kx='kubectx'
 alias tf="terraform"

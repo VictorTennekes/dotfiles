@@ -38,6 +38,7 @@ brew "antidote"          # A Zsh plugin manager.
 brew "atuin"             # Magical shell history.
 brew "btop"              # A modern resource monitor.
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
+brew "lazygit"
 brew "pyenv"             # Python version management.
 brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
 brew "zoxide"            # A smarter cd command.
@@ -88,6 +89,9 @@ cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
 cask "rectangle-pro"        # Window management.
 
+# --- Messengers ---
+cask "signal"
+
 # --- Entertainment ---
 cask "philips-hue-sync"
 cask "spotify"
@@ -96,8 +100,8 @@ cask "steam"
 # --- Mac App Store Apps ---
 brew "mas" # Command-line interface for the Mac App Store.
 mas "Startup Manager", id: 1296723195
-mas "Telegram", id: 747648890
-mas "WhatsApp", id: 310633997
+mas "Telegram Messenger", id: 747648890
+mas "WhatsApp Messenger", id: 310633997
 
 
 # ==============================================================================

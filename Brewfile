@@ -63,6 +63,9 @@ cask "font-jetbrains-mono-nerd-font"
 cask "font-maple-mono-nf"
 cask "font-monaspace"
 
+# --- Languages ---
+brew "zig"
+brew "go"
 
 # ==============================================================================
 # DESKTOP APPLICATIONS & UTILITIES

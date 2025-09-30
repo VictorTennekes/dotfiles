@@ -3,6 +3,7 @@ alias c='clear'
 alias cdf='cd $(fzf)'
 alias dots="cd ~/.dotfiles"
 alias g='git'
+alias gg='lazygit'
 alias gho='gh repo view -w'
 alias glo='glab repo view -w'
 alias kn='kubens'

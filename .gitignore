@@ -20,3 +20,5 @@ nvim/spell/
 # Zsh
 zsh_plugins.zsh
 zsh/work
+zsh/.zsh_history
+zsh/.zsh_sessions

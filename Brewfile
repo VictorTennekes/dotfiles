@@ -92,6 +92,12 @@ cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
 cask "rectangle-pro"        # Window management.
 
+tap "nikitabobko/tap"
+cask "aerospace"
+
+tap "FelixKratz/formulae"
+brew "borders"
+
 # --- Messengers ---
 cask "signal"
 

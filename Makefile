@@ -18,6 +18,7 @@ clean:
 	@rm -f $(HOME)/.vimrc
 	@rm -f $(shell bat --config-dir 2>/dev/null)/themes/Catppuccin_Mocha.tmTheme
 	@rm -rf $(XDG_CACHE_HOME:-$(HOME)/.cache)/zsh
+	@rm -rf $(XDG_CONFIG_HOME)/aerospace
 	@rm -rf $(XDG_CONFIG_HOME)/btop
 	@rm -rf $(XDG_CONFIG_HOME)/ghostty
 	@rm -rf $(XDG_CONFIG_HOME)/k9s
@@ -26,7 +27,7 @@ clean:
 	@rm -f $(HOME)/.zshenv
 	@echo "🧼 Clean complete."
 
-install: homebrew brew git ghostty bat btop k9s nvim zsh
+install: aerospace homebrew brew git ghostty bat btop k9s nvim zsh
 	@echo "✅ All installations completed!"
 
 
@@ -52,6 +53,11 @@ Brewfile.lock.json: Brewfile
 # ==============================================================================
 # CONFIGURATION SYMLINKING & SETUP
 # ==============================================================================
+
+# --- Aerospace ---
+aerospace: $(CURRENT_DIR)/aerospace
+	@echo "💻 Symlinking aerospace config..."
+	@ln -fhs $(CURRENT_DIR)/aerospace $(XDG_CONFIG_HOME)/aerospace || (echo "Error: Failed to symlink aerospace config" && exit 1)
 
 # --- Bat ---
 BATTHEMES_DIR = $(shell bat --config-dir 2>/dev/null)/themes
@@ -156,4 +162,4 @@ zsh:
 # PHONY TARGETS
 # ==============================================================================
 # Prevents conflicts with any files that might have the same name as a target.
-.PHONY: bat brew btop clean git ghostty homebrew install k9s nvim zsh
+.PHONY: aerospace bat brew btop clean git ghostty homebrew install k9s nvim zsh

@@ -15,7 +15,6 @@ clean:
 	@echo "🧹 Cleaning up symlinks and config files..."
 	@rm -f $(HOME)/.gitconfig
 	@rm -f $(HOME)/.gitignore
-	@rm -f $(HOME)/.vimrc
 	@rm -f $(shell bat --config-dir 2>/dev/null)/themes/Catppuccin_Mocha.tmTheme
 	@rm -rf $(XDG_CACHE_HOME:-$(HOME)/.cache)/zsh
 	@rm -rf $(XDG_CONFIG_HOME)/aerospace
@@ -146,8 +145,6 @@ nvim: $(CURRENT_DIR)/nvim/init.lua
 	@echo "🖋️ Symlinking Neovim config..."
 	@mkdir -p $(XDG_CONFIG_HOME)
 	@ln -fhs $(CURRENT_DIR)/nvim $(XDG_CONFIG_HOME)/nvim || (echo "Error: Failed to symlink Neovim config" && exit 1)
-	@echo "🖋️ Symlinking .vimrc for compatibility..."
-	@ln -fhs $(XDG_CONFIG_HOME)/nvim/vimrc $(HOME)/.vimrc || (echo "Error: Failed to symlink .vimrc" && exit 1)
 
 # --- Zsh ---
 zsh:

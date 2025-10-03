@@ -26,3 +26,5 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.config/zsh
 zstyle ':completion:*' compress end
+
+zstyle ':completion:*' rehash true

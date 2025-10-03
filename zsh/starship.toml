@@ -11,11 +11,7 @@ $character\
 
 right_format = """
 $status\
-$cmd_duration\
 $python\
-$conda\
-$terraform\
-$gcloud
 """
 
 [gcloud]
@@ -32,6 +28,3 @@ disabled = true
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 symbol = "🐍"
 version_format = "${raw}"
-
-[terraform]
-format = '[$symbol$workspace]($style) '

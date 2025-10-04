@@ -16,7 +16,7 @@ alias vscode="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/co
 alias v='nvim'
 
 # File explorer
-alias f="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --bind 'enter:become(nvim {+})'"
+alias ff="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --bind 'enter:become(nvim {+})'"
 
 # System replacements
 alias cat='bat'

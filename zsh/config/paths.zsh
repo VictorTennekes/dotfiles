@@ -6,11 +6,6 @@ if [[ -d "$PYENV_ROOT/bin" ]]; then
 fi
 
 # --- Application Paths ---
-# Add other application binaries to the PATH if they exist.
-SUBLIME_BIN="/Applications/Sublime Text.app/Contents/SharedSupport/bin"
-if [[ -d "$SUBLIME_BIN" ]]; then
-  export PATH="$SUBLIME_BIN:$PATH"
-fi
 JETBRAINS_SCRIPTS="$HOME/Library/Application Support/JetBrains/Toolbox/scripts"
 if [[ -d "$JETBRAINS_SCRIPTS" ]]; then
   export PATH="$PATH:$JETBRAINS_SCRIPTS"

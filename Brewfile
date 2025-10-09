@@ -105,6 +105,7 @@ cask "signal"
 cask "philips-hue-sync"
 cask "spotify"
 cask "steam"
+cask "stremio"
 
 # --- Mac App Store Apps ---
 brew "mas" # Command-line interface for the Mac App Store.

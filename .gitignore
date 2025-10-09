@@ -2,23 +2,25 @@
 .brew_install.sh
 Brewfile.lock.json
 
+# Karabiner
+config/karabiner/automatic_backups
+
 # K9S
-k9s/benchmarks
-k9s/clusters
-k9s/screen-dumps
-k9s/skins
+config/k9s/benchmarks
+config/k9s/clusters
+config/k9s/screen-dumps
 
 # Nvim
-nvim/lazy-lock.json
-nvim/tags
-nvim/test.sh
-nvim/.luarc.json
-nvim/nvim
-nvim/spell/
+config/nvim/lazy-lock.json
+config/nvim/tags
+config/nvim/test.sh
+config/nvim/.luarc.json
+config/nvim/nvim
+config/nvim/spell/
 
 
 # Zsh
-zsh_plugins.zsh
-zsh/work
-zsh/.zsh_history
-zsh/.zsh_sessions
+config/zsh/zsh_plugins.zsh
+config/zsh/work
+config/zsh/.zsh_history
+config/zsh/.zsh_sessions

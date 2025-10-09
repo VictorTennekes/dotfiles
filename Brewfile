@@ -134,7 +134,7 @@ if hostname.start_with?('PC-')
   brew "gnupg"
   brew "pinentry-mac"
 
-  # --- Docker & Kubernetes ---
+  # --- Kubernetes ---
   brew "helm"
   brew "k9s"
   brew "krew"

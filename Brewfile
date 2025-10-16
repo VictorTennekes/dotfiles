@@ -16,7 +16,7 @@ brew "eza"               # A modern replacement for 'ls'.
 brew "fd"                # A simple, fast and user-friendly alternative to 'find'.
 brew "fzf"               # A command-line fuzzy finder.
 brew "gh"                # GitHub's official command-line tool.
-brew "glab"				 # GitLab's official command-line tool.
+brew "glab"              # GitLab's official command-line tool.
 brew "git"               # Distributed revision control system.
 brew "gnutls"            # A secure communications library implementing SSL, TLS and DTLS.
 brew "node"              # JavaScript runtime.
@@ -33,6 +33,8 @@ brew "wget"              # A free utility for non-interactive download of files 
 # Terminals, shells, and tools that improve the command-line experience.
 
 cask "ghostty"           # A modern GPU-accelerated terminal emulator.
+
+brew "hyperfine"
 
 brew "antidote"          # A Zsh plugin manager.
 brew "atuin"             # Magical shell history.
@@ -59,9 +61,11 @@ brew "tree-sitter-cli"
 
 # --- Fonts ---
 cask "font-commit-mono-nerd-font"
+cask "font-hack-nerd-font"
 cask "font-jetbrains-mono-nerd-font"
 cask "font-maple-mono-nf"
 cask "font-monaspace"
+cask "sf-symbols"
 
 # --- Languages ---
 brew "zig"
@@ -97,6 +101,8 @@ cask "aerospace"
 
 tap "FelixKratz/formulae"
 brew "borders"
+brew "sketchybar"
+cask "font-sketchybar-app-font"
 
 # --- Messengers ---
 cask "signal"

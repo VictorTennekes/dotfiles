@@ -1,0 +1,59 @@
+#!/bin/bash
+# Symlinks config directories and specific dotfiles from the project root.
+
+# Find the absolute path of the directory this script is in
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+
+CONFIG_SOURCE_DIR="$PROJECT_ROOT/config"
+CONFIG_TARGET_DIR="$HOME/.config"
+
+
+# --- 0. Clone nvim config if not present ---
+NVIM_CONFIG_DIR="$CONFIG_SOURCE_DIR/nvim"
+
+if [ ! -d "$NVIM_CONFIG_DIR" ]; then
+    echo "📦 'nvim' config not found in $CONFIG_SOURCE_DIR — cloning from GitHub..."
+    git clone https://github.com/victortennekes/nvim "$NVIM_CONFIG_DIR" || {
+        echo "❌ Failed to clone nvim config. Aborting symlink step for it."
+    }
+else
+    echo "✅ 'nvim' config already exists. Skipping clone."
+fi
+
+# --- 1. Link all directories inside './config' ---
+if [ -d "$CONFIG_SOURCE_DIR" ]; then
+    echo "🔗 Linking config directories to $CONFIG_TARGET_DIR..."
+    # Ensure the target directory exists
+    mkdir -p "$CONFIG_TARGET_DIR"
+
+    # Find all directories in the source folder and link them
+    for dir in "$CONFIG_SOURCE_DIR"/*/; do
+        config_name=$(basename "$dir")
+        source_path="$CONFIG_SOURCE_DIR/$config_name"
+        target_path="$CONFIG_TARGET_DIR/$config_name"
+
+        echo "  -> Linking $config_name"
+        ln -snf "$source_path" "$target_path"
+    done
+else
+    echo "ℹ️  Skipping config directories, '$CONFIG_SOURCE_DIR' not found."
+fi
+
+# --- 2. Link individual files from the project root ---
+
+echo "🔗 Linking individual files to $HOME..."
+
+# Specifically handle zshenv
+ZSHENV_SOURCE="$PROJECT_ROOT/.zshenv"
+ZSHENV_TARGET="$HOME/.zshenv"
+
+if [ -f "$ZSHENV_SOURCE" ]; then
+    echo "  -> Linking zshenv"
+    ln -snf "$ZSHENV_SOURCE" "$ZSHENV_TARGET"
+else
+    echo "ℹ️  Skipping zshenv, file not found."
+fi
+
+
+echo "✅ Done."

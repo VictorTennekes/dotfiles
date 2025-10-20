@@ -1,0 +1,43 @@
+[alias]
+	br = branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate
+	ci = commit
+	d = "!f() { \
+	    git diff --name-only --relative --diff-filter=d -z | xargs -0 bat --diff; \
+	}; f"
+	st = status
+	cm = commit -m
+	sw = switch
+	swc = "!f() { \
+        git show-ref --verify --quiet refs/heads/$1 && git switch $1 || git switch -c $1; \
+    }; f"
+	cb = "!f() { \
+		git commit -m \"$(git branch --show-current): $1\"; \
+	}; f"
+	acm = !git add . && git cm
+	acb = !git add . && git cb
+	pob = !git push -u origin $(git branch --show-current)
+	plob = !git pull origin $(git branch --show-current)
+	rocket = "!f() { \
+	   git add . && git commit -m \"$1\" && git pob; \
+	   }; f"
+	last = log -1 HEAD
+	unstage = reset HEAD --
+	ll = log --oneline
+	gl = config --global -l
+
+[push]
+    default = simple
+
+[fetch]
+    prune = true
+
+[core]
+	editor = nvim
+	excludesfile = ~/.config/git/ignore
+
+[color]
+	ui = auto
+
+# Include local config
+[include]
+    path = ~/.gitconfig.local

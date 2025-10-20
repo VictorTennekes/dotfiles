@@ -1,0 +1,9 @@
+mattmc3/zephyr path:plugins/completion kind:defer
+
+Aloxaf/fzf-tab kind:defer
+
+zdharma-continuum/fast-syntax-highlighting kind:defer
+zsh-users/zsh-autosuggestions kind:defer
+
+# Additions
+zsh-users/zsh-history-substring-search kind:defer

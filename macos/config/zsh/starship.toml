@@ -1,0 +1,30 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$character\
+"""
+
+right_format = """
+$status\
+$python\
+"""
+
+[gcloud]
+disabled = true
+format = 'on [$symbol$account]($style) '
+
+[git_branch]
+format = "$branch "
+
+[package]
+disabled = true
+
+[python]
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+symbol = "🐍"
+version_format = "${raw}"

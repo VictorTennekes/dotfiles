@@ -1,0 +1,15 @@
+#!/bin/bash
+LED_PATH="/sys/class/leds/smc::kbd_backlight"
+get_brightness() {
+    curr=$(cat "$LED_PATH/brightness")
+    max=$(cat "$LED_PATH/max_brightness")
+    echo $((curr * 100 / max))
+}
+# Print initial value for Waybar
+echo "{\"text\": \"$(get_brightness)%\"}"
+
+# Watch for changes using inotify
+inotifywait --monitor "$LED_PATH/brightness" | while read; do
+    echo "{\"text\": \"$(get_brightness)%\"}"
+done
+

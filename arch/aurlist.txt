@@ -1,0 +1,6 @@
+grimblast-git
+kvantum-theme-catppuccin-git
+paru
+tofi
+zen-browser-bin
+zsh-antidote

@@ -7,8 +7,6 @@ source ${ZDOTDIR}/config/functions.zsh
 source ${ZDOTDIR}/config/history.zsh
 source ${ZDOTDIR}/config/integrations.zsh
 
-source ${ZDOTDIR}/work/init.zsh
-
 . "$HOME/.local/bin/env"
 
 antidote load ${ZDOTDIR}/zsh_plugins.txt

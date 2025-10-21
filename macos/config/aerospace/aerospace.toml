@@ -185,10 +185,10 @@ alt-shift-0 = 'move-node-to-workspace 10 --focus-follows-window'
 alt-tab = 'workspace-back-and-forth'
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
-alt-b = 'exec-and-forget open -a /Applications/Zen.app'
-alt-n = 'exec-and-forget open -a /Applications/Obsidian.app'
-alt-s = 'exec-and-forget open -a /Applications/Slack.app'
-alt-enter = 'exec-and-forget open -a /Applications/Ghostty.app'
+alt-shift-b = 'exec-and-forget open -a /Applications/Zen.app'
+alt-shift-n = 'exec-and-forget open -a /Applications/Obsidian.app'
+alt-shift-s = 'exec-and-forget open -a /Applications/Slack.app'
+alt-shift-enter = 'exec-and-forget open -a /Applications/Ghostty.app'
 alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode

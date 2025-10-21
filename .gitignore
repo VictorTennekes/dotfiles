@@ -11,13 +11,7 @@ config/k9s/clusters
 config/k9s/screen-dumps
 
 # Nvim
-config/nvim/lazy-lock.json
-config/nvim/tags
-config/nvim/test.sh
-config/nvim/.luarc.json
-config/nvim/nvim
-config/nvim/spell/
-
+*/config/nvim
 
 # Zsh
 config/zsh/zsh_plugins.zsh

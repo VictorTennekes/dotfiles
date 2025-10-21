@@ -37,14 +37,15 @@ cask "ghostty"           # A modern GPU-accelerated terminal emulator.
 brew "hyperfine"
 
 brew "antidote"          # A Zsh plugin manager.
-brew "atuin"             # Magical shell history.
-brew "btop"              # A modern resource monitor.
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
-brew "lazygit"
 brew "pyenv"             # Python version management.
 brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
 brew "zoxide"            # A smarter cd command.
 
+# TUI's
+brew "btop"
+brew "lazygit"
+brew "yazi"
 
 # ==============================================================================
 # DEVELOPMENT & EDITORS

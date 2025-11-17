@@ -15,8 +15,6 @@ if [ "$SENDER" = "aerospace_workspace_change" ]; then
     done <<<"${prevapps}"
     sketchybar --set space.$PREV_WORKSPACE label="$icon_strip"
   else
-    #WARN: moves empty workspaces back to monitor 1
-    ###### this assumes monitor 1 is your main monitor
     aerospace move-workspace-to-monitor --workspace "$PREV_WORKSPACE" 1
     sketchybar --set space.$PREV_WORKSPACE drawing=off display=1
   fi

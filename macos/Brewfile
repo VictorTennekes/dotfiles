@@ -72,6 +72,9 @@ cask "sf-symbols"
 brew "zig"
 brew "go"
 
+# --- AI ---
+brew "gemini-cli"
+
 # ==============================================================================
 # DESKTOP APPLICATIONS & UTILITIES
 # ==============================================================================
@@ -96,14 +99,6 @@ cask "keka"                 # A free file archiver for macOS.
 cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
 cask "rectangle-pro"        # Window management.
-
-tap "nikitabobko/tap"
-cask "aerospace"
-
-tap "FelixKratz/formulae"
-brew "borders"
-brew "sketchybar"
-cask "font-sketchybar-app-font"
 
 # --- Messengers ---
 cask "signal"

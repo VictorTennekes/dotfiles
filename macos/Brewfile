@@ -85,6 +85,7 @@ cask "zen"
 # --- Productivity ---
 cask "1password"
 cask "1password-cli"
+cask "proton-pass"
 cask "chatgpt"
 cask "keyboardcleantool"
 cask "nordvpn"
@@ -141,6 +142,7 @@ if hostname.start_with?('PC-')
   brew "k9s"
   brew "krew"
   brew "kubectx"
+  cask "docker-desktop"
 
   # --- Google Cloud ---
   cask "gcloud-cli"

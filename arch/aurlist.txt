@@ -1,9 +1,0 @@
-1password
-brave-bin
-grimblast-git
-kvantum-theme-catppuccin-git
-paru
-tofi
-wlogout-git
-zen-browser-bin
-zsh-antidote

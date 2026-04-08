@@ -6,48 +6,35 @@ and symlinking of configuration files for a clean and reproducible environment.
 
 ---
 
-## ✨ Overview
-
-This repository contains the configuration files for my
-primary development tools. The main goals are:
-
-- **Automation:** A single command should set up a new machine.
-- **Cleanliness:** Adherence to the XDG Base Directory Specification
-to keep the home directory uncluttered.
-- **Simplicity:** Using `make` to orchestrate shell scripts for
-straightforward and readable logic.
-
----
-
-## 🔧 What's Inside?
-
-This setup configures the following tools:
+## What's Inside?
 
 - **Shell:** Zsh with [Antidote](https://github.com/mattmc3/antidote)
-for fast plugin management.
-- **Package Manager:** [Homebrew](https://brew.sh/) for installing system
-packages and applications via a `Brewfile`.
-- **Terminal:** Configuration for Ghostty.
-- **Core Utils:** Settings for my core utilities.
-- **Editor:** My Neovim setup is managed separately.
-See [Neovim Configuration](https://github.com/victortennekes/nvim) below.
+for plugin management and [Starship](https://starship.rs/) prompt.
+- **Package Manager:** [Homebrew](https://brew.sh/) via a `Brewfile`.
+- **Terminal:** [Ghostty](https://ghostty.org/) with Catppuccin Mocha theme.
+- **Git:** [Delta](https://github.com/dandavison/delta) for diffs,
+commit signing via Bitwarden SSH agent.
+- **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
+- **TUIs:** `lazygit`, `btop`, `yazi`, `k9s`.
+- **Editor:** Neovim, managed separately at
+[victortennekes/nvim](https://github.com/victortennekes/nvim).
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 
 - Git
-- macOS Command Line Tools (run `xcode-select --install` to get them)
+- macOS Command Line Tools (`xcode-select --install`)
 
 ### Steps
 
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/victortennekes/dotfiles.git
-   cd dotfiles
+   git clone https://github.com/victortennekes/dotfiles.git ~/.dotfiles
+   cd ~/.dotfiles
    ```
 
 2. **Run the installer:**
@@ -56,44 +43,39 @@ See [Neovim Configuration](https://github.com/victortennekes/nvim) below.
    make install
    ```
 
-   This command will automatically:
-   - Install **Homebrew** if it's not already present.
-   - Install all applications and tools listed in the `Brewfile`.
-   - Symlink all configuration files to the correct locations (`~/.config/` and `~/`).
+   This will:
+   - Install Homebrew if not present.
+   - Install all packages from the `Brewfile`.
+   - Symlink all configs to `~/.config/`.
 
 ---
 
-## 💡 Post-Installation
+## Usage
 
-The first time you open a Zsh session after installation, Antidote will
-automatically clone the plugins listed in your `zsh/zsh_plugins.txt` file.
-
----
-
-## 🛠️ Usage
-
-The `Makefile` provides two main targets for managing your dotfiles:
-
-- `make install`: Sets up everything or updates existing symlinks and packages.
-- `make clean`: Safely removes all created symlinks from your home directory.
+| Command | Description |
+|---|---|
+| `make install` | Full setup: brew + symlinks |
+| `make update` | Pull dotfiles, update brew, re-link |
+| `make dump` | Export current brew packages to Brewfile |
+| `make clean` | Remove all symlinks |
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
-- `Makefile`: The main orchestrator that runs all setup and cleanup tasks.
-- `Brewfile`: A list of all Homebrew packages, casks, and App Store apps to be installed.
-- `config/`: Contains application-specific configurations that will be linked
-into `~/.config/`.
-- `scripts/`: Holds the robust `install` and `clean` shell scripts responsible
-for symlinking.
-- `zshenv`: The bootstrap file that sets the `$ZDOTDIR`,
-keeping the home directory clean.
-
----
-
-## 🖋️ Neovim Configuration
-
-My Neovim configuration is managed in its own repository to keep it modular.
-You can find it over at
-[github.com/victortennekes/nvim](https://github.com/victortennekes/nvim).
+```txt
+.dotfiles/
+├── Brewfile        # Homebrew packages, casks, and Mac App Store apps
+├── Makefile        # Setup orchestrator
+├── config/         # App configs, symlinked to ~/.config/
+│   ├── bat/
+│   ├── btop/
+│   ├── ghostty/
+│   ├── git/
+│   ├── k9s/
+│   ├── karabiner/
+│   └── zsh/
+└── scripts/
+    ├── install     # Symlink creation
+    └── clean       # Symlink removal
+```

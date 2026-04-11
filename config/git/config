@@ -15,6 +15,9 @@
 	pob = !git push -u origin $(git branch --show-current)
 	plob = !git pull origin $(git branch --show-current)
 	rocket = "!f() { \
+	   echo \"About to add, commit, and push with message: $1\"; \
+	   printf 'Continue? [y/N] '; read ans; \
+	   [ \"$ans\" = \"y\" ] || [ \"$ans\" = \"Y\" ] || { echo 'Aborted.'; return 1; }; \
 	   git add . && git commit -m \"$1\" && git pob; \
 	   }; f"
 	last = log -1 HEAD

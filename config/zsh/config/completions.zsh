@@ -10,7 +10,18 @@ zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|
 
 # Completion caching
 zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.config/zsh
+zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR"
 zstyle ':completion:*' compress end
 
 zstyle ':completion:*' rehash true
+
+# kubectx/kubens alias completions (deferred until compinit is available)
+function _register_kube_completions() {
+  if (( $+commands[kubectx] )); then
+    compdef _kubectx kx 2>/dev/null
+    compdef _kubens kn 2>/dev/null
+  fi
+  add-zsh-hook -d precmd _register_kube_completions
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _register_kube_completions

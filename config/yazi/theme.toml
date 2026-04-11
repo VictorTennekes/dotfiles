@@ -1,0 +1,4 @@
+# Uses catppuccin-mocha from yazi's built-in flavor support
+# To install: ya pack -a yazi-rs/flavors:catppuccin-mocha
+[flavor]
+use = "catppuccin-mocha"

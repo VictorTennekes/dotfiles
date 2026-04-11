@@ -9,9 +9,6 @@ alias glo='glab repo view -w'
 alias kn='kubens'
 alias kx='kubectx'
 alias tf="terraform"
-alias vf='nvim $(prev)'
-alias vscode="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
-
 # Neovim
 alias v='nvim'
 

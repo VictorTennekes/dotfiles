@@ -72,7 +72,17 @@ dump:
 	@echo "📋 Brewfile updated with current packages."
 
 # ==============================================================================
+# VALIDATION
+# ==============================================================================
+# Validate configs before symlinking to prevent broken shell startups.
+lint:
+	@echo "🔍 Validating configs..."
+	@zsh -n $(wildcard config/zsh/.zshrc config/zsh/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
+	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
+	@echo "✅ All configs valid."
+
+# ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
 # Prevents conflicts with any files that might have the same name as a target.
-.PHONY: all install clean homebrew brew configs update dump
+.PHONY: all install clean homebrew brew configs update dump lint

@@ -11,7 +11,6 @@ hostname = `hostname`.strip
 
 brew "bat"               # A cat(1) clone with wings.
 brew "bat-extras"        # Extra scripts for bat.
-brew "cmake"             # Cross-platform build system.
 brew "eza"               # A modern replacement for 'ls'.
 brew "fd"                # A simple, fast and user-friendly alternative to 'find'.
 brew "delta"             # A syntax-highlighting pager for git, diff, and grep output.
@@ -20,13 +19,10 @@ brew "jq"                # A lightweight command-line JSON processor.
 brew "gh"                # GitHub's official command-line tool.
 brew "glab"              # GitLab's official command-line tool.
 brew "git"               # Distributed revision control system.
-brew "gnutls"            # A secure communications library implementing SSL, TLS and DTLS.
 brew "node"              # JavaScript runtime.
-brew "openssh"           # OpenBSD's Secure Shell server.
 brew "ripgrep"           # A line-oriented search tool that recursively searches your current directory.
 brew "vivid"             # A generator for LS_COLORS with themes.
 brew "watch"             # Executes a program periodically, showing output fullscreen.
-brew "wget"              # A free utility for non-interactive download of files from the Web.
 
 
 # ==============================================================================
@@ -63,21 +59,17 @@ brew "tree-sitter"
 brew "tree-sitter-cli"
 
 # --- Fonts ---
-cask "font-commit-mono-nerd-font"
-cask "font-hack-nerd-font"
 cask "font-jetbrains-mono-nerd-font"
-cask "font-maple-mono-nf"
-cask "font-monaspace"
-cask "sf-symbols"
 
 # --- Languages ---
 brew "zig"
 brew "go"
 
 # --- AI ---
-brew "gemini-cli"
+cask "chatgpt"
 cask "claude-code"
 cask "claude"
+brew "gemini-cli"
 
 # ==============================================================================
 # DESKTOP APPLICATIONS & UTILITIES
@@ -87,14 +79,9 @@ cask "claude"
 cask "zen"
 
 # --- Productivity ---
-cask "1password"
-cask "1password-cli"
-
 cask "Bitwarden"
 brew "bitwarden-cli"
 
-cask "proton-pass"
-cask "chatgpt"
 cask "keyboardcleantool"
 cask "nordvpn"
 cask "obsidian"
@@ -109,7 +96,6 @@ cask "keka"                 # A free file archiver for macOS.
 cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
 cask "rectangle-pro"        # Window management.
-cask "macdown"
 
 # --- Messengers ---
 cask "signal"
@@ -145,10 +131,6 @@ if hostname.start_with?('PC-')
   brew "parallel"
   brew "yq"
 
-  # --- Security / Cryptography ---
-  brew "gnupg"
-  brew "pinentry-mac"
-
   # --- Kubernetes ---
   brew "helm"
   brew "k9s"
@@ -160,6 +142,5 @@ if hostname.start_with?('PC-')
   cask "gcloud-cli"
 
   # --- Work Apps (Mac App Store) ---
-  mas "Bitwarden", id: 1352778147
   mas "Slack", id: 803453959
 end

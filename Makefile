@@ -58,7 +58,9 @@ configs:
 # Pull latest dotfiles, update brew packages, and re-link configs.
 update:
 	@echo "⬇️  Pulling latest dotfiles..."
+	@git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) diff --quiet 2>/dev/null || git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) stash
 	@git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) pull --rebase
+	@git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) stash pop 2>/dev/null || true
 	@echo "📦 Updating brew packages..."
 	@brew update && brew upgrade
 	@brew bundle install --cleanup --no-upgrade --file ./Brewfile
@@ -77,7 +79,7 @@ dump:
 # Validate configs before symlinking to prevent broken shell startups.
 lint:
 	@echo "🔍 Validating configs..."
-	@zsh -n $(wildcard config/zsh/.zshrc config/zsh/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
+	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
 	@echo "✅ All configs valid."
 

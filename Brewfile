@@ -19,9 +19,13 @@ brew "jq"                # A lightweight command-line JSON processor.
 brew "gh"                # GitHub's official command-line tool.
 brew "glab"              # GitLab's official command-line tool.
 brew "git"               # Distributed revision control system.
-brew "node"              # JavaScript runtime.
+brew "git-machete"       # Manage stacked branches and PR chains.
+# node, go, and python are managed by mise
 brew "ripgrep"           # A line-oriented search tool that recursively searches your current directory.
+brew "stow"              # Symlink farm manager for dotfiles.
+brew "tealdeer"          # Fast tldr client for quick command examples.
 brew "vivid"             # A generator for LS_COLORS with themes.
+brew "hyperfine"         # A command-line benchmarking tool.
 brew "watch"             # Executes a program periodically, showing output fullscreen.
 
 
@@ -32,11 +36,9 @@ brew "watch"             # Executes a program periodically, showing output fulls
 
 cask "ghostty"           # A modern GPU-accelerated terminal emulator.
 
-brew "hyperfine"
-
 brew "antidote"          # A Zsh plugin manager.
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
-brew "pyenv"             # Python version management.
+brew "mise"              # Polyglot version manager (replaces pyenv, nvm, etc.).
 brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
 brew "zoxide"            # A smarter cd command.
 
@@ -63,7 +65,6 @@ cask "font-jetbrains-mono-nerd-font"
 
 # --- Languages ---
 brew "zig"
-brew "go"
 
 # --- AI ---
 cask "chatgpt"

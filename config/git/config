@@ -10,8 +10,8 @@
 	cb = "!f() { \
 		git commit -m \"$(git branch --show-current): $1\"; \
 	}; f"
-	acm = !git add . && git cm
-	acb = !git add . && git cb
+	acm = !git add -u && git cm
+	acb = !git add -u && git cb
 	pob = !git push -u origin $(git branch --show-current)
 	plob = !git pull origin $(git branch --show-current)
 	rocket = "!f() { \
@@ -25,6 +25,12 @@
 	ll = log --oneline
 	gl = config --global -l
 
+[init]
+    defaultBranch = main
+
+[transfer]
+    fsckobjects = true
+
 [push]
     default = simple
     autoSetupRemote = true
@@ -37,9 +43,13 @@
 
 [rebase]
     autoStash = true
+    missingCommitsCheck = error
 
 [rerere]
     enabled = true
+
+[branch]
+    sort = -committerdate
 
 [column]
     ui = auto
@@ -48,6 +58,8 @@
 	editor = nvim
 	excludesfile = ~/.config/git/ignore
 	pager = delta
+	fsmonitor = true
+	untrackedcache = true
 
 [interactive]
 	diffFilter = delta --color-only
@@ -65,6 +77,15 @@
 
 [color]
 	ui = auto
+
+[commit]
+	gpgsign = true
+
+[gpg]
+	format = ssh
+
+[user]
+	signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH3q1jZWw7MRIxIf/GK5bo1+jL2HLXR+g3USNs/JJ0QK"
 
 # Include local config
 [include]

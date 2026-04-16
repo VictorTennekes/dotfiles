@@ -1,3 +1,6 @@
+# Skip compinit security checks (faster startup)
+zstyle ':zephyr:plugin:completion' disable-compfix 'yes'
+
 # Completion styling (compinit is handled by zephyr's completion plugin)
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"

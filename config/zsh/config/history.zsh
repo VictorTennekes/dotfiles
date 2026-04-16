@@ -12,8 +12,10 @@ setopt hist_ignore_space       # Do not record an event starting with a space.
 setopt hist_reduce_blanks      # Remove extra blanks from commands added to the history list.
 setopt hist_save_no_dups       # Do not write a duplicate event to the history file.
 setopt hist_verify             # Do not execute immediately upon history expansion.
-setopt inc_append_history      # Write to the history file immediately, not when the shell exits.
+setopt inc_append_history_time  # Write to history when command finishes (not on keystroke), avoids UI-blocking I/O.
+setopt hist_fcntl_lock         # Use OS-level locking on the history file.
 setopt NO_hist_beep            # Don't beep when accessing non-existent history.
+setopt NO_beep                 # Disable all terminal beeps.
 
 # Directory navigation
 setopt auto_cd                 # Type a directory name to cd into it.

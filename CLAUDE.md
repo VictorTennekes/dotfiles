@@ -1,17 +1,17 @@
 # Dotfiles
 
-macOS dotfiles managed with Homebrew and symlinks.
-All configs live in `config/` and are symlinked to
-`~/.config/` via `scripts/install`.
+macOS dotfiles managed with Homebrew and GNU Stow.
 
 ## Structure
 
 - `Brewfile` — all packages, casks, and Mac App Store
   apps. Work packages gated behind `PC-` hostname.
-- `config/` — app configs
+- `config/` — app configs stowed to `~/.config/`
   (zsh, git, nvim, ghostty, btop, k9s, karabiner)
-- `scripts/install` — symlinks configs, clones nvim
-- `scripts/clean` — removes all symlinks
+- `home/` — home-level dotfiles stowed to `~/`
+  (.zshenv)
+- `scripts/install` — stow configs, clone nvim
+- `scripts/clean` — unstow all symlinks
 - `Makefile` — `install`, `update`, `dump`, `clean`
 
 ## Shell (Zsh)
@@ -19,8 +19,10 @@ All configs live in `config/` and are symlinked to
 - Entry: `.zshrc` sources modular configs from
   `config/zsh/config/`
 - Plugins via antidote, all deferred for performance
-- Tool inits (fzf, zoxide, starship) are cached in
+- Tool inits (fzf, zoxide, starship, mise) cached in
   `~/.cache/zsh/` to avoid subprocess spawns
+- Custom functions use zsh autoload (parsed on first call)
+- mise for polyglot version management (python, node, etc.)
 - Exports, paths, aliases, functions, completions,
   history are separate files
 

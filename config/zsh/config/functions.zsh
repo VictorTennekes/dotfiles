@@ -1,3 +1,3 @@
-for func in ${ZDOTDIR}/config/functions/*.zsh; do
-  source "$func"
-done
+# Autoload custom functions — only parsed when first called
+fpath+=(${ZDOTDIR}/config/functions)
+autoload -Uz ${ZDOTDIR}/config/functions/*(.:t)

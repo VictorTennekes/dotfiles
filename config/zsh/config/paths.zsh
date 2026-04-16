@@ -1,6 +1,8 @@
-# --- Pyenv ---
-# Set pyenv root and add its bin to the PATH if it exists.
-export PYENV_ROOT="$HOME/.pyenv"
-if [[ -d "$PYENV_ROOT/bin" ]]; then
-  export PATH="$PYENV_ROOT/bin:$PATH"
+# Deduplicate PATH entries (prevents bloat across subshells)
+typeset -gU path
+
+# --- mise ---
+# Adds mise shims to PATH for tool version management.
+if [[ -d "$HOME/.local/share/mise/shims" ]]; then
+  export PATH="$HOME/.local/share/mise/shims:$PATH"
 fi

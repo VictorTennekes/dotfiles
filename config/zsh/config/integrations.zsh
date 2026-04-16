@@ -9,6 +9,16 @@ _cache_init() {
   source "$cache_file"
 }
 
-_cache_init fzf      "fzf --zsh"          "$(command -v fzf)"
-_cache_init zoxide   "zoxide init zsh"    "$(command -v zoxide)"
-_cache_init starship "starship init zsh"  "$(command -v starship)"
+# Use ${commands[...]} (zsh hash lookup) instead of $(command -v ...) to avoid forks
+(( $+commands[fzf] ))      && _cache_init fzf      "fzf --zsh"            "${commands[fzf]}"
+(( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh"      "${commands[zoxide]}"
+(( $+commands[starship] )) && _cache_init starship "starship init zsh"    "${commands[starship]}"
+(( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}"
+
+# Async autosuggestions — generate suggestions in background to keep ZLE responsive
+export ZSH_AUTOSUGGEST_USE_ASYNC=1
+export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+
+# Up/down arrow: substring search through history when text is in the buffer
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down

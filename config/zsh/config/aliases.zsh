@@ -1,4 +1,4 @@
-# Aliasses
+# Aliases
 alias c='clear'
 alias cdf='cd $(fzf)'
 alias dots="cd ~/.dotfiles"

@@ -1,48 +1,13 @@
 #!/bin/bash
-# Safely removes symlinks created by the install script.
+# Removes symlinks created by stow.
 
-# Find the absolute path of the directory this script is in
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 
-# --- 1. Clean symlinks from the ~/.config directory ---
+echo "🧹 Removing config symlinks..."
+stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D config
 
-CONFIG_SOURCE_DIR="$PROJECT_ROOT/config"
-CONFIG_TARGET_DIR="$HOME/.config"
-
-if [ -d "$CONFIG_SOURCE_DIR" ]; then
-    echo "🧹 Cleaning config directory symlinks..."
-
-    # Find all directories in the source folder and remove their links
-    for dir in "$CONFIG_SOURCE_DIR"/*/; do
-        config_name=$(basename "$dir")
-        target_path="$CONFIG_TARGET_DIR/$config_name"
-
-        # Safety Check: Only remove if it's a symbolic link!
-        if [ -L "$target_path" ]; then
-            echo "  -> Removing $config_name"
-            rm "$target_path"
-        else
-            echo "  -> Skipping $config_name (not a symlink)"
-        fi
-    done
-else
-    echo "ℹ️  Skipping config directories, '$CONFIG_SOURCE_DIR' not found."
-fi
-
-# --- 2. Clean individual symlinks from the home directory ---
-
-echo "🧹 Cleaning individual file symlinks..."
-
-# Specifically handle zshenv
-ZSHENV_TARGET="$HOME/.zshenv"
-
-# Safety Check: Only remove if it's a symbolic link!
-if [ -L "$ZSHENV_TARGET" ]; then
-    echo "  -> Removing .zshenv"
-    rm "$ZSHENV_TARGET"
-else
-    echo "  -> Skipping .zshenv (not a symlink)"
-fi
+echo "🧹 Removing home symlinks..."
+stow -d "$PROJECT_ROOT" -t "$HOME" -D home
 
 echo "✅ Clean complete."

@@ -1,59 +1,28 @@
 #!/bin/bash
-# Symlinks config directories and specific dotfiles from the project root.
+# Symlinks dotfiles using GNU Stow.
 
-# Find the absolute path of the directory this script is in
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 
-CONFIG_SOURCE_DIR="$PROJECT_ROOT/config"
-CONFIG_TARGET_DIR="$HOME/.config"
-
 # --- 0. Clone nvim config if not present ---
-NVIM_CONFIG_DIR="$CONFIG_SOURCE_DIR/nvim"
+NVIM_CONFIG_DIR="$PROJECT_ROOT/config/nvim"
 
 if [ ! -d "$NVIM_CONFIG_DIR" ]; then
-    echo "📦 'nvim' config not found in $CONFIG_SOURCE_DIR — cloning from GitHub..."
+    echo "📦 'nvim' config not found — cloning from GitHub..."
     git clone https://github.com/victortennekes/nvim "$NVIM_CONFIG_DIR" || {
-        echo "❌ Failed to clone nvim config. Aborting symlink step for it."
+        echo "❌ Failed to clone nvim config."
     }
 else
     echo "✅ 'nvim' config already exists. Skipping clone."
 fi
 
-# --- 1. Link all directories inside './config' ---
+# --- 1. Link config/ → ~/.config/ via stow ---
+echo "🔗 Linking config directories to ~/.config..."
+mkdir -p "$HOME/.config"
+stow -d "$PROJECT_ROOT" -t "$HOME/.config" config
 
-if [ -d "$CONFIG_SOURCE_DIR" ]; then
-    echo "🔗 Linking config directories to $CONFIG_TARGET_DIR..."
-    # Ensure the target directory exists
-    mkdir -p "$CONFIG_TARGET_DIR"
-
-    # Find all directories in the source folder and link them
-    for dir in "$CONFIG_SOURCE_DIR"/*/; do
-        config_name=$(basename "$dir")
-        source_path="$CONFIG_SOURCE_DIR/$config_name"
-        target_path="$CONFIG_TARGET_DIR/$config_name"
-
-        echo "  -> Linking $config_name"
-        ln -snf "$source_path" "$target_path"
-    done
-else
-    echo "ℹ️  Skipping config directories, '$CONFIG_SOURCE_DIR' not found."
-fi
-
-# --- 2. Link individual files from the project root ---
-
-echo "🔗 Linking individual files to $HOME..."
-
-# Specifically handle zshenv
-ZSHENV_SOURCE="$CONFIG_SOURCE_DIR/zsh/.zshenv"
-ZSHENV_TARGET="$HOME/.zshenv"
-
-if [ -f "$ZSHENV_SOURCE" ]; then
-    echo "  -> Linking zshenv"
-    ln -snf "$ZSHENV_SOURCE" "$ZSHENV_TARGET"
-else
-    echo "ℹ️  Skipping zshenv, file not found."
-fi
-
+# --- 2. Link home/ → ~/ via stow ---
+echo "🔗 Linking home files to ~..."
+stow -d "$PROJECT_ROOT" -t "$HOME" home
 
 echo "✅ Done."

@@ -14,6 +14,7 @@
 # DNF — core CLI tools
 # ==============================================================================
 DNF_PACKAGES=(
+  zsh
   bat
   eza
   fd-find          # binary: fd
@@ -29,11 +30,9 @@ DNF_PACKAGES=(
   hyperfine
   procps-ng        # provides watch
   fastfetch
-  starship
   zoxide
   btop
   neovim
-  tree-sitter-devel
   zig
 
   # Build deps for tools we install via cargo / npm below
@@ -96,6 +95,7 @@ SHELL_INSTALLERS=(
   'ollama|command -v ollama >/dev/null || curl -fsSL https://ollama.com/install.sh | sh'
   'opencode|command -v opencode >/dev/null || curl -fsSL https://opencode.ai/install | bash'
   'antidote|[ -d "$HOME/.local/share/antidote" ] || git clone --depth=1 https://github.com/mattmc3/antidote "$HOME/.local/share/antidote"'
+  'starship|command -v starship >/dev/null || curl -sS https://starship.rs/install.sh | sh -s -- --yes'
 )
 
 # ==============================================================================

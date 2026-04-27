@@ -36,11 +36,11 @@ run_installers() {
 
 # --- 1. DNF -------------------------------------------------------------------
 step "DNF packages"
-sudo dnf install -y "${DNF_PACKAGES[@]}"
+sudo dnf install -y --skip-unavailable "${DNF_PACKAGES[@]}"
 
 if [[ "$IS_WORK" == "true" && ${#DNF_PACKAGES_WORK[@]} -gt 0 ]]; then
   step "DNF (work)"
-  sudo dnf install -y "${DNF_PACKAGES_WORK[@]}"
+  sudo dnf install -y --skip-unavailable "${DNF_PACKAGES_WORK[@]}"
 fi
 
 # --- 2. COPR ------------------------------------------------------------------

@@ -157,23 +157,7 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
     gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com 2>/dev/null || true
   fi
 
-  # PaperWM (scrollable tiling) replaces Forge — disable Forge, ensure
-  # PaperWM is in the enabled-extensions list. The list edit only takes
-  # effect after a Shell restart (logout/login on Wayland).
-  if [[ -d "$HOME/.local/share/gnome-shell/extensions/paperwm@paperwm.github.com" ]]; then
-    gnome-extensions disable forge@jmmaranan.com 2>/dev/null || true
-    current=$(gsettings get org.gnome.shell enabled-extensions)
-    if [[ "$current" != *paperwm@paperwm.github.com* ]]; then
-      # Strip the trailing ] and inject paperwm. Empty list ('@as []') becomes a single-element list.
-      if [[ "$current" == "@as []" ]]; then
-        gsettings set org.gnome.shell enabled-extensions "['paperwm@paperwm.github.com']"
-      else
-        gsettings set org.gnome.shell enabled-extensions "${current%]}, 'paperwm@paperwm.github.com']"
-      fi
-    fi
-  fi
-
-  say "GNOME keybindings + font + icons + window manager set."
+  say "GNOME keybindings + font + icons set."
 fi
 
 step "Fedora packages installed."

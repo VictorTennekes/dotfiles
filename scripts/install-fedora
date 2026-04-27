@@ -175,7 +175,37 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
     gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com 2>/dev/null || true
   fi
 
-  say "GNOME keybindings + font + icons set."
+  # Mutter experimental: variable refresh rate (panels that don't support it
+  # ignore the flag harmlessly).
+  current_exp=$(gsettings get org.gnome.mutter experimental-features)
+  if [[ "$current_exp" != *variable-refresh-rate* ]]; then
+    gsettings set org.gnome.mutter experimental-features \
+      "['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']"
+  fi
+
+  # Per-app notification policy: silence ghostty (copy-on-select would
+  # otherwise spam, even with ghostty's own desktop-notifications=false
+  # turning it off at the source).
+  gsettings set org.gnome.desktop.notifications.application:/org/gnome/desktop/notifications/application/com-mitchellh-ghostty/ enable false
+
+  # Dash-to-Dock tweaks (only if the user has it installed via Extension
+  # Manager — schema lives in the extension dir, not the system path)
+  D2D_SCHEMAS="$HOME/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/schemas"
+  if [[ -d "$D2D_SCHEMAS" ]]; then
+    GSETTINGS_SCHEMA_DIR="$D2D_SCHEMAS" gsettings set org.gnome.shell.extensions.dash-to-dock show-show-apps-button false
+    GSETTINGS_SCHEMA_DIR="$D2D_SCHEMAS" gsettings set org.gnome.shell.extensions.dash-to-dock show-icons-notifications-counter true
+    GSETTINGS_SCHEMA_DIR="$D2D_SCHEMAS" gsettings set org.gnome.shell.extensions.dash-to-dock show-icons-emblems true
+    GSETTINGS_SCHEMA_DIR="$D2D_SCHEMAS" gsettings set org.gnome.shell.extensions.dash-to-dock application-counter-overrides-notifications false
+  fi
+
+  # blur-my-shell: lockscreen wallpaper readable, overview not rounded
+  BMS_SCHEMAS="$HOME/.local/share/gnome-shell/extensions/blur-my-shell@aunetx/schemas"
+  if [[ -d "$BMS_SCHEMAS" ]]; then
+    GSETTINGS_SCHEMA_DIR="$BMS_SCHEMAS" gsettings set org.gnome.shell.extensions.blur-my-shell.lockscreen blur false
+    GSETTINGS_SCHEMA_DIR="$BMS_SCHEMAS" gsettings set org.gnome.shell.extensions.blur-my-shell.overview style-components 0
+  fi
+
+  say "GNOME settings applied."
 fi
 
 step "Fedora packages installed."

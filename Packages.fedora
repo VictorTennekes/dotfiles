@@ -102,7 +102,6 @@ SHELL_INSTALLERS=(
   'starship|command -v starship >/dev/null || curl -sS https://starship.rs/install.sh | sh -s -- --yes'
   'claude|command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash'
   'whitesur-icons|[ -d "$HOME/.local/share/icons/WhiteSur" ] || (set -e; t=$(mktemp -d); git clone --depth=1 https://github.com/vinceliuice/WhiteSur-icon-theme.git "$t"; "$t/install.sh" -a; rm -rf "$t")'
-  'paperwm|[ -d "$HOME/.local/share/PaperWM" ] || (set -e; git clone --depth=1 -b release https://github.com/paperwm/PaperWM.git "$HOME/.local/share/PaperWM"; make -C "$HOME/.local/share/PaperWM" install)'
 )
 
 # ==============================================================================

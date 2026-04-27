@@ -1,0 +1,10 @@
+# Slow down two-finger scroll on Framework 13 AMD Ryzen AI 300 trackpad.
+# Default AttrScrollPixelDistance is 15 (lower = faster). Tune to taste:
+#  20 = subtle slowdown
+#  25 = moderate (default here)
+#  30 = noticeable, still usable
+#  40+ = quite slow
+[FrameworkAMDTouchpadScrollSpeed]
+MatchUdevType=touchpad
+MatchDMIModalias=dmi:*svnFramework:*pnLaptop?13*Ryzen?AI?300*
+AttrScrollPixelDistance=25

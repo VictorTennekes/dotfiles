@@ -18,3 +18,6 @@ if [[ ! -s "$_antidote_bundle" || "${ZDOTDIR}/zsh_plugins.txt" -nt "$_antidote_b
 fi
 [[ -s "$_antidote_bundle" ]] && source "$_antidote_bundle"
 unset _antidote_bundle
+
+# opencode
+export PATH=/home/victortennekes/.opencode/bin:$PATH

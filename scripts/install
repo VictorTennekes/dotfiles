@@ -10,8 +10,9 @@ OS=$(uname -s)
 # --- 0. Clone nvim config if not present ---
 NVIM_CONFIG_DIR="$PROJECT_ROOT/config/nvim"
 
-if [ ! -d "$NVIM_CONFIG_DIR" ]; then
+if [ ! -d "$NVIM_CONFIG_DIR" ] || [ -z "$(ls -A "$NVIM_CONFIG_DIR" 2>/dev/null)" ]; then
     echo "📦 'nvim' config not found — cloning from GitHub..."
+    rmdir "$NVIM_CONFIG_DIR" 2>/dev/null || true
     git clone https://github.com/victortennekes/nvim "$NVIM_CONFIG_DIR" || {
         echo "❌ Failed to clone nvim config."
     }

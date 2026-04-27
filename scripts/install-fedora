@@ -147,7 +147,18 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
     gsettings set org.gnome.desktop.interface document-font-name 'Inter 11'
   fi
 
-  say "GNOME keybindings + font set."
+  # WhiteSur (macOS-style) icon theme — only if installed
+  if [[ -d "$HOME/.local/share/icons/WhiteSur-dark" ]]; then
+    gsettings set org.gnome.desktop.interface icon-theme 'WhiteSur-dark'
+  fi
+
+  # AppIndicator extension — required for Bitwarden/Slack/etc. tray icons.
+  # The dnf package installs the files; we still need to enable it once.
+  if gnome-extensions info appindicatorsupport@rgcjonas.gmail.com >/dev/null 2>&1; then
+    gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com 2>/dev/null || true
+  fi
+
+  say "GNOME keybindings + font + icons set."
 fi
 
 step "Fedora packages installed."

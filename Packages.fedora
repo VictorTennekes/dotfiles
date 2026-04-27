@@ -41,7 +41,8 @@ DNF_PACKAGES=(
 
   # GNOME tweaks + macOS-feel additions
   gnome-tweaks
-  rsms-inter-fonts    # Inter typeface — closest free analogue to SF Pro
+  gnome-shell-extension-appindicator   # tray icons for Bitwarden/Slack/etc.
+  rsms-inter-fonts                     # Inter typeface — closest free analogue to SF Pro
 )
 
 # ==============================================================================
@@ -100,6 +101,7 @@ SHELL_INSTALLERS=(
   'opencode|command -v opencode >/dev/null || curl -fsSL https://opencode.ai/install | bash'
   'antidote|[ -d "$HOME/.local/share/antidote" ] || git clone --depth=1 https://github.com/mattmc3/antidote "$HOME/.local/share/antidote"'
   'starship|command -v starship >/dev/null || curl -sS https://starship.rs/install.sh | sh -s -- --yes'
+  'whitesur-icons|[ -d "$HOME/.local/share/icons/WhiteSur" ] || (set -e; t=$(mktemp -d); git clone --depth=1 https://github.com/vinceliuice/WhiteSur-icon-theme.git "$t"; "$t/install.sh" -a; rm -rf "$t")'
 )
 
 # ==============================================================================

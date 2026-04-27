@@ -38,6 +38,10 @@ DNF_PACKAGES=(
   # Build deps for tools we install via cargo / npm below
   cargo
   npm
+
+  # GNOME tweaks + macOS-feel additions
+  gnome-tweaks
+  rsms-inter-fonts    # Inter typeface — closest free analogue to SF Pro
 )
 
 # ==============================================================================

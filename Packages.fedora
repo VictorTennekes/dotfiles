@@ -68,7 +68,6 @@ CARGO_PACKAGES=(
 # NPM — tools distributed via npm
 # ==============================================================================
 NPM_PACKAGES=(
-  "@anthropic-ai/claude-code"
   "@google/gemini-cli"
   "@bitwarden/cli"
   "tree-sitter-cli"
@@ -101,6 +100,7 @@ SHELL_INSTALLERS=(
   'opencode|command -v opencode >/dev/null || curl -fsSL https://opencode.ai/install | bash'
   'antidote|[ -d "$HOME/.local/share/antidote" ] || git clone --depth=1 https://github.com/mattmc3/antidote "$HOME/.local/share/antidote"'
   'starship|command -v starship >/dev/null || curl -sS https://starship.rs/install.sh | sh -s -- --yes'
+  'claude|command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash'
   'whitesur-icons|[ -d "$HOME/.local/share/icons/WhiteSur" ] || (set -e; t=$(mktemp -d); git clone --depth=1 https://github.com/vinceliuice/WhiteSur-icon-theme.git "$t"; "$t/install.sh" -a; rm -rf "$t")'
 )
 

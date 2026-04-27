@@ -68,6 +68,10 @@
 	navigate = true
 	side-by-side = true
 	line-numbers = true
+	features = catppuccin-mocha
+
+[include]
+	path = ./catppuccin.gitconfig
 
 [merge]
 	conflictstyle = zdiff3

@@ -14,9 +14,14 @@ if [[ "$OSTYPE" == darwin* && -z "$HOMEBREW_PREFIX" ]]; then
   fi
 fi
 
-# --- Bitwarden SSH agent (macOS desktop app socket) ---
+# --- Bitwarden SSH agent ---
 if [[ "$OSTYPE" == darwin* ]]; then
   export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
+elif [[ "$OSTYPE" == linux* ]]; then
+  # Bitwarden Desktop installed via Flatpak (com.bitwarden.desktop)
+  _bw_sock="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+  [[ -S "$_bw_sock" ]] && export SSH_AUTH_SOCK="$_bw_sock"
+  unset _bw_sock
 fi
 
 # --- App Configurations ---

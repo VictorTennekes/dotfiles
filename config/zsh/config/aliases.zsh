@@ -16,7 +16,7 @@ alias v='nvim'
 alias ff="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --bind 'enter:become(nvim {+})'"
 
 # LLM helpers
-alias tc='eza --tree --git-ignore -I .git | pbcopy'
+alias tc='eza --tree --git-ignore -I .git | clip'
 
 # System replacements
 alias cat='bat'

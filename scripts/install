@@ -1,8 +1,11 @@
 #!/bin/bash
-# Symlinks dotfiles using GNU Stow.
+# Symlinks dotfiles using GNU Stow. Cross-platform (macOS + Linux).
+
+set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+OS=$(uname -s)
 
 # --- 0. Clone nvim config if not present ---
 NVIM_CONFIG_DIR="$PROJECT_ROOT/config/nvim"
@@ -16,12 +19,18 @@ else
     echo "✅ 'nvim' config already exists. Skipping clone."
 fi
 
-# --- 1. Link config/ → ~/.config/ via stow ---
+# --- 1. Per-OS stow ignore list (skip macOS-only configs on Linux) ---
+STOW_FLAGS=()
+if [[ "$OS" != "Darwin" ]]; then
+  STOW_FLAGS+=(--ignore='^karabiner$')
+fi
+
+# --- 2. Link config/ → ~/.config/ via stow ---
 echo "🔗 Linking config directories to ~/.config..."
 mkdir -p "$HOME/.config"
-stow -d "$PROJECT_ROOT" -t "$HOME/.config" config
+stow -d "$PROJECT_ROOT" -t "$HOME/.config" "${STOW_FLAGS[@]}" config
 
-# --- 2. Link home/ → ~/ via stow ---
+# --- 3. Link home/ → ~/ via stow ---
 echo "🔗 Linking home files to ~..."
 stow -d "$PROJECT_ROOT" -t "$HOME" home
 

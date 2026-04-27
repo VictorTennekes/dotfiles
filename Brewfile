@@ -71,6 +71,8 @@ cask "chatgpt"
 cask "claude-code"
 cask "claude"
 brew "gemini-cli"
+brew "ollama"
+brew "opencode"
 
 # ==============================================================================
 # DESKTOP APPLICATIONS & UTILITIES
@@ -106,6 +108,7 @@ cask "philips-hue-sync"
 cask "spotify"
 cask "steam"
 cask "stremio"
+cask "equinox"
 
 # --- Mac App Store Apps ---
 brew "mas" # Command-line interface for the Mac App Store.
@@ -131,6 +134,10 @@ if hostname.start_with?('PC-')
   brew "uv"
   brew "parallel"
   brew "yq"
+
+  # --- Git ---
+  brew "gnupg"
+  brew "pinentry-mac"
 
   # --- Kubernetes ---
   brew "helm"

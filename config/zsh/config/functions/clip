@@ -1,12 +1,27 @@
-# If arguments are provided, treat the first one as a file to copy.
+# Cross-platform clipboard copy.
+# With a file argument: copy that file's contents.
+# Otherwise: read from stdin.
+local _copy
+if (( $+commands[pbcopy] )); then
+  _copy=(pbcopy)
+elif [[ -n "$WAYLAND_DISPLAY" ]] && (( $+commands[wl-copy] )); then
+  _copy=(wl-copy)
+elif (( $+commands[xclip] )); then
+  _copy=(xclip -selection clipboard)
+elif (( $+commands[xsel] )); then
+  _copy=(xsel --clipboard --input)
+else
+  echo "clip: no clipboard tool found (install wl-clipboard or xclip)" >&2
+  return 1
+fi
+
 if [[ $# -gt 0 ]]; then
   if [[ -f "$1" ]]; then
-    pbcopy < "$1" && echo "Copied contents of '$1' to clipboard."
+    "${_copy[@]}" < "$1" && echo "Copied contents of '$1' to clipboard."
   else
     echo "Error: '$1' is not a valid file." >&2
     return 1
   fi
-# If NO arguments are provided, read from standard input.
 else
-  pbcopy && echo "Copied from stdin to clipboard."
+  "${_copy[@]}" && echo "Copied from stdin to clipboard."
 fi

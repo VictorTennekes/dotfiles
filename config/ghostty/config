@@ -11,6 +11,7 @@ font-size = 15
 copy-on-select = clipboard
 shell-integration = zsh
 
+# macOS-only options (silently no-op on Linux, but Ghostty may warn at startup)
 macos-option-as-alt = true
 macos-titlebar-proxy-icon = hidden
 macos-titlebar-style = tabs

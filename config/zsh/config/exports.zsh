@@ -1,15 +1,23 @@
-# --- Homebrew (avoid eval fork — hardcode Apple Silicon paths) ---
-if [[ -z "$HOMEBREW_PREFIX" ]]; then
-  export HOMEBREW_PREFIX="/opt/homebrew"
-  export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
-  export HOMEBREW_REPOSITORY="/opt/homebrew"
-  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin${PATH+:$PATH}"
-  export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:"
-  export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
+# --- Homebrew (macOS only — avoid eval fork by hardcoding prefix) ---
+if [[ "$OSTYPE" == darwin* && -z "$HOMEBREW_PREFIX" ]]; then
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    export HOMEBREW_PREFIX="/opt/homebrew"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    export HOMEBREW_PREFIX="/usr/local"
+  fi
+  if [[ -n "$HOMEBREW_PREFIX" ]]; then
+    export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar"
+    export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX"
+    export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin${PATH+:$PATH}"
+    export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH+:$MANPATH}:"
+    export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
+  fi
 fi
 
-# --- Bitwarden ---
-export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
+# --- Bitwarden SSH agent (macOS desktop app socket) ---
+if [[ "$OSTYPE" == darwin* ]]; then
+  export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
+fi
 
 # --- App Configurations ---
 export BAT_THEME="Catppuccin_Mocha"

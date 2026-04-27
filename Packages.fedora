@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# Fedora package manifest — mirror of Brewfile for Linux/Fedora hosts.
+# Sourced by scripts/install-fedora.
+#
+# Layout mirrors Brewfile sections. Work-specific packages are gated by the
+# hostname prefix `PC-` (same convention as Brewfile).
+#
+# To use a different gate on Linux, override IS_WORK before invoking the
+# install script (e.g. `IS_WORK=true make install`).
+
+: "${IS_WORK:=$( [[ "$(hostname -s)" == PC-* ]] && echo true || echo false )}"
+
+# ==============================================================================
+# DNF — core CLI tools
+# ==============================================================================
+DNF_PACKAGES=(
+  bat
+  eza
+  fd-find          # binary: fd
+  git-delta        # binary: delta
+  fzf
+  jq
+  gh
+  glab
+  git
+  ripgrep
+  stow
+  tealdeer         # binary: tldr
+  hyperfine
+  procps-ng        # provides watch
+  fastfetch
+  starship
+  zoxide
+  btop
+  neovim
+  tree-sitter-devel
+  zig
+
+  # Build deps for tools we install via cargo / npm below
+  cargo
+  npm
+)
+
+# ==============================================================================
+# DNF COPR — repos and packages not in core Fedora
+# ==============================================================================
+COPR_REPOS=(
+  atim/lazygit
+  lihaohong/yazi
+)
+COPR_PACKAGES=(
+  lazygit
+  yazi
+)
+
+# ==============================================================================
+# CARGO — tools with no reliable RPM
+# ==============================================================================
+CARGO_PACKAGES=(
+  vivid
+)
+
+# ==============================================================================
+# NPM — tools distributed via npm
+# ==============================================================================
+NPM_PACKAGES=(
+  "@anthropic-ai/claude-code"
+  "@google/gemini-cli"
+  "@bitwarden/cli"
+  "tree-sitter-cli"
+)
+
+# ==============================================================================
+# FLATPAK — GUI apps (replaces casks)
+# ==============================================================================
+FLATPAK_PACKAGES=(
+  app.zen_browser.zen          # Zen browser
+  com.bitwarden.desktop        # Bitwarden
+  com.mitchellh.ghostty        # Ghostty (when published; else build from source)
+  com.spotify.Client
+  com.stremio.Stremio
+  com.valvesoftware.Steam
+  dev.zed.Zed                  # Zed editor
+  md.obsidian.Obsidian
+  org.signaldesktop.Signal
+  org.telegram.desktop
+)
+
+# ==============================================================================
+# CURL / SHELL INSTALLERS — tools with vendor scripts (must be idempotent)
+# ==============================================================================
+# Each entry: "name|shell-command". The command runs unconditionally; include
+# your own existence check inside it (e.g., `command -v X >/dev/null || ...`).
+SHELL_INSTALLERS=(
+  'mise|command -v mise >/dev/null || curl https://mise.run | sh'
+  'ollama|command -v ollama >/dev/null || curl -fsSL https://ollama.com/install.sh | sh'
+  'opencode|command -v opencode >/dev/null || curl -fsSL https://opencode.ai/install | bash'
+  'antidote|[ -d "$HOME/.local/share/antidote" ] || git clone --depth=1 https://github.com/mattmc3/antidote "$HOME/.local/share/antidote"'
+)
+
+# ==============================================================================
+# MANUAL — packages not auto-installed (notes only)
+# ==============================================================================
+# - JetBrainsMono Nerd Font: download from https://www.nerdfonts.com/font-downloads
+#   and unzip into ~/.local/share/fonts, then `fc-cache -fv`
+# - bat-extras: clone https://github.com/eth-p/bat-extras and run install.sh
+# - chatgpt / claude desktop: no native Linux app; use web or CLI
+# - keyboardcleantool / alfred / karabiner / rectangle / appcleaner / lulu /
+#   pearcleaner / jordanbaird-ice / keka / equinox / keepingyouawake /
+#   philips-hue-sync: macOS-only, no Linux equivalents
+
+# ==============================================================================
+# WORK-SPECIFIC — gated by IS_WORK (default: hostname starts with PC-)
+# ==============================================================================
+DNF_PACKAGES_WORK=(
+  pre-commit
+  parallel
+  yq
+  gnupg2
+  pinentry            # Linux equivalent of pinentry-mac
+  kubectx             # provides kubectx + kubens
+  helm
+  python3-pip
+  pipx                # for installing dbt-core, ruff, etc. into isolated venvs
+  python3-ruff        # ruff lives here on Fedora; alternatively `pipx install ruff`
+)
+
+COPR_REPOS_WORK=()
+COPR_PACKAGES_WORK=()
+
+FLATPAK_PACKAGES_WORK=(
+  com.slack.Slack
+)
+
+# Work shell installers
+SHELL_INSTALLERS_WORK=(
+  'uv|command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh'
+  'krew|command -v kubectl-krew >/dev/null || ( set -e; cd "$(mktemp -d)"; curl -fsSLO https://github.com/kubernetes-sigs/krew/releases/latest/download/krew-linux_amd64.tar.gz; tar zxvf krew-linux_amd64.tar.gz; ./krew-linux_amd64 install krew )'
+)
+
+# Work manual notes:
+# - terraform:    enable HashiCorp repo, then `dnf install terraform`
+#                 https://developer.hashicorp.com/terraform/install#linux
+# - dbt-core:     pipx install dbt-core (after pip/pipx via DNF)
+# - gcloud:       https://cloud.google.com/sdk/docs/install#rpm
+# - docker:       Fedora ships Podman by default. If you need Docker,
+#                 install docker-ce: https://docs.docker.com/engine/install/fedora/

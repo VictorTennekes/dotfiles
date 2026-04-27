@@ -115,7 +115,25 @@ if [[ "$IS_WORK" == "true" && ${#SHELL_INSTALLERS_WORK[@]} -gt 0 ]]; then
   run_installers "${SHELL_INSTALLERS_WORK[@]}"
 fi
 
-# --- 7. GNOME settings (Mac-style keybindings + custom launcher hotkeys) ------
+# --- 7. System libinput overrides --------------------------------------------
+# Sync each file under system/ into / via sudo, idempotent (only writes when
+# content differs). Keeps trackpad/scroll quirks etc. tracked in the dotfiles.
+SYSTEM_DIR="$PROJECT_ROOT/system"
+if [[ -d "$SYSTEM_DIR" ]]; then
+  step "System overrides (sudo)"
+  while IFS= read -r -d '' src; do
+    rel="${src#$SYSTEM_DIR/}"
+    dst="/$rel"
+    if ! sudo cmp -s "$src" "$dst" 2>/dev/null; then
+      say "→ $dst"
+      sudo install -Dm644 "$src" "$dst"
+    else
+      say "= $dst (already current)"
+    fi
+  done < <(find "$SYSTEM_DIR" -type f -print0)
+fi
+
+# --- 8. GNOME settings (Mac-style keybindings + custom launcher hotkeys) ------
 if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/null 2>&1; then
   step "GNOME settings"
 

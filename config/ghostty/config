@@ -11,6 +11,13 @@ font-size = 15
 copy-on-select = clipboard
 shell-integration = zsh
 
+# Kill desktop notifications entirely — copy-on-select would otherwise
+# fire one per selection, and shells/programs sending OSC 9 / OSC 777
+# turn into a constant nag.
+desktop-notifications = false
+app-notifications = no-clipboard-copy,no-config-reload
+notify-on-command-finish-action = no-bell,no-notify
+
 # macOS-only options (silently no-op on Linux, but Ghostty may warn at startup)
 macos-option-as-alt = true
 macos-titlebar-proxy-icon = hidden

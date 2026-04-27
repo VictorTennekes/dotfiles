@@ -123,23 +123,22 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
   gsettings set org.gnome.desktop.wm.keybindings close      "['<Super>q']"
   gsettings set org.gnome.desktop.wm.keybindings minimize   "['<Super>h', '<Super>m']"
 
-  # Custom keybindings: Super+Space → Vicinae, Super+Return → Ghostty
+  # Custom keybindings: Super+Space → Vicinae, Super+Return → Ghostty.
+  # Use customN/ ids (not named slots) so the GNOME Settings UI plays
+  # nicely with these entries instead of duplicating them.
   cb_root="org.gnome.settings-daemon.plugins.media-keys"
   cb_path_root="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-  declare -a desired_paths=(
-    "$cb_path_root/vicinae/"
-    "$cb_path_root/ghostty/"
-  )
+  dconf reset -f "$cb_path_root/" 2>/dev/null || true
   gsettings set "$cb_root" custom-keybindings \
-    "['${desired_paths[0]}', '${desired_paths[1]}']"
+    "['$cb_path_root/custom0/', '$cb_path_root/custom1/']"
 
-  gsettings set "$cb_root.custom-keybinding:${desired_paths[0]}" name    'Vicinae'
-  gsettings set "$cb_root.custom-keybinding:${desired_paths[0]}" command 'vicinae toggle'
-  gsettings set "$cb_root.custom-keybinding:${desired_paths[0]}" binding '<Super>space'
+  gsettings set "$cb_root.custom-keybinding:$cb_path_root/custom0/" name    'Vicinae'
+  gsettings set "$cb_root.custom-keybinding:$cb_path_root/custom0/" command 'vicinae toggle'
+  gsettings set "$cb_root.custom-keybinding:$cb_path_root/custom0/" binding '<Super>space'
 
-  gsettings set "$cb_root.custom-keybinding:${desired_paths[1]}" name    'Ghostty'
-  gsettings set "$cb_root.custom-keybinding:${desired_paths[1]}" command 'ghostty'
-  gsettings set "$cb_root.custom-keybinding:${desired_paths[1]}" binding '<Super>Return'
+  gsettings set "$cb_root.custom-keybinding:$cb_path_root/custom1/" name    'Ghostty'
+  gsettings set "$cb_root.custom-keybinding:$cb_path_root/custom1/" command 'ghostty'
+  gsettings set "$cb_root.custom-keybinding:$cb_path_root/custom1/" binding '<Super>Return'
 
   # Inter as the system UI font (only if installed)
   if fc-list | grep -q "Inter:"; then

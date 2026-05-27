@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Install Void Linux packages from packages/void (host: bb8). TEMPLATE.
+#
+# Usage:    scripts/install-void
+# Env:      IS_WORK=true  forces installation of work-only packages
+#
+# Native-first: XBPS for repos, Flatpak for GUI apps Void lacks. Services are
+# runit. Shared, distro-agnostic steps live in scripts/lib/common.sh.
+
+set -uo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+
+# shellcheck source=lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+load_manifest "$PROJECT_ROOT/packages/void"
+
+prime_sudo
+
+# --- XBPS (repo packages) ----------------------------------------------------
+if [[ ${#XBPS_PACKAGES[@]} -gt 0 ]]; then
+  step "XBPS packages"
+  sudo xbps-install -Sy "${XBPS_PACKAGES[@]}" || warn "some xbps packages failed (verify names with: xbps-query -Rs <name>)"
+fi
+
+if [[ "$IS_WORK" == "true" && ${#XBPS_PACKAGES_WORK[@]} -gt 0 ]]; then
+  step "XBPS (work)"
+  sudo xbps-install -Sy "${XBPS_PACKAGES_WORK[@]}" || warn "some work packages failed"
+fi
+
+# --- Shared steps (flatpak / cargo / npm / installers / system overrides) ----
+# Ensure flatpak exists if any flatpaks are requested.
+{ [[ ${#FLATPAK_PACKAGES[@]} -gt 0 ]] || { [[ "$IS_WORK" == "true" ]] && [[ ${#FLATPAK_PACKAGES_WORK[@]} -gt 0 ]]; }; } \
+  && ! command -v flatpak >/dev/null 2>&1 && { step "Installing flatpak"; sudo xbps-install -Sy flatpak; }
+install_flatpaks
+install_cargo
+install_npm
+install_shell_installers
+sync_system_overrides
+
+# --- Services (runit) --------------------------------------------------------
+# enable_service auto-detects runit on Void (symlinks /etc/sv/<svc> into
+# /var/service). List services to enable in RUNIT_SERVICES in the manifest.
+if [[ ${#RUNIT_SERVICES[@]} -gt 0 ]]; then
+  step "Services (runit)"
+  for svc in "${RUNIT_SERVICES[@]}"; do
+    say "→ $svc"
+    enable_service "$svc"
+  done
+fi
+
+ensure_default_shell
+
+step "Void packages installed."

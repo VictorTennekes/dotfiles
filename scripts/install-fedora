@@ -1,40 +1,24 @@
 #!/usr/bin/env bash
-# Install Fedora packages from Packages.fedora.
+# Install Fedora packages from packages/fedora.
 #
 # Usage:    scripts/install-fedora
 # Env:      IS_WORK=true  forces installation of work-only packages
 #
-# Requires sudo for dnf operations.
+# Requires sudo for dnf. Shared, distro-agnostic steps live in
+# scripts/lib/common.sh.
 
 set -uo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
-MANIFEST="$PROJECT_ROOT/Packages.fedora"
 
-if [[ ! -f "$MANIFEST" ]]; then
-  echo "❌ Packages.fedora not found at $MANIFEST" >&2
-  exit 1
-fi
+# shellcheck source=lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+load_manifest "$PROJECT_ROOT/packages/fedora"
 
-# shellcheck disable=SC1090
-source "$MANIFEST"
+prime_sudo
 
-step()  { printf '\n\033[1;34m==>\033[0m \033[1m%s\033[0m\n' "$*"; }
-say()   { printf '    %s\n' "$*"; }
-warn()  { printf '\033[1;33m    ! %s\033[0m\n' "$*"; }
-
-run_installers() {
-  local entry name cmd
-  for entry in "$@"; do
-    name="${entry%%|*}"
-    cmd="${entry#*|}"
-    say "→ $name"
-    bash -c "$cmd" || warn "$name failed (continuing)"
-  done
-}
-
-# --- 1. DNF -------------------------------------------------------------------
+# --- DNF (repo packages) -----------------------------------------------------
 step "DNF packages"
 sudo dnf install -y --skip-unavailable "${DNF_PACKAGES[@]}"
 
@@ -43,7 +27,7 @@ if [[ "$IS_WORK" == "true" && ${#DNF_PACKAGES_WORK[@]} -gt 0 ]]; then
   sudo dnf install -y --skip-unavailable "${DNF_PACKAGES_WORK[@]}"
 fi
 
-# --- 2. COPR ------------------------------------------------------------------
+# --- COPR --------------------------------------------------------------------
 if [[ ${#COPR_REPOS[@]} -gt 0 ]]; then
   step "COPR repos"
   for repo in "${COPR_REPOS[@]}"; do
@@ -61,79 +45,15 @@ if [[ "$IS_WORK" == "true" && ${#COPR_REPOS_WORK[@]} -gt 0 ]]; then
   [[ ${#COPR_PACKAGES_WORK[@]} -gt 0 ]] && sudo dnf install -y "${COPR_PACKAGES_WORK[@]}"
 fi
 
-# --- 3. Flatpak ---------------------------------------------------------------
-if ! command -v flatpak >/dev/null 2>&1; then
-  step "Installing flatpak"
-  sudo dnf install -y flatpak
-fi
+# --- Shared steps ------------------------------------------------------------
+command -v flatpak >/dev/null 2>&1 || { step "Installing flatpak"; sudo dnf install -y flatpak; }
+install_flatpaks
+install_cargo
+install_npm
+install_shell_installers
+sync_system_overrides
 
-step "Flathub remote"
-flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
-
-if [[ ${#FLATPAK_PACKAGES[@]} -gt 0 ]]; then
-  step "Flatpak apps"
-  flatpak install --user -y --noninteractive flathub "${FLATPAK_PACKAGES[@]}" \
-    || warn "some flatpaks may not exist on flathub yet — review output above"
-fi
-
-if [[ "$IS_WORK" == "true" && ${#FLATPAK_PACKAGES_WORK[@]} -gt 0 ]]; then
-  step "Flatpak (work)"
-  flatpak install --user -y --noninteractive flathub "${FLATPAK_PACKAGES_WORK[@]}" || true
-fi
-
-# --- 4. Cargo -----------------------------------------------------------------
-if [[ ${#CARGO_PACKAGES[@]} -gt 0 ]]; then
-  step "Cargo packages"
-  for pkg in "${CARGO_PACKAGES[@]}"; do
-    if cargo install --list | grep -q "^${pkg} "; then
-      say "$pkg already installed; skipping"
-    else
-      cargo install --locked "$pkg" || warn "$pkg failed"
-    fi
-  done
-fi
-
-# --- 5. NPM (user-level prefix to avoid sudo) ---------------------------------
-if [[ ${#NPM_PACKAGES[@]} -gt 0 ]]; then
-  step "NPM packages (user-level prefix)"
-  mkdir -p "$HOME/.local"
-  npm config set prefix "$HOME/.local" >/dev/null
-  for pkg in "${NPM_PACKAGES[@]}"; do
-    say "→ $pkg"
-    npm install -g "$pkg" || warn "$pkg failed"
-  done
-fi
-
-# --- 6. Shell installers ------------------------------------------------------
-if [[ ${#SHELL_INSTALLERS[@]} -gt 0 ]]; then
-  step "Shell installers"
-  run_installers "${SHELL_INSTALLERS[@]}"
-fi
-
-if [[ "$IS_WORK" == "true" && ${#SHELL_INSTALLERS_WORK[@]} -gt 0 ]]; then
-  step "Shell installers (work)"
-  run_installers "${SHELL_INSTALLERS_WORK[@]}"
-fi
-
-# --- 7. System libinput overrides --------------------------------------------
-# Sync each file under system/ into / via sudo, idempotent (only writes when
-# content differs). Keeps trackpad/scroll quirks etc. tracked in the dotfiles.
-SYSTEM_DIR="$PROJECT_ROOT/system"
-if [[ -d "$SYSTEM_DIR" ]]; then
-  step "System overrides (sudo)"
-  while IFS= read -r -d '' src; do
-    rel="${src#$SYSTEM_DIR/}"
-    dst="/$rel"
-    if ! sudo cmp -s "$src" "$dst" 2>/dev/null; then
-      say "→ $dst"
-      sudo install -Dm644 "$src" "$dst"
-    else
-      say "= $dst (already current)"
-    fi
-  done < <(find "$SYSTEM_DIR" -type f -print0)
-fi
-
-# --- 8. GNOME settings (Mac-style keybindings + custom launcher hotkeys) ------
+# --- GNOME settings (Mac-style keybindings + custom launcher hotkeys) --------
 if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/null 2>&1; then
   step "GNOME settings"
 
@@ -142,8 +62,6 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
   gsettings set org.gnome.desktop.wm.keybindings minimize   "['<Super>h', '<Super>m']"
 
   # Custom keybindings: Super+Space → Vicinae, Super+Return → Ghostty.
-  # Use customN/ ids (not named slots) so the GNOME Settings UI plays
-  # nicely with these entries instead of duplicating them.
   cb_root="org.gnome.settings-daemon.plugins.media-keys"
   cb_path_root="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
   dconf reset -f "$cb_path_root/" 2>/dev/null || true
@@ -170,26 +88,21 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
   fi
 
   # AppIndicator extension — required for Bitwarden/Slack/etc. tray icons.
-  # The dnf package installs the files; we still need to enable it once.
   if gnome-extensions info appindicatorsupport@rgcjonas.gmail.com >/dev/null 2>&1; then
     gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com 2>/dev/null || true
   fi
 
-  # Mutter experimental: variable refresh rate (panels that don't support it
-  # ignore the flag harmlessly).
+  # Mutter experimental: variable refresh rate (ignored harmlessly if unsupported).
   current_exp=$(gsettings get org.gnome.mutter experimental-features)
   if [[ "$current_exp" != *variable-refresh-rate* ]]; then
     gsettings set org.gnome.mutter experimental-features \
       "['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']"
   fi
 
-  # Per-app notification policy: silence ghostty (copy-on-select would
-  # otherwise spam, even with ghostty's own desktop-notifications=false
-  # turning it off at the source).
+  # Per-app notification policy: silence ghostty.
   gsettings set org.gnome.desktop.notifications.application:/org/gnome/desktop/notifications/application/com-mitchellh-ghostty/ enable false
 
-  # Dash-to-Dock tweaks (only if the user has it installed via Extension
-  # Manager — schema lives in the extension dir, not the system path)
+  # Dash-to-Dock tweaks (only if installed via Extension Manager)
   D2D_SCHEMAS="$HOME/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/schemas"
   if [[ -d "$D2D_SCHEMAS" ]]; then
     GSETTINGS_SCHEMA_DIR="$D2D_SCHEMAS" gsettings set org.gnome.shell.extensions.dash-to-dock show-show-apps-button false
@@ -198,7 +111,7 @@ if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gsettings >/dev/nul
     GSETTINGS_SCHEMA_DIR="$D2D_SCHEMAS" gsettings set org.gnome.shell.extensions.dash-to-dock application-counter-overrides-notifications false
   fi
 
-  # blur-my-shell: lockscreen wallpaper readable, overview not rounded
+  # blur-my-shell tweaks
   BMS_SCHEMAS="$HOME/.local/share/gnome-shell/extensions/blur-my-shell@aunetx/schemas"
   if [[ -d "$BMS_SCHEMAS" ]]; then
     GSETTINGS_SCHEMA_DIR="$BMS_SCHEMAS" gsettings set org.gnome.shell.extensions.blur-my-shell.lockscreen blur false

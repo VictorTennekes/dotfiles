@@ -5,9 +5,12 @@ INSTALL_SCRIPT       ?= scripts/install
 CLEAN_SCRIPT         ?= scripts/clean
 INSTALL_FEDORA       ?= scripts/install-fedora
 INSTALL_ARCH         ?= scripts/install-arch
+INSTALL_VOID         ?= scripts/install-void
 BREW_INSTALLER        = .brew_install.sh
 
-OS := $(shell uname -s)
+OS     := $(shell uname -s)
+# Uniform Linux distro id from /etc/os-release (arch | fedora | void | …).
+DISTRO := $(shell . /etc/os-release 2>/dev/null && echo $$ID)
 
 # ==============================================================================
 # MAIN TARGETS
@@ -35,15 +38,14 @@ else
 	@echo "❌ Unsupported OS: $(OS)"; exit 1
 endif
 
-# --- Linux: route to the right distro installer ---
+# --- Linux: route by /etc/os-release ID ---
 linux:
-	@if [ -f /etc/arch-release ]; then \
-		$(MAKE) arch; \
-	elif [ -f /etc/fedora-release ]; then \
-		$(MAKE) fedora; \
-	else \
-		echo "❌ Unsupported Linux distro (no /etc/arch-release or /etc/fedora-release)"; exit 1; \
-	fi
+	@case "$(DISTRO)" in \
+		arch)   $(MAKE) arch ;; \
+		fedora) $(MAKE) fedora ;; \
+		void)   $(MAKE) void ;; \
+		*) echo "❌ Unsupported Linux distro: '$(DISTRO)' (expected arch/fedora/void)"; exit 1 ;; \
+	esac
 
 # --- macOS: Homebrew ---
 homebrew: $(BREW_INSTALLER)
@@ -54,19 +56,24 @@ $(BREW_INSTALLER):
 	@echo "⏳ Downloading Homebrew install script..."
 	@curl -fsSL 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh' > $@
 
-brew: homebrew Brewfile
+brew: homebrew packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew bundle install --cleanup --no-upgrade --file ./Brewfile
+	@brew bundle install --cleanup --no-upgrade --file ./packages/Brewfile
 
 # --- Linux: Fedora (dnf + flatpak + cargo + npm + curl installers) ---
-fedora: Packages.fedora
+fedora: packages/fedora
 	@echo "📦 Installing Fedora packages..."
 	@bash $(INSTALL_FEDORA)
 
 # --- Linux: Arch (pacman + AUR/paru + npm + curl installers) ---
-arch: Packages.arch
+arch: packages/arch
 	@echo "📦 Installing Arch packages..."
 	@bash $(INSTALL_ARCH)
+
+# --- Linux: Void (xbps + runit services) ---
+void: packages/void
+	@echo "📦 Installing Void packages..."
+	@bash $(INSTALL_VOID)
 
 # ==============================================================================
 # CONFIGURATION SYMLINKS
@@ -86,19 +93,23 @@ update:
 ifeq ($(OS),Darwin)
 	@echo "📦 Updating brew packages..."
 	@brew update && brew upgrade
-	@brew bundle install --cleanup --no-upgrade --file ./Brewfile
+	@brew bundle install --cleanup --no-upgrade --file ./packages/Brewfile
 else ifeq ($(OS),Linux)
-	@if [ -f /etc/arch-release ]; then \
-		echo "📦 Updating pacman packages..."; \
-		sudo pacman -Syu --noconfirm; \
-		command -v paru >/dev/null 2>&1 && paru -Sua --noconfirm || true; \
-		bash $(INSTALL_ARCH); \
-	else \
-		echo "📦 Updating dnf packages..."; \
-		sudo dnf upgrade -y; \
-		flatpak update --user -y || true; \
-		bash $(INSTALL_FEDORA); \
-	fi
+	@case "$(DISTRO)" in \
+		arch) echo "📦 Updating pacman packages..."; \
+			sudo pacman -Syu --noconfirm; \
+			command -v paru >/dev/null 2>&1 && paru -Sua --noconfirm || true; \
+			bash $(INSTALL_ARCH) ;; \
+		fedora) echo "📦 Updating dnf packages..."; \
+			sudo dnf upgrade -y; \
+			flatpak update --user -y || true; \
+			bash $(INSTALL_FEDORA) ;; \
+		void) echo "📦 Updating xbps packages..."; \
+			sudo xbps-install -Su || true; \
+			flatpak update --user -y || true; \
+			bash $(INSTALL_VOID) ;; \
+		*) echo "❌ Unsupported Linux distro: '$(DISTRO)'"; exit 1 ;; \
+	esac
 endif
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
@@ -107,10 +118,10 @@ endif
 # Dump currently installed packages — only meaningful on macOS (Brewfile).
 dump:
 ifeq ($(OS),Darwin)
-	@brew bundle dump --force --file ./Brewfile
+	@brew bundle dump --force --file ./packages/Brewfile
 	@echo "📋 Brewfile updated with current packages."
 else
-	@echo "ℹ️  dump is macOS-only (Brewfile). Edit Packages.fedora by hand."
+	@echo "ℹ️  dump is macOS-only (Brewfile). Edit packages/fedora by hand."
 endif
 
 # ==============================================================================
@@ -120,11 +131,11 @@ lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
-	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) $(INSTALL_FEDORA) $(INSTALL_ARCH) && echo "  ✓ Install scripts OK" || exit 1
-	@bash -n Packages.fedora Packages.arch && echo "  ✓ Package manifests OK" || exit 1
+	@bash -n scripts/lib/common.sh $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) $(INSTALL_FEDORA) $(INSTALL_ARCH) $(INSTALL_VOID) && echo "  ✓ Install scripts OK" || exit 1
+	@bash -n packages/fedora packages/arch packages/void && echo "  ✓ Package manifests OK" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew fedora arch linux packages configs update dump lint
+.PHONY: all install clean homebrew brew fedora arch void linux packages configs update dump lint

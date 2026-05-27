@@ -64,6 +64,27 @@ PACMAN_PACKAGES=(
 
   # local LLM runner
   ollama
+
+  # niri desktop / rice stack
+  niri                     # scrollable-tiling Wayland compositor
+  waybar                   # status bar
+  mako                     # notifications
+  fuzzel                   # launcher
+  swaybg                   # wallpaper
+  swaylock swayidle        # screen lock + idle (config TODO)
+  pipewire pipewire-pulse wireplumber   # audio (wpctl)
+  brightnessctl            # backlight/LED control (waybar + niri binds)
+  pavucontrol              # audio mixer GUI
+  wl-clipboard             # wl-copy / wl-paste
+  xwayland-satellite       # X11 app support on niri (Steam and other X11-only apps)
+  xdg-desktop-portal-gnome xdg-desktop-portal-gtk   # portals (screencast, dialogs)
+  polkit-gnome             # polkit auth agent (spawned by niri)
+  gnome-keyring            # secrets + ssh keyring
+  networkmanager           # wifi/networking (nmtui)
+  wlsunset                 # night-shift (color temperature), toggled from waybar
+
+  # power management — auto perf on AC, balanced on battery (TLP)
+  tlp
 )
 
 # ==============================================================================

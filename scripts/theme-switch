@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# theme-switch <name> — switch the Niri rice theme (single source of truth).
+#
+# Each theme lives in config/theme/themes/<name>/ and holds the color
+# snippet in each app's native format:
+#   waybar.css   @define-color tokens, imported by waybar/style.css
+#   fuzzel.ini   [colors] + [border] block (stamped, no includes)
+#   mako.conf    color keys (stamped, no includes)
+#   niri.kdl     focus-ring active/inactive colors (stamped, no includes)
+#
+# This script:
+#   1. repoints ~/.config/theme/current -> the chosen theme dir
+#   2. stamps colors into mako/fuzzel/niri configs between THEME:colors markers
+#      (waybar pulls its colors live via @import current/waybar.css)
+#   3. live-reloads waybar, mako, and niri (niri hot-reloads on file save)
+#
+# Idempotent and safe to re-run. Run after `stow` so the configs are linked.
+set -euo pipefail
+
+# ── locate theme dir (works whether invoked from repo or via PATH) ──────────
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+REPO_ROOT=$(dirname "$SCRIPT_DIR")
+THEMES_DIR="$REPO_ROOT/config/theme/themes"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+THEME_LINK="$CONFIG_DIR/theme/current"
+
+usage() {
+  echo "usage: theme-switch <name>"
+  echo "available themes:"
+  if [[ -d "$THEMES_DIR" ]]; then
+    for d in "$THEMES_DIR"/*/; do
+      [[ -d "$d" ]] && echo "  - $(basename "$d")"
+    done
+  fi
+  exit "${1:-1}"
+}
+
+[[ $# -eq 1 ]] || usage 1
+NAME="$1"
+[[ "$NAME" == "-h" || "$NAME" == "--help" ]] && usage 0
+
+THEME_DIR="$THEMES_DIR/$NAME"
+if [[ ! -d "$THEME_DIR" ]]; then
+  echo "error: theme '$NAME' not found in $THEMES_DIR" >&2
+  usage 1
+fi
+
+# ── 1. repoint the current symlink ──────────────────────────────────────────
+# Point at the installed (stowed) location so app configs resolve it the same
+# way regardless of where the repo lives.
+mkdir -p "$CONFIG_DIR/theme"
+ln -sfn "$CONFIG_DIR/theme/themes/$NAME" "$THEME_LINK"
+echo "current -> themes/$NAME"
+
+# ── helpers ─────────────────────────────────────────────────────────────────
+# stamp a payload between THEME:colors:start/end markers in a target file.
+# $1 target file, $2 payload file (lines copied verbatim), $3 comment-prefix
+stamp() {
+  local target="$1" payload="$2" prefix="$3"
+  [[ -f "$target" ]] || { echo "skip (missing): $target"; return; }
+  [[ -f "$payload" ]] || { echo "skip (no payload): $payload"; return; }
+
+  local start_marker="${prefix} THEME:colors:start"
+  local end_marker="${prefix} THEME:colors:end"
+
+  if ! grep -qF "THEME:colors:start" "$target"; then
+    echo "warn: no THEME:colors markers in $target — leaving untouched" >&2
+    return
+  fi
+
+  # Strip comment lines (starting with # or //) from the payload so app
+  # config files don't accumulate the snippet's documentation.
+  local body
+  body=$(grep -vE '^[[:space:]]*(#|//)' "$payload")
+
+  local tmp
+  tmp=$(mktemp)
+  awk -v start="$start_marker" -v end="$end_marker" -v body="$body" '
+    $0 ~ /THEME:colors:start/ { print start; print body; skip=1; next }
+    $0 ~ /THEME:colors:end/   { print end; skip=0; next }
+    !skip { print }
+  ' "$target" > "$tmp"
+  mv "$tmp" "$target"
+  echo "stamped: $target"
+}
+
+# ── 2. stamp colors into the include-less configs ───────────────────────────
+stamp "$CONFIG_DIR/mako/config"        "$THEME_DIR/mako.conf"   "#"
+stamp "$CONFIG_DIR/fuzzel/fuzzel.ini"  "$THEME_DIR/fuzzel.ini"  "#"
+stamp "$CONFIG_DIR/niri/config.kdl"    "$THEME_DIR/niri.kdl"    "//"
+
+# ── 3. live-reload running apps ─────────────────────────────────────────────
+# waybar: SIGUSR2 reloads config+style (picks up the new @import target).
+if pgrep -x waybar >/dev/null 2>&1; then
+  killall -SIGUSR2 waybar 2>/dev/null && echo "reloaded: waybar"
+fi
+
+# mako: makoctl reload re-reads the config.
+if pgrep -x mako >/dev/null 2>&1; then
+  makoctl reload 2>/dev/null && echo "reloaded: mako"
+fi
+
+# niri: validate, then it hot-reloads on file save automatically.
+if command -v niri >/dev/null 2>&1; then
+  if niri validate -c "$CONFIG_DIR/niri/config.kdl" >/dev/null 2>&1; then
+    echo "validated: niri (hot-reloads on save)"
+  else
+    echo "warn: niri config failed validation — check $CONFIG_DIR/niri/config.kdl" >&2
+  fi
+fi
+
+# fuzzel reads its config fresh on each launch — nothing to reload.
+echo "done: theme '$NAME' applied."

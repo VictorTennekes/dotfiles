@@ -1,7 +1,19 @@
 theme = catppuccin-mocha.conf
 background-opacity = 0.95
 cursor-style = block
-custom-shader = shaders/cursor_warp.glsl
+
+# Force the block cursor: without this, zsh shell integration switches it to a
+# beam in insert mode, which also breaks the cursor shaders below.
+shell-integration-features = no-cursor
+
+# Cursor trail shader (requires a block cursor, set above). Swap the filename
+# to change the effect; options live in shaders/:
+#   cursor_blaze · cursor_tail · cursor_sweep · cursor_warp · ripple_cursor · sonic_boom_cursor
+# Paths are relative to this config file. animation=true renders only while
+# focused (kinder on laptop battery than `always`).
+custom-shader = shaders/cursor_tail.glsl
+custom-shader-animation = true
+
 window-padding-x = 5
 window-padding-y = 5
 window-padding-balance = true

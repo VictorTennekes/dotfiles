@@ -22,3 +22,6 @@ unset _antidote_bundle
 # Keybindings that depend on plugins being loaded
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
+
+# opencode
+export PATH=/home/victortennekes/.opencode/bin:$PATH

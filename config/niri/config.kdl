@@ -4,8 +4,15 @@
 // Validate with `niri validate -c ~/.config/niri/config.kdl`.
 input {
     keyboard { xkb { layout "us"; }; }
-    touchpad { tap; natural-scroll; }
+    touchpad { tap; natural-scroll; scroll-factor 0.4; }
     focus-follows-mouse
+}
+
+// Framework 13 panel (2880x1920). Scale 2 = native/integer (crispest),
+// logical 1440x960. Drop toward 1.75/1.5 if you want everything smaller —
+// but prefer tuning per-app font sizes over global scale.
+output "eDP-1" {
+    scale 2
 }
 
 layout {
@@ -37,6 +44,7 @@ spawn-at-startup "waybar"
 spawn-at-startup "mako"
 spawn-at-startup "swaybg" "-i" "/home/victortennekes/Pictures/wallpaper/otto-night.png" "-m" "fill"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+spawn-at-startup "xwayland-satellite" ":0"
 
 environment {
     MOZ_ENABLE_WAYLAND "1"
@@ -44,6 +52,7 @@ environment {
     NIXOS_OZONE_WL "1"
     SSH_AUTH_SOCK "/home/victortennekes/.bitwarden-ssh-agent.sock"
     ELECTRON_OZONE_PLATFORM_HINT "auto"
+    DISPLAY ":0"
 }
 
 binds {

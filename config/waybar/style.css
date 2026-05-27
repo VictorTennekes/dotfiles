@@ -58,6 +58,8 @@ window#waybar.empty #window { background: transparent; }
 
 /* ── right-side status cluster (mono for glyph + number) ─────── */
 #pulseaudio,
+#backlight,
+#custom-kbd,
 #network,
 #battery {
   color: @subtext1;

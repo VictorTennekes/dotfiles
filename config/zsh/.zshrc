@@ -19,5 +19,6 @@ fi
 [[ -s "$_antidote_bundle" ]] && source "$_antidote_bundle"
 unset _antidote_bundle
 
-# opencode
-export PATH=/home/victortennekes/.opencode/bin:$PATH
+# Keybindings that depend on plugins being loaded
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down

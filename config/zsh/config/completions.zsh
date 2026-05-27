@@ -16,8 +16,6 @@ zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR"
 zstyle ':completion:*' compress end
 
-zstyle ':completion:*' rehash true
-
 # kubectx/kubens alias completions (deferred until compinit is available)
 function _register_kube_completions() {
   if (( $+commands[kubectx] )); then

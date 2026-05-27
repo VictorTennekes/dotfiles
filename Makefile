@@ -4,6 +4,7 @@
 INSTALL_SCRIPT       ?= scripts/install
 CLEAN_SCRIPT         ?= scripts/clean
 INSTALL_FEDORA       ?= scripts/install-fedora
+INSTALL_ARCH         ?= scripts/install-arch
 BREW_INSTALLER        = .brew_install.sh
 
 OS := $(shell uname -s)
@@ -29,10 +30,20 @@ packages:
 ifeq ($(OS),Darwin)
 	@$(MAKE) homebrew brew
 else ifeq ($(OS),Linux)
-	@$(MAKE) fedora
+	@$(MAKE) linux
 else
 	@echo "❌ Unsupported OS: $(OS)"; exit 1
 endif
+
+# --- Linux: route to the right distro installer ---
+linux:
+	@if [ -f /etc/arch-release ]; then \
+		$(MAKE) arch; \
+	elif [ -f /etc/fedora-release ]; then \
+		$(MAKE) fedora; \
+	else \
+		echo "❌ Unsupported Linux distro (no /etc/arch-release or /etc/fedora-release)"; exit 1; \
+	fi
 
 # --- macOS: Homebrew ---
 homebrew: $(BREW_INSTALLER)
@@ -51,6 +62,11 @@ brew: homebrew Brewfile
 fedora: Packages.fedora
 	@echo "📦 Installing Fedora packages..."
 	@bash $(INSTALL_FEDORA)
+
+# --- Linux: Arch (pacman + AUR/paru + npm + curl installers) ---
+arch: Packages.arch
+	@echo "📦 Installing Arch packages..."
+	@bash $(INSTALL_ARCH)
 
 # ==============================================================================
 # CONFIGURATION SYMLINKS
@@ -72,10 +88,17 @@ ifeq ($(OS),Darwin)
 	@brew update && brew upgrade
 	@brew bundle install --cleanup --no-upgrade --file ./Brewfile
 else ifeq ($(OS),Linux)
-	@echo "📦 Updating dnf packages..."
-	@sudo dnf upgrade -y
-	@flatpak update --user -y || true
-	@bash $(INSTALL_FEDORA)
+	@if [ -f /etc/arch-release ]; then \
+		echo "📦 Updating pacman packages..."; \
+		sudo pacman -Syu --noconfirm; \
+		command -v paru >/dev/null 2>&1 && paru -Sua --noconfirm || true; \
+		bash $(INSTALL_ARCH); \
+	else \
+		echo "📦 Updating dnf packages..."; \
+		sudo dnf upgrade -y; \
+		flatpak update --user -y || true; \
+		bash $(INSTALL_FEDORA); \
+	fi
 endif
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
@@ -97,11 +120,11 @@ lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
-	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) $(INSTALL_FEDORA) && echo "  ✓ Install scripts OK" || exit 1
-	@bash -n Packages.fedora && echo "  ✓ Packages.fedora OK" || exit 1
+	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) $(INSTALL_FEDORA) $(INSTALL_ARCH) && echo "  ✓ Install scripts OK" || exit 1
+	@bash -n Packages.fedora Packages.arch && echo "  ✓ Package manifests OK" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew fedora packages configs update dump lint
+.PHONY: all install clean homebrew brew fedora arch linux packages configs update dump lint

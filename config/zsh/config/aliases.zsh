@@ -12,8 +12,11 @@ alias tf="terraform"
 # Neovim
 alias v='nvim'
 
-# File explorer
-alias ff="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --bind 'enter:become(nvim {+})'"
+# File explorer (fzf → open selection in nvim)
+alias f="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --bind 'enter:become(nvim {+})'"
+
+# System info
+alias ff="fastfetch"
 
 # LLM helpers
 alias tc='eza --tree --git-ignore -I .git | clip'

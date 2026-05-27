@@ -11,7 +11,7 @@
 
   "modules-left": ["niri/workspaces", "niri/window"],
   "modules-center": ["clock"],
-  "modules-right": ["pulseaudio", "network", "battery", "tray"],
+  "modules-right": ["tray", "backlight", "custom/kbd", "pulseaudio", "network", "battery"],
 
   "niri/workspaces": {
     "format": "{index}"
@@ -56,8 +56,31 @@
     "format": "{icon} {volume}%",
     "format-muted": "󰖁 muted",
     "format-icons": { "default": ["󰕿", "󰖀", "󰕾"] },
-    "scroll-step": 5,
-    "on-click": "pavucontrol"
+    "on-click": "pavucontrol",
+    "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%+ -l 1.0",
+    "smooth-scrolling-threshold": 3
+  },
+
+  "backlight": {
+    "device": "amdgpu_bl1",
+    "format": "{icon} {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "on-scroll-up": "brightnessctl -d amdgpu_bl1 set 5%-",
+    "on-scroll-down": "brightnessctl -d amdgpu_bl1 set 5%+",
+    "smooth-scrolling-threshold": 3,
+    "on-click": "pgrep -x wlsunset >/dev/null && pkill wlsunset || wlsunset -t 4000 -T 4001 -S 00:00 -s 00:01",
+    "tooltip": false
+  },
+
+  "custom/kbd": {
+    "exec": "brightnessctl -d chromeos::kbd_backlight -m | cut -d, -f4 | tr -d %",
+    "interval": 3,
+    "format": "󰌌 {}%",
+    "on-scroll-up": "brightnessctl -d chromeos::kbd_backlight set 10%-",
+    "on-scroll-down": "brightnessctl -d chromeos::kbd_backlight set 10%+",
+    "smooth-scrolling-threshold": 3,
+    "tooltip": false
   },
 
   "tray": {

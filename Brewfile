@@ -27,6 +27,7 @@ brew "tealdeer"          # Fast tldr client for quick command examples.
 brew "vivid"             # A generator for LS_COLORS with themes.
 brew "hyperfine"         # A command-line benchmarking tool.
 brew "watch"             # Executes a program periodically, showing output fullscreen.
+brew "fortune"           # Random quotes; backs the Star Wars shell greeting.
 
 
 # ==============================================================================
@@ -66,10 +67,14 @@ cask "font-jetbrains-mono-nerd-font"
 # --- Languages ---
 brew "zig"
 
+brew "repomix"           # Pack a repo into a single LLM-friendly file.
+
 # --- AI ---
+tap "typewhisper/tap"
 cask "chatgpt"
 cask "claude-code"
 cask "claude"
+cask "typewhisper/tap/typewhisper"  # Local speech-to-text dictation for macOS.
 brew "gemini-cli"
 brew "ollama"
 brew "opencode"
@@ -79,11 +84,13 @@ brew "opencode"
 # ==============================================================================
 
 # --- Browsers ---
+cask "helium-browser"
 cask "zen"
 
 # --- Productivity ---
 cask "Bitwarden"
 brew "bitwarden-cli"
+cask "proton-pass"
 
 cask "keyboardcleantool"
 cask "nordvpn"
@@ -93,12 +100,15 @@ cask "obsidian"
 cask "alfred"
 cask "keepingyouawake"
 cask "appcleaner"
+tap "TheBoredTeam/boring-notch"
+cask "TheBoredTeam/boring-notch/boring-notch"  # A dynamic notch replacement for macOS.
 cask "jordanbaird-ice"      # A modern menu bar manager for macOS.
 cask "karabiner-elements"   # A powerful and stable keyboard customizer.
 cask "keka"                 # A free file archiver for macOS.
 cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
 cask "rectangle-pro"        # Window management.
+brew "mole"
 
 # --- Messengers ---
 cask "signal"
@@ -110,8 +120,11 @@ cask "steam"
 cask "stremio"
 cask "equinox"
 
+cask "porting-kit"
+
 # --- Mac App Store Apps ---
 brew "mas" # Command-line interface for the Mac App Store.
+mas "NextDNS", id: 1464122853
 mas "Startup Manager", id: 1296723195
 mas "Telegram Messenger", id: 747648890
 mas "WhatsApp Messenger", id: 310633997

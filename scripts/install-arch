@@ -98,6 +98,10 @@ if pacman -Qq tlp >/dev/null 2>&1; then
   enable_service tlp
   sudo systemctl mask systemd-rfkill.service systemd-rfkill.socket 2>/dev/null || true
 fi
+if pacman -Qq fw-fanctrl >/dev/null 2>&1; then
+  step "Fan control (fw-fanctrl)"
+  enable_service fw-fanctrl          # gentler EC fan curve (default strategy: lazy)
+fi
 pacman -Qq networkmanager >/dev/null 2>&1 && enable_service NetworkManager
 
 ensure_default_shell

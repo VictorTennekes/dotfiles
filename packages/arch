@@ -62,9 +62,6 @@ PACMAN_PACKAGES=(
   ttf-jetbrains-mono-nerd  # terminal/editor Nerd Font
   papirus-icon-theme       # colorful app icons for the fuzzel launcher
 
-  # local LLM runner
-  ollama
-
   # niri desktop / rice stack
   niri                     # scrollable-tiling Wayland compositor
   waybar                   # status bar
@@ -83,7 +80,10 @@ PACMAN_PACKAGES=(
   networkmanager           # wifi/networking (nmtui)
   wlsunset                 # night-shift (color temperature), toggled from waybar
 
-  # power management — auto perf on AC, balanced on battery (TLP)
+  # power management — adaptive on AC, scales down on battery (TLP).
+  # NOTE: AC uses powersave governor + balance_performance EPP (NOT the
+  # performance governor) — amd-pstate still boosts to max under load, but
+  # idles cool instead of baking the chip during light use. See system/etc/tlp.d.
   tlp
 )
 
@@ -92,7 +92,8 @@ PACMAN_PACKAGES=(
 # ==============================================================================
 AUR_PACKAGES=(
   zen-browser-bin
-  helium-browser-bin
+  fw-fanctrl               # gentler EC fan curve for Framework 13; pulls fw-ectool.
+                           # install-arch enables fw-fanctrl.service (default: lazy curve)
 )
 
 # ==============================================================================

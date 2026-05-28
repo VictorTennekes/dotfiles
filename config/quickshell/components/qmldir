@@ -1,0 +1,5 @@
+module components
+
+Bar           1.0 Bar.qml
+QuickSettings 1.0 QuickSettings.qml
+Toast         1.0 Toast.qml

@@ -58,7 +58,7 @@ $(BREW_INSTALLER):
 
 brew: homebrew packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew bundle install --cleanup --no-upgrade --file ./packages/Brewfile
+	@brew bundle install --no-upgrade --file ./packages/Brewfile
 
 # --- Linux: Fedora (dnf + flatpak + cargo + npm + curl installers) ---
 fedora: packages/fedora
@@ -93,7 +93,7 @@ update:
 ifeq ($(OS),Darwin)
 	@echo "📦 Updating brew packages..."
 	@brew update && brew upgrade
-	@brew bundle install --cleanup --no-upgrade --file ./packages/Brewfile
+	@brew bundle install --no-upgrade --file ./packages/Brewfile
 else ifeq ($(OS),Linux)
 	@case "$(DISTRO)" in \
 		arch) echo "📦 Updating pacman packages..."; \

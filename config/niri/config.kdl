@@ -40,7 +40,10 @@ screenshot-path "/home/victortennekes/Pictures/Screenshots/Screenshot-%Y%m%d-%H%
 hotkey-overlay { skip-at-startup; }
 
 spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets,ssh"
-spawn-at-startup "waybar"
+// Bar/shell: quickshell (Niri Desktop v3 design). To fall back to waybar
+// during a debug session, run `waybar &` manually — the package is still
+// installed.
+spawn-at-startup "qs"
 spawn-at-startup "mako"
 spawn-at-startup "swaybg" "-i" "/home/victortennekes/Pictures/wallpaper/otto-night.png" "-m" "fill"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -62,6 +65,9 @@ binds {
     Mod+Space { spawn "sh" "-c" "pkill fuzzel || fuzzel"; }
     Mod+B { spawn "firefox"; }
     Mod+Q { close-window; }
+
+    // Quickshell QuickSettings popout (top-right of the bar).
+    Mod+P { spawn "qs" "ipc" "call" "quickSettings" "toggle"; }
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }

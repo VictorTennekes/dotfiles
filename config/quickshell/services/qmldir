@@ -1,0 +1,9 @@
+module services
+
+singleton Tokens     1.0 Tokens.qml
+singleton Niri       1.0 Niri.qml
+singleton Brightness 1.0 Brightness.qml
+singleton Volume     1.0 Volume.qml
+singleton Battery    1.0 Battery.qml
+singleton Network    1.0 Network.qml
+singleton Media      1.0 Media.qml

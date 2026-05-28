@@ -64,7 +64,11 @@ PACMAN_PACKAGES=(
 
   # niri desktop / rice stack
   niri                     # scrollable-tiling Wayland compositor
-  waybar                   # status bar
+  quickshell               # QML/Qt-based shell — drives Bar + QuickSettings + Toast.
+                           # Config lives in config/quickshell/ (stowed). Launched
+                           # via `spawn-at-startup "qs"` in niri config.kdl.
+  waybar                   # status bar — kept as fallback during quickshell bring-up.
+                           # Remove once the new shell is stable.
   mako                     # notifications
   fuzzel                   # launcher
   swaybg                   # wallpaper

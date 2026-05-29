@@ -35,6 +35,8 @@ DNF_PACKAGES=(
   neovim
   zig
 
+  git-machete
+
   # Build deps for tools we install via cargo / npm below
   cargo
   npm
@@ -75,6 +77,7 @@ NPM_PACKAGES=(
   "@google/gemini-cli"
   "@bitwarden/cli"
   "tree-sitter-cli"
+  "repomix"
 )
 
 # ==============================================================================
@@ -127,6 +130,7 @@ DNF_PACKAGES_WORK=(
   pre-commit
   parallel
   yq
+  k9s
   gnupg2
   pinentry            # Linux equivalent of pinentry-mac
   kubectx             # provides kubectx + kubens

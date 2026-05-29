@@ -3,7 +3,7 @@
 _cache_init() {
   local name="$1" cmd="$2" bin="$3"
   local cache_file="${ZSH_CACHE_DIR}/${name}.zsh"
-  if [[ ! -f "$cache_file" || "$bin" -nt "$cache_file" ]]; then
+  if [[ ! -s "$cache_file" || "$bin" -nt "$cache_file" ]]; then
     eval "$cmd" > "$cache_file"
   fi
   source "$cache_file"

@@ -80,7 +80,7 @@ stamp() {
     $0 ~ /THEME:colors:end/   { print end; skip=0; next }
     !skip { print }
   ' "$target" > "$tmp"
-  mv "$tmp" "$target"
+  cp "$tmp" "$target" && rm -f "$tmp"
   echo "stamped: $target"
 }
 

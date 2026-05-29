@@ -1,7 +1,5 @@
-# --- User PATH ---
-[[ -d "$HOME/.local/bin" ]]  && export PATH="$HOME/.local/bin:$PATH"
-[[ -d "$HOME/.krew/bin" ]]   && export PATH="$HOME/.krew/bin:$PATH"
-[[ -d "$HOME/go/bin" ]]      && export PATH="$HOME/go/bin:$PATH"
+[[ -n "$_EXPORTS_SOURCED" ]] && return
+export _EXPORTS_SOURCED=1
 
 # --- Homebrew (macOS only — avoid eval fork by hardcoding prefix) ---
 if [[ "$OSTYPE" == darwin* && -z "$HOMEBREW_PREFIX" ]]; then
@@ -21,11 +19,19 @@ fi
 
 # --- Bitwarden SSH agent ---
 if [[ "$OSTYPE" == darwin* ]]; then
-  export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
-elif [[ "$OSTYPE" == linux* ]]; then
-  # Bitwarden Desktop installed via Flatpak (com.bitwarden.desktop)
-  _bw_sock="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+  _bw_sock="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
   [[ -S "$_bw_sock" ]] && export SSH_AUTH_SOCK="$_bw_sock"
+  unset _bw_sock
+elif [[ "$OSTYPE" == linux* ]]; then
+  _bw_sock="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+  if [[ -S "$_bw_sock" ]]; then
+    export SSH_AUTH_SOCK="$_bw_sock"
+  elif [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
+    for _sock in /tmp/ssh-*/agent.* "$HOME/.gnupg/S.gpg-agent.ssh"; do
+      [[ -S "$_sock" ]] && { export SSH_AUTH_SOCK="$_sock"; break; }
+    done
+    unset _sock
+  fi
   unset _bw_sock
 fi
 
@@ -50,7 +56,7 @@ export CLICOLOR=1
 if [[ -z "$LS_COLORS" ]]; then
   _vivid_cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/ls_colors.zsh"
   if (( $+commands[vivid] )); then
-    if [[ ! -f "$_vivid_cache" || "${commands[vivid]}" -nt "$_vivid_cache" ]]; then
+    if [[ ! -s "$_vivid_cache" || "${commands[vivid]}" -nt "$_vivid_cache" ]]; then
       vivid generate catppuccin-mocha 2>/dev/null > "$_vivid_cache"
     fi
     export LS_COLORS="$(<$_vivid_cache)"
@@ -58,4 +64,4 @@ if [[ -z "$LS_COLORS" ]]; then
   unset _vivid_cache
 fi
 
-export GOOGLE_CLOUD_PROJECT="com-ridedott-data"
+# Machine-specific overrides live in ~/.config/zsh/local.zsh (not tracked in dotfiles)

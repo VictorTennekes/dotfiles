@@ -22,10 +22,11 @@ XBPS_PACKAGES=(
   delta            # git-delta is `delta` on Void
   github-cli glab
   starship
+  lazygit yazi vivid
   # toolchains / build deps
   base-devel rust nodejs npm pkg-config
-  # fonts
-  font-inter ttf-jetbrains-mono   # TODO: confirm Void font package names
+  # fonts — nerd-fonts-ttf provides JetBrains Mono Nerd Font (symbols/icons in terminal)
+  font-inter-otf nerd-fonts-ttf
 
   # TODO niri desktop stack on Void: niri waybar mako fuzzel swaybg swaylock
   #      swayidle pipewire wireplumber brightnessctl pavucontrol wl-clipboard
@@ -34,14 +35,35 @@ XBPS_PACKAGES=(
   # TODO power: tlp  (runit service)
 )
 XBPS_PACKAGES_WORK=(
-  # pre-commit parallel yq gnupg pinentry kubectx helm python3-pip ruff k9s
+  pre-commit
+  parallel
+  yq
+  gnupg
+  pinentry
+  kubectx
+  kubernetes-helm  # 'helm' is 'kubernetes-helm' on Void
+  python3-pip
+  ruff
+  k9s
 )
 
 # ==============================================================================
 # FLATPAK — GUI apps Void lacks natively (browsers, etc.)
 # ==============================================================================
-FLATPAK_PACKAGES=()
-FLATPAK_PACKAGES_WORK=()
+FLATPAK_PACKAGES=(
+  app.zen_browser.zen
+  com.bitwarden.desktop
+  com.mitchellh.ghostty
+  com.spotify.Client
+  com.stremio.Stremio
+  com.valvesoftware.Steam
+  md.obsidian.Obsidian
+  org.signaldesktop.Signal
+  org.telegram.desktop
+)
+FLATPAK_PACKAGES_WORK=(
+  com.slack.Slack
+)
 
 # ==============================================================================
 # CARGO / NPM — user-level (identical across distros)
@@ -50,6 +72,7 @@ CARGO_PACKAGES=()
 NPM_PACKAGES=(
   "@google/gemini-cli"
   "@bitwarden/cli"
+  "repomix"
 )
 
 # ==============================================================================
@@ -57,10 +80,16 @@ NPM_PACKAGES=(
 # ==============================================================================
 SHELL_INSTALLERS=(
   'antidote|[ -d "$HOME/.local/share/antidote" ] || git clone --depth=1 https://github.com/mattmc3/antidote "$HOME/.local/share/antidote"'
+  'mise|command -v mise >/dev/null || curl https://mise.run | sh'
+  'ollama|command -v ollama >/dev/null || curl -fsSL https://ollama.com/install.sh | sh'
   'opencode|command -v opencode >/dev/null || curl -fsSL https://opencode.ai/install | bash'
   'claude|command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash'
+  'framework_tool|[ -x "$HOME/.cargo/bin/framework_tool" ] || cargo install --locked --git https://github.com/FrameworkComputer/framework-system framework_tool'
 )
-SHELL_INSTALLERS_WORK=()
+SHELL_INSTALLERS_WORK=(
+  'uv|command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh'
+  'krew|command -v kubectl-krew >/dev/null || ( set -e; cd "$(mktemp -d)"; curl -fsSLO https://github.com/kubernetes-sigs/krew/releases/latest/download/krew-linux_amd64.tar.gz; tar zxvf krew-linux_amd64.tar.gz; ./krew-linux_amd64 install krew )'
+)
 
 # ==============================================================================
 # SERVICES — runit services to enable (install-void links into /var/service)

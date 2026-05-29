@@ -17,5 +17,5 @@ for f in "$@"; do
   fi
 done
 
-echo -n "$output" | clip > /dev/null
+clip <<< "$output" > /dev/null
 echo "Copied ${#@} file(s) to clipboard."

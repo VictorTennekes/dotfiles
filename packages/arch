@@ -98,6 +98,7 @@ AUR_PACKAGES=(
   zen-browser-bin
   fw-fanctrl               # gentler EC fan curve for Framework 13; pulls fw-ectool.
                            # install-arch enables fw-fanctrl.service (default: lazy curve)
+  git-machete              # git branch management
 )
 
 # ==============================================================================
@@ -122,6 +123,7 @@ CARGO_PACKAGES=()
 NPM_PACKAGES=(
   "@google/gemini-cli"
   "@bitwarden/cli"          # provides `bw`; avoids nodejs-lts-jod conflict
+  "repomix"
 )
 
 # ==============================================================================
@@ -136,6 +138,7 @@ FLATPAK_PACKAGES=()
 # your own existence check inside it.
 SHELL_INSTALLERS=(
   'antidote|[ -d "$HOME/.local/share/antidote" ] || git clone --depth=1 https://github.com/mattmc3/antidote "$HOME/.local/share/antidote"'
+  'ollama|command -v ollama >/dev/null || curl -fsSL https://ollama.com/install.sh | sh'
   'opencode|command -v opencode >/dev/null || curl -fsSL https://opencode.ai/install | bash'
   'claude|command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash'
   'framework_tool|[ -x "$HOME/.cargo/bin/framework_tool" ] || cargo install --locked --git https://github.com/FrameworkComputer/framework-system framework_tool'

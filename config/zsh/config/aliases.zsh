@@ -21,9 +21,11 @@ alias ff="fastfetch"
 # LLM helpers
 alias tc='eza --tree --git-ignore -I .git | clip'
 
-# System replacements
-alias cat='bat'
-alias cd='z'
-alias ls='eza --icons --group-directories-first'
-alias ll='eza --icons --group-directories-first -la'
-alias lt='eza --icons --group-directories-first --tree --level=2'
+# System replacements — guarded so a fresh machine without these tools still works
+(( $+commands[bat]    )) && alias cat='bat'
+(( $+commands[zoxide] )) && alias cd='z'
+if (( $+commands[eza] )); then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza --icons --group-directories-first -la'
+  alias lt='eza --icons --group-directories-first --tree --level=2'
+fi

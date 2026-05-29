@@ -83,6 +83,10 @@ install_flatpaks() {
 # ── cargo / npm (user-level) ─────────────────────────────────────────────────
 install_cargo() {
   [[ ${#CARGO_PACKAGES[@]} -gt 0 ]] || return 0
+  if ! command -v cargo >/dev/null 2>&1; then
+    warn "cargo not found; skipping cargo packages"
+    return 0
+  fi
   step "Cargo packages"
   local pkg
   for pkg in "${CARGO_PACKAGES[@]}"; do
@@ -96,6 +100,10 @@ install_cargo() {
 
 install_npm() {
   [[ ${#NPM_PACKAGES[@]} -gt 0 ]] || return 0
+  if ! command -v npm >/dev/null 2>&1; then
+    warn "npm not found; skipping npm packages"
+    return 0
+  fi
   step "NPM packages (user-level prefix)"
   mkdir -p "$HOME/.local"
   npm config set prefix "$HOME/.local" >/dev/null

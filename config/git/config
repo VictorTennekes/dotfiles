@@ -59,7 +59,7 @@
 	excludesfile = ~/.config/git/ignore
 	pager = delta
 	fsmonitor = true
-	untrackedcache = true
+	untrackedCache = true
 
 [interactive]
 	diffFilter = delta --color-only
@@ -87,6 +87,9 @@
 
 [gpg]
 	format = ssh
+
+[gpg "ssh"]
+	allowedSignersFile = ~/.ssh/allowed_signers
 
 [user]
 	signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH3q1jZWw7MRIxIf/GK5bo1+jL2HLXR+g3USNs/JJ0QK"

@@ -22,7 +22,9 @@ fi
 
 # --- 1. Per-OS stow ignore list (skip macOS-only configs on Linux) ---
 STOW_FLAGS=()
-if [[ "$OS" != "Darwin" ]]; then
+if [[ "$OS" == "Darwin" ]]; then
+  STOW_FLAGS+=(--ignore='^fuzzel$' --ignore='^mako$' --ignore='^niri$' --ignore='^quickshell$' --ignore='^waybar$')
+else
   STOW_FLAGS+=(--ignore='^karabiner$')
 fi
 

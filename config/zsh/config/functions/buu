@@ -22,30 +22,65 @@ if [[ "$OSTYPE" == darwin* ]]; then
     brew upgrade
     brew cleanup
   fi
+
 elif [[ "$OSTYPE" == linux* ]]; then
-  case "$1" in
-    check)   sudo dnf check-update; return ;;
-    dry-run) sudo dnf check-update; flatpak update --user -y --noninteractive --dry-run 2>/dev/null || true; return ;;
+  local ID
+  [[ -r /etc/os-release ]] && source /etc/os-release 2>/dev/null
+  local _distro="${ID:-}"
+
+  case "${_distro}" in
+    arch)
+      case "$1" in
+        check)   sudo paru -Sy; return ;;
+        dry-run) paru -Quq; return ;;
+      esac
+      echo -e "${YELLOW}paru...${RESET}"
+      paru -Syu --noconfirm
+      ;;
+    fedora)
+      case "$1" in
+        check)   sudo dnf check-update; return ;;
+        dry-run) sudo dnf check-update; flatpak update --user -y --noninteractive --dry-run 2>/dev/null || true; return ;;
+      esac
+      echo -e "${YELLOW}DNF...${RESET}"
+      sudo dnf upgrade -y --refresh
+      ;;
+    void)
+      case "$1" in
+        check)   sudo xbps-install -S; return ;;
+        dry-run) sudo xbps-install -Sun; return ;;
+      esac
+      echo -e "${YELLOW}XBPS...${RESET}"
+      sudo xbps-install -Su
+      ;;
+    *)
+      echo -e "${YELLOW}Unknown distro '${_distro}', skipping system packages.${RESET}"
+      ;;
   esac
-  echo -e "${YELLOW}DNF...${RESET}"
-  sudo dnf upgrade -y --refresh
+
   echo -e "${YELLOW}Flatpak...${RESET}"
-  flatpak update --user -y
+  flatpak update --user -y 2>/dev/null || true
+
   if (( $+commands[fwupdmgr] )); then
     echo -e "${YELLOW}Firmware...${RESET}"
     sudo fwupdmgr refresh --force >/dev/null 2>&1 && sudo fwupdmgr update -y --no-reboot-check 2>&1 | tail -3
   fi
-  if (( $+commands[npm] )) && [[ -d "$HOME/.local/lib/node_modules" ]]; then
-    echo -e "${YELLOW}NPM (user-global)...${RESET}"
-    npm update -g
-  fi
+
 fi
 
-# Force-refresh the antidote bundle (.zshrc auto-regenerates on staleness, this is the "make sure" knob)
-if [[ -r "$HOME/.local/share/antidote/antidote.zsh" ]]; then
+if (( $+commands[npm] )) && [[ -d "$HOME/.local/lib/node_modules" ]]; then
+  echo -e "${YELLOW}NPM (user-global)...${RESET}"
+  npm update -g
+fi
+
+# Force-refresh the antidote bundle
+_antidote_zsh="${HOMEBREW_PREFIX:+${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh}"
+[[ -r "$_antidote_zsh" ]] || _antidote_zsh="$HOME/.local/share/antidote/antidote.zsh"
+if [[ -r "$_antidote_zsh" ]]; then
   echo -e "${YELLOW}Regenerating zsh plugins...${RESET}"
-  source "$HOME/.local/share/antidote/antidote.zsh"
+  source "$_antidote_zsh"
   antidote bundle < "${ZDOTDIR}/zsh_plugins.txt" > "${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/zsh_plugins.zsh"
 fi
+unset _antidote_zsh
 
 echo -e "${GREEN}Done!${RESET}"

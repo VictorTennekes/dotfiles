@@ -30,6 +30,7 @@ PACMAN_PACKAGES=(
   tealdeer         # binary: tldr
   hyperfine
   procps-ng        # provides watch
+  pacman-contrib   # paccache (weekly cache-trim timer), checkupdates
   fastfetch
   zoxide
   btop
@@ -60,29 +61,30 @@ PACMAN_PACKAGES=(
   # fonts + icons
   inter-font               # rsms-inter on Fedora — UI font
   ttf-jetbrains-mono-nerd  # terminal/editor Nerd Font
-  papirus-icon-theme       # colorful app icons for the fuzzel launcher
+  papirus-icon-theme       # colorful app icons for the noctalia launcher
 
   # niri desktop / rice stack
   niri                     # scrollable-tiling Wayland compositor
-  quickshell               # QML/Qt-based shell — drives Bar + QuickSettings + Toast.
-                           # Config lives in config/quickshell/ (stowed). Launched
-                           # via `spawn-at-startup "qs"` in niri config.kdl.
-  waybar                   # status bar — kept as fallback during quickshell bring-up.
-                           # Remove once the new shell is stable.
-  mako                     # notifications
-  fuzzel                   # launcher
-  swaybg                   # wallpaper
-  swaylock swayidle        # screen lock + idle (config TODO)
+                           # Shell: noctalia v5 — see `noctalia-git` in AUR below.
+                           # It's a native Wayland/GLES shell (no Qt) that subsumes
+                           # the bar, launcher, notifications, OSD, idle+lock, and
+                           # wallpaper — replacing quickshell, waybar, mako, fuzzel,
+                           # hyprlock, hypridle, awww and wlsunset that this stack
+                           # used to carry as separate tools.
   pipewire pipewire-pulse wireplumber   # audio (wpctl)
-  brightnessctl            # backlight/LED control (waybar + niri binds)
+  brightnessctl            # backlight/LED control (niri binds + noctalia OSD)
   pavucontrol              # audio mixer GUI
   wl-clipboard             # wl-copy / wl-paste
   xwayland-satellite       # X11 app support on niri (Steam and other X11-only apps)
   xdg-desktop-portal-gnome xdg-desktop-portal-gtk   # portals (screencast, dialogs)
-  polkit-gnome             # polkit auth agent (spawned by niri)
+  polkit-gnome             # polkit auth agent (spawned by niri — noctalia v5 does
+                           # not bundle an auth agent, so this stays)
   gnome-keyring            # secrets + ssh keyring
   networkmanager           # wifi/networking (nmtui)
-  wlsunset                 # night-shift (color temperature), toggled from waybar
+
+  # containers
+  docker
+  docker-compose
 
   # power management — adaptive on AC, scales down on battery (TLP).
   # NOTE: AC uses powersave governor + balance_performance EPP (NOT the
@@ -95,6 +97,10 @@ PACMAN_PACKAGES=(
 # AUR — installed via paru (bootstrapped by install-arch)
 # ==============================================================================
 AUR_PACKAGES=(
+  noctalia-git             # Noctalia v5 — native Wayland/GLES desktop shell (bar,
+                           # launcher, notifications, OSD, idle+lock, wallpaper).
+                           # Launched via `spawn-at-startup "noctalia"` in niri.
+                           # Pre-1.0/alpha: pin/rollback here if a build regresses.
   zen-browser-bin
   fw-fanctrl               # gentler EC fan curve for Framework 13; pulls fw-ectool.
                            # install-arch enables fw-fanctrl.service (default: lazy curve)

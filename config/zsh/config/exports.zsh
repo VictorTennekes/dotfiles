@@ -1,5 +1,9 @@
+# Guard against double-sourcing within a shell. Must NOT be exported: an
+# exported flag leaks into every child shell, so a stale ancestor (started
+# before this file last changed) would make new shells skip these exports
+# entirely — silently serving outdated config until full logout.
 [[ -n "$_EXPORTS_SOURCED" ]] && return
-export _EXPORTS_SOURCED=1
+typeset -g _EXPORTS_SOURCED=1
 
 # --- Homebrew (macOS only — avoid eval fork by hardcoding prefix) ---
 if [[ "$OSTYPE" == darwin* && -z "$HOMEBREW_PREFIX" ]]; then
@@ -36,7 +40,8 @@ elif [[ "$OSTYPE" == linux* ]]; then
 fi
 
 # --- App Configurations ---
-export BAT_THEME="Catppuccin_Mocha"
+[[ "$OSTYPE" == linux* ]] && export BROWSER="zen-browser"
+export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
 export FZF_DEFAULT_OPTS=" \
   --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \

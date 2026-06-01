@@ -3,7 +3,7 @@ YELLOW="\033[1;33m"
 RESET="\033[0m"
 
 if [[ "$1" == "help" || "$1" == "--help" ]]; then
-  echo -e "${GREEN}Usage:${RESET} buu [option]"
+  echo -e "${GREEN}Usage:${RESET} up [option]"
   echo -e "  ${YELLOW}check${RESET}     Sanity-check the package manager"
   echo -e "  ${YELLOW}dry-run${RESET}   Show what an upgrade would change"
   echo -e "  ${YELLOW}help${RESET}      Show this help"

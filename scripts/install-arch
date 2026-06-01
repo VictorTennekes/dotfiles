@@ -102,7 +102,13 @@ if pacman -Qq fw-fanctrl >/dev/null 2>&1; then
   step "Fan control (fw-fanctrl)"
   enable_service fw-fanctrl          # gentler EC fan curve (default strategy: lazy)
 fi
+if pacman -Qq pacman-contrib >/dev/null 2>&1; then
+  step "Package-cache trim (paccache.timer)"   # weekly: keep last 3 versions
+  sudo systemctl enable --now paccache.timer 2>/dev/null \
+    || warn "could not enable paccache.timer"
+fi
 pacman -Qq networkmanager >/dev/null 2>&1 && enable_service NetworkManager
+pacman -Qq docker >/dev/null 2>&1 && { enable_service docker; sudo usermod -aG docker "$USER"; }
 
 ensure_default_shell
 

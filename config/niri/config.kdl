@@ -15,6 +15,14 @@ output "eDP-1" {
     scale 2
 }
 
+// Make fullscreen transitions instantaneous — niri's default window-resize
+// animates the window growing over ~150 ms, during which the bar (layer
+// surface) stays visible because the window hasn't actually covered it yet.
+// Turning the resize anim off makes the bar disappear immediately on fullscreen.
+animations {
+    window-resize { off; }
+}
+
 layout {
     gaps 12
     center-focused-column "never"
@@ -40,12 +48,11 @@ screenshot-path "/home/victortennekes/Pictures/Screenshots/Screenshot-%Y%m%d-%H%
 hotkey-overlay { skip-at-startup; }
 
 spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets,ssh"
-// Bar/shell: quickshell (Niri Desktop v3 design). To fall back to waybar
-// during a debug session, run `waybar &` manually — the package is still
-// installed.
-spawn-at-startup "qs"
-spawn-at-startup "mako"
-spawn-at-startup "swaybg" "-i" "/home/victortennekes/Pictures/wallpaper/otto-night.png" "-m" "fill"
+// Shell: Noctalia v5 (native Wayland/GLES). One process provides the bar,
+// notifications, OSD, launcher, idle management + auto-lock, and the
+// wallpaper — so there's no separate quickshell/mako/awww/hypridle here.
+// Config in ~/.config/noctalia/. Drive it at runtime with `noctalia msg …`.
+spawn-at-startup "noctalia"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "xwayland-satellite" ":0"
 
@@ -61,13 +68,17 @@ environment {
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
     Mod+Return { spawn "ghostty"; }
-    Mod+D { spawn "fuzzel"; }
-    Mod+Space { spawn "sh" "-c" "pkill fuzzel || fuzzel"; }
-    Mod+B { spawn "firefox"; }
+    // App launcher — Noctalia v5 launcher panel.
+    Mod+D { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+B { spawn "zen-browser"; }
     Mod+Q { close-window; }
 
-    // Quickshell QuickSettings popout (top-right of the bar).
-    Mod+P { spawn "qs" "ipc" "call" "quickSettings" "toggle"; }
+    // Noctalia control center (quick settings / toggles).
+    Mod+P { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+
+    // Region screenshot → clipboard (grim + slurp + wl-copy).
+    Mod+Shift+S { spawn "sh" "-c" "grim -g \"$(slurp)\" - | wl-copy"; }
 
     Mod+H { focus-column-left; }
     Mod+L { focus-column-right; }

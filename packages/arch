@@ -105,6 +105,7 @@ AUR_PACKAGES=(
   fw-fanctrl               # gentler EC fan curve for Framework 13; pulls fw-ectool.
                            # install-arch enables fw-fanctrl.service (default: lazy curve)
   git-machete              # git branch management
+  proton-ge-custom         # Proton fork with better game compatibility (esp. Ubisoft titles)
 )
 
 # ==============================================================================

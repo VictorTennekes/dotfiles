@@ -7,13 +7,14 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 OS=$(uname -s)
 
-STOW_FLAGS=()
-if [[ "$OS" != "Darwin" ]]; then
-  STOW_FLAGS+=(--ignore='^karabiner$')
-fi
-
 echo "🧹 Removing config symlinks..."
-stow -d "$PROJECT_ROOT" -t "$HOME/.config" "${STOW_FLAGS[@]}" -D config
+stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D config
+
+if [[ "$OS" == "Darwin" ]]; then
+  stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D darwin
+else
+  stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D linux
+fi
 
 echo "🧹 Removing home symlinks..."
 stow -d "$PROJECT_ROOT" -t "$HOME" -D home

@@ -40,10 +40,10 @@ make install
 `make install` auto-detects the OS via `uname -s`:
 
 - **Darwin** — installs Homebrew, runs `brew bundle` against `Brewfile`,
-  stows `config/` and `home/`.
+  stows `config/`, `darwin/`, and `home/`.
 - **Linux** — runs `scripts/install-fedora` against `Packages.fedora`
   (dnf + COPR + flatpak + cargo + npm + curl installers), then stows
-  `config/` while skipping `karabiner` (macOS-only).
+  `config/`, `linux/`, and `home/`.
 
 Work-only packages (dbt, terraform, k9s, slack, …) are gated by hostname
 prefix `PC-` on both platforms. Override on Linux with
@@ -70,18 +70,23 @@ prefix `PC-` on both platforms. Override on Linux with
 ├── Brewfile          # macOS packages (brew, casks, mas)
 ├── Packages.fedora   # Linux packages (dnf, copr, flatpak, cargo, npm, curl)
 ├── Makefile          # OS-aware setup orchestrator
-├── config/           # App configs, symlinked to ~/.config/
+├── config/           # Cross-platform app configs, symlinked to ~/.config/
 │   ├── bat/
 │   ├── btop/
 │   ├── ghostty/
 │   ├── git/
 │   ├── k9s/
-│   ├── karabiner/    # macOS only — skipped by stow on Linux
 │   ├── mise/
 │   ├── nvim/
 │   ├── opencode/
 │   ├── yazi/
 │   └── zsh/
+├── darwin/           # macOS-only configs, symlinked to ~/.config/
+│   └── karabiner/
+├── linux/            # Linux-only configs, symlinked to ~/.config/
+│   ├── niri/
+│   ├── noctalia/
+│   └── theme/
 ├── home/             # Home-level dotfiles, symlinked to ~/
 │   └── .zshenv
 └── scripts/
@@ -98,7 +103,7 @@ prefix `PC-` on both platforms. Override on Linux with
   `pbcopy` on macOS, `wl-copy` on Wayland, or `xclip` on X11.
 - **SSH agent.** macOS uses Bitwarden's containerized socket; on Linux
   fall back to `ssh-agent` or run Bitwarden CLI separately.
-- **Karabiner.** macOS-only; on Linux use [`kanata`](https://github.com/jtroo/kanata)
+- **Karabiner.** macOS-only (`darwin/`); on Linux use [`kanata`](https://github.com/jtroo/kanata)
   for keyboard remapping (not currently configured here).
 - **Nerd Fonts.** Brew cask installs them on macOS; on Fedora install via
   [`getnf`](https://github.com/getnf/getnf) or download manually into

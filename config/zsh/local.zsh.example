@@ -1,0 +1,16 @@
+# local.zsh — machine-specific overrides, not tracked in dotfiles
+# Copy to ~/.config/zsh/local.zsh and fill in as needed.
+
+# Cloud / infra credentials
+# export GOOGLE_CLOUD_PROJECT="my-project"
+# export AWS_PROFILE="default"
+# export KUBECONFIG="$HOME/.kube/config"
+
+# Paths for locally-installed tools not in Homebrew/mise
+# export PATH="$HOME/bin:$PATH"
+
+# Work git identity (if different from personal)
+# git config --global user.email "work@company.com"
+
+# Override defaults
+# export EDITOR="code"

@@ -6,7 +6,7 @@
 Brewfile.lock.json
 
 # Karabiner
-config/karabiner/automatic_backups
+darwin/karabiner/automatic_backups
 
 # K9S
 config/k9s/benchmarks
@@ -31,8 +31,8 @@ config/zsh/.zsh_sessions
 # active theme); never commit it. App color blocks are stamped in-place by
 # theme-switch but the committed files already carry the default theme, so they
 # stay tracked.
-config/theme/current
+linux/theme/current
 
 # Noctalia — colors.json is regenerated from the active wallpaper, so it churns
 # on every wallpaper change. settings.json + colorschemes stay tracked.
-config/noctalia/colors.json
+linux/noctalia/colors.json

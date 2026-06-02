@@ -90,8 +90,7 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 │   └── karabiner/
 ├── linux/            # Linux-only configs → ~/.config/
 │   ├── niri/
-│   ├── noctalia/
-│   └── theme/
+│   └── noctalia/
 ├── home/             # Home-level dotfiles → ~/
 │   └── .zshenv
 ├── system/           # System-level config (gamemode, libinput, tlp)
@@ -103,7 +102,6 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 │   ├── install-void  # Void package installer
 │   ├── clean         # Remove stow symlinks
 │   ├── macos-defaults # Apply macOS system defaults
-│   ├── theme-switch  # Toggle between light/dark theme
 │   └── lib/
 │       └── common.sh # Shared shell helpers
 └── Makefile

@@ -1,23 +1,25 @@
 # Dotfiles
 
-Personal cross-platform configuration for **macOS** and **Fedora Linux**,
-managed with Make and structured for XDG compliance.
+Personal configuration for **macOS** and **Linux** (Arch, Fedora, Void),
+managed with Make and GNU Stow. XDG Base Directory compliant throughout.
 
 ---
 
-## What's Inside?
+## What's Inside
 
-- **Shell:** Zsh with [Antidote](https://github.com/mattmc3/antidote)
-  for plugin management and [Starship](https://starship.rs/) prompt.
-- **Package Manager:** [Homebrew](https://brew.sh/) (`Brewfile`) on macOS;
-  `dnf` + COPR + Flatpak (`Packages.fedora`) on Fedora.
+- **Shell:** Zsh with [Antidote](https://github.com/mattmc3/antidote) for
+  plugin management and [Starship](https://starship.rs/) prompt.
+- **Package Manager:** [Homebrew](https://brew.sh/) (`packages/Brewfile`) on
+  macOS; pacman/paru, dnf, or xbps on Linux.
 - **Terminal:** [Ghostty](https://ghostty.org/) with Catppuccin Mocha theme.
-- **Git:** [Delta](https://github.com/dandavison/delta) for diffs,
-  commit signing via Bitwarden SSH agent (macOS).
-- **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
-- **TUIs:** `lazygit`, `btop`, `yazi`, `k9s`.
 - **Editor:** Neovim, managed separately at
   [victortennekes/nvim](https://github.com/victortennekes/nvim).
+- **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
+  signing via Bitwarden SSH agent (macOS).
+- **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
+- **TUIs:** `lazygit`, `btop`, `yazi`, `k9s`, `fastfetch`.
+- **Linux Desktop:** [Niri](https://github.com/YaLTeR/niri) (tiling Wayland
+  compositor) with Noctalia theme.
 
 ---
 
@@ -27,7 +29,7 @@ managed with Make and structured for XDG compliance.
 
 - Git
 - macOS: Command Line Tools (`xcode-select --install`)
-- Fedora: `sudo` access (for `dnf`)
+- Linux: `sudo` access
 
 ### Steps
 
@@ -37,29 +39,29 @@ cd ~/.dotfiles
 make install
 ```
 
-`make install` auto-detects the OS via `uname -s`:
+`make install` auto-detects the OS via `uname -s`, then routes by distro on Linux:
 
-- **Darwin** — installs Homebrew, runs `brew bundle` against `Brewfile`,
-  stows `config/`, `darwin/`, and `home/`.
-- **Linux** — runs `scripts/install-fedora` against `Packages.fedora`
-  (dnf + COPR + flatpak + cargo + npm + curl installers), then stows
-  `config/`, `linux/`, and `home/`.
+| Platform | Package manager | Package manifest |
+|----------|----------------|-----------------|
+| macOS    | Homebrew       | `packages/Brewfile` |
+| Arch     | pacman + paru  | `packages/arch` |
+| Fedora   | dnf + flatpak  | `packages/fedora` |
+| Void     | xbps           | `packages/void` |
 
-Work-only packages (dbt, terraform, k9s, slack, …) are gated by hostname
-prefix `PC-` on both platforms. Override on Linux with
-`IS_WORK=true make install`.
+Work-only packages (dbt, terraform, k9s, Slack, …) are gated by hostname
+prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 
 ---
 
 ## Usage
 
-| Command         | Description                                           |
-|-----------------|-------------------------------------------------------|
-| `make install`  | Full setup: packages + symlinks (per OS)              |
-| `make update`   | Pull dotfiles, update packages, re-link configs       |
-| `make dump`     | macOS: export current brew packages to Brewfile       |
-| `make lint`     | Validate zsh, json, and install scripts               |
-| `make clean`    | Remove all stow symlinks                              |
+| Command        | Description                                       |
+|----------------|---------------------------------------------------|
+| `make install` | Full setup: packages + symlinks (per OS/distro)   |
+| `make update`  | Pull dotfiles, update packages, re-link configs   |
+| `make dump`    | macOS: export current brew packages to Brewfile   |
+| `make lint`    | Validate zsh, JSON, and install scripts           |
+| `make clean`   | Remove all stow symlinks                          |
 
 ---
 
@@ -67,58 +69,58 @@ prefix `PC-` on both platforms. Override on Linux with
 
 ```txt
 .dotfiles/
-├── Brewfile          # macOS packages (brew, casks, mas)
-├── Packages.fedora   # Linux packages (dnf, copr, flatpak, cargo, npm, curl)
-├── Makefile          # OS-aware setup orchestrator
-├── config/           # Cross-platform app configs, symlinked to ~/.config/
+├── packages/
+│   ├── Brewfile      # macOS (brew, casks, mas)
+│   ├── arch          # Arch Linux (pacman + paru + npm + curl)
+│   ├── fedora        # Fedora (dnf + copr + flatpak + cargo + npm + curl)
+│   └── void          # Void Linux (xbps + runit)
+├── config/           # Cross-platform app configs → ~/.config/
 │   ├── bat/
 │   ├── btop/
+│   ├── fastfetch/
 │   ├── ghostty/
 │   ├── git/
 │   ├── k9s/
+│   ├── lazygit/
 │   ├── mise/
 │   ├── nvim/
-│   ├── opencode/
 │   ├── yazi/
 │   └── zsh/
-├── darwin/           # macOS-only configs, symlinked to ~/.config/
+├── darwin/           # macOS-only configs → ~/.config/
 │   └── karabiner/
-├── linux/            # Linux-only configs, symlinked to ~/.config/
+├── linux/            # Linux-only configs → ~/.config/
 │   ├── niri/
 │   ├── noctalia/
 │   └── theme/
-├── home/             # Home-level dotfiles, symlinked to ~/
+├── home/             # Home-level dotfiles → ~/
 │   └── .zshenv
-└── scripts/
-    ├── install        # Symlink dotfiles via stow (cross-platform)
-    ├── install-fedora # Install dnf/copr/flatpak/cargo/npm/curl packages
-    └── clean          # Symlink removal
+├── system/           # System-level config (gamemode, libinput, tlp)
+│   └── etc/
+├── scripts/
+│   ├── install       # Symlink dotfiles via stow
+│   ├── install-arch  # Arch package installer
+│   ├── install-fedora # Fedora package installer
+│   ├── install-void  # Void package installer
+│   ├── clean         # Remove stow symlinks
+│   ├── macos-defaults # Apply macOS system defaults
+│   ├── theme-switch  # Toggle between light/dark theme
+│   └── lib/
+│       └── common.sh # Shared shell helpers
+└── Makefile
 ```
 
 ---
 
-## Cross-platform notes
+## Cross-platform Notes
 
-- **Clipboard.** The `clip` zsh function transparently dispatches to
-  `pbcopy` on macOS, `wl-copy` on Wayland, or `xclip` on X11.
-- **SSH agent.** macOS uses Bitwarden's containerized socket; on Linux
-  fall back to `ssh-agent` or run Bitwarden CLI separately.
-- **Karabiner.** macOS-only (`darwin/`); on Linux use [`kanata`](https://github.com/jtroo/kanata)
-  for keyboard remapping (not currently configured here).
-- **Nerd Fonts.** Brew cask installs them on macOS; on Fedora install via
-  [`getnf`](https://github.com/getnf/getnf) or download manually into
+- **Clipboard.** The `clip` zsh function dispatches to `pbcopy` on macOS,
+  `wl-copy` on Wayland, or `xclip` on X11.
+- **SSH agent.** macOS uses Bitwarden's containerized socket; on Linux fall
+  back to `ssh-agent` or run Bitwarden CLI separately.
+- **Keyboard remapping.** macOS uses Karabiner (`darwin/`); Linux equivalent
+  ([`kanata`](https://github.com/jtroo/kanata)) is not currently configured.
+- **Nerd Fonts.** Brew cask installs them on macOS; on Arch/Fedora install via
+  [`getnf`](https://github.com/getnf/getnf) or drop fonts into
   `~/.local/share/fonts`.
-- **Ghostty options.** `config/ghostty/config` keeps a few `macos-*` keys.
-  They're cosmetic on macOS and Ghostty no-ops them on Linux (may print a
-  startup warning); split into a darwin-only include if it becomes noisy.
-
-### First Fedora run
-
-Linux package names drift between releases. The `Packages.fedora` manifest
-is a starting point — expect to tweak some entries on first install:
-
-- `glab` lives in core repos on Fedora 39+, COPR earlier.
-- `tree-sitter-devel` may need to become `tree-sitter` depending on Fedora version.
-- `com.mitchellh.ghostty` may not be on Flathub yet; build from source if needed.
-- COPR repos (`atim/lazygit`, `lihaohong/yazi`) require `dnf-plugins-core`.
-- Some flatpak app IDs change over time — `flatpak search <name>` to verify.
+- **macOS defaults.** Run `scripts/macos-defaults` after first install to
+  apply sensible system preferences.

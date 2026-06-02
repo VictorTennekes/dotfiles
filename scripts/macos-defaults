@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Apply macOS system defaults.
+# Run after a fresh macOS install or wipe. Requires logout/restart for some
+# settings to take effect. Exported from an existing machine with `defaults read`.
+set -euo pipefail
+
+echo "Applying macOS defaults..."
+
+# --- Dock ---
+defaults write com.apple.dock autohide -bool true
+defaults write com.apple.dock autohide-delay -float 0
+defaults write com.apple.dock autohide-time-modifier -float 0.15
+defaults write com.apple.dock tilesize -int 42
+defaults write com.apple.dock magnification -bool false
+defaults write com.apple.dock largesize -int 16
+defaults write com.apple.dock orientation -string left
+defaults write com.apple.dock mineffect -string scale
+defaults write com.apple.dock minimize-to-application -bool true
+defaults write com.apple.dock show-recents -bool false
+
+# --- Mission Control ---
+defaults write com.apple.spaces spans-displays -bool true    # displays have separate spaces = off
+defaults write com.apple.dock expose-group-apps -bool true   # group windows by app
+# Bottom-left hot corner: Lock Screen (13) with Cmd modifier (1048576)
+defaults write com.apple.dock wvous-bl-corner -int 13
+defaults write com.apple.dock wvous-bl-modifier -int 1048576
+defaults write com.apple.dock wvous-br-corner -int 1         # disabled
+
+# --- Keyboard ---
+defaults write NSGlobalDomain KeyRepeat -int 2
+defaults write NSGlobalDomain InitialKeyRepeat -int 15
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool true  # accent menu on hold
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool true
+defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool true
+defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool true
+defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool true
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool true
+
+# --- Trackpad ---
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true       # tap to click
+defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
+defaults write com.apple.AppleMultitouchTrackpad TrackpadScroll -bool true
+defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool false
+defaults write com.apple.AppleMultitouchTrackpad Dragging -bool false
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true
+
+# --- Finder ---
+defaults write com.apple.finder FXPreferredViewStyle -string clmv    # column view
+defaults write com.apple.finder NewWindowTarget -string PfHm          # open home folder
+defaults write com.apple.finder FXDefaultSearchScope -string SCcf     # search current folder
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+defaults write com.apple.finder ShowPathbar -bool true
+defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
+defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true
+
+# --- Screenshots ---
+defaults write com.apple.screencapture location -string "${HOME}/Screenshots"
+defaults write com.apple.screencapture type -string png
+mkdir -p "${HOME}/Screenshots"
+
+# --- General UI ---
+defaults write NSGlobalDomain AppleInterfaceStyle -string Dark
+defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 2
+
+# --- Menu Bar Clock ---
+defaults write com.apple.menuextra.clock IsAnalog -bool false
+defaults write com.apple.menuextra.clock ShowAMPM -bool true
+defaults write com.apple.menuextra.clock ShowDate -bool false
+defaults write com.apple.menuextra.clock ShowDayOfWeek -bool true
+defaults write com.apple.menuextra.clock ShowSeconds -bool false
+defaults write com.apple.menuextra.clock FlashDateSeparators -bool false
+
+# Restart affected apps
+echo "Restarting Dock and Finder..."
+killall Dock 2>/dev/null || true
+killall Finder 2>/dev/null || true
+
+echo "Done. Some changes require logout or restart to take effect."

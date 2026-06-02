@@ -1,0 +1,19 @@
+# .gitconfig.local — machine-specific git config, not tracked in dotfiles
+# Copy to ~/.gitconfig.local and fill in as needed.
+# Included by ~/.config/git/config via [include] path = ~/.gitconfig.local
+
+[user]
+	name = Your Name
+	email = you@example.com
+
+# Override signing key for this machine if different
+# [user]
+# 	signingkey = "ssh-ed25519 AAAA..."
+
+# Work remote config
+# [url "git@github.com-work:"]
+# 	insteadOf = git@github.com:work-org/
+
+# Machine-specific proxy
+# [http]
+# 	proxy = http://proxy.example.com:8080

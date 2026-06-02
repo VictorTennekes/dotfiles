@@ -130,7 +130,7 @@ endif
 lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
-	@if [ "$(OS)" = "Darwin" ]; then command -v python3 >/dev/null 2>&1 && python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || echo "  ⚠ Skipping Karabiner JSON check (python3 missing)"; fi
+	@if [ "$(OS)" = "Darwin" ]; then command -v python3 >/dev/null 2>&1 && python3 -m json.tool darwin/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || echo "  ⚠ Skipping Karabiner JSON check (python3 missing)"; fi
 	@bash -n scripts/lib/common.sh $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) $(INSTALL_FEDORA) $(INSTALL_ARCH) $(INSTALL_VOID) && echo "  ✓ Install scripts OK" || exit 1
 	@bash -n packages/fedora packages/arch packages/void && echo "  ✓ Package manifests OK" || exit 1
 	@echo "✅ All configs valid."

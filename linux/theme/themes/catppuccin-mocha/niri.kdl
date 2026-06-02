@@ -1,6 +1,0 @@
-// Catppuccin Mocha — niri focus-ring colors.
-// niri KDL has no includes/vars, so theme-switch stamps these two
-// lines into the focus-ring block of niri/config.kdl between the
-// THEME:colors markers. Keep the keys exactly: active-color / inactive-color.
-active-color "#89b4fa"
-inactive-color "#45475a"

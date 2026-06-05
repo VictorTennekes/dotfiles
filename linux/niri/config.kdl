@@ -53,6 +53,12 @@ spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets,ssh"
 spawn-at-startup "noctalia"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "xwayland-satellite" ":0"
+// Bitwarden (Electron) registers its tray icon via StatusNotifierItem once at
+// launch. Delay it so Noctalia is up as the StatusNotifierWatcher first —
+// otherwise it finds no tray host and (with startToTray) ends up invisible.
+// Its own login-autostart is disabled so this is the sole launcher; a 2nd
+// launch can't re-register the tray because Bitwarden is single-instance.
+spawn-at-startup "sh" "-c" "sleep 3 && bitwarden-desktop"
 
 // Place Noctalia's wallpaper surface into niri's backdrop so it shows in the
 // overview (and stays stationary between workspaces). Pairs with the

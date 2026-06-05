@@ -23,6 +23,8 @@ animations {
 
 layout {
     gaps 12
+    // Transparent so the wallpaper placed within the backdrop shows through.
+    background-color "transparent"
     center-focused-column "never"
     preset-column-widths {
         proportion 0.33333
@@ -51,6 +53,15 @@ spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets,ssh"
 spawn-at-startup "noctalia"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "xwayland-satellite" ":0"
+
+// Place Noctalia's wallpaper surface into niri's backdrop so it shows in the
+// overview (and stays stationary between workspaces). Pairs with the
+// transparent layout background-color above. Surface namespace confirmed via
+// `niri msg layers`; v5 emits "noctalia-wallpaper" (no separate overview layer).
+layer-rule {
+    match namespace="^noctalia-wallpaper"
+    place-within-backdrop true
+}
 
 environment {
     MOZ_ENABLE_WAYLAND "1"

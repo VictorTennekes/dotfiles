@@ -35,7 +35,6 @@ PACMAN_PACKAGES=(
   zoxide
   btop
   neovim
-  zig
   vivid            # cargo on Fedora; native here
   tree-sitter-cli  # npm on Fedora; native here
 

@@ -61,7 +61,6 @@ PACMAN_PACKAGES=(
   inter-font               # rsms-inter on Fedora — UI font
   ttf-jetbrains-mono-nerd  # terminal/editor Nerd Font
   papirus-icon-theme       # colorful app icons for the noctalia launcher
-  chafa                    # image→terminal art; renders the X-wing fastfetch logo
 
   # niri desktop / rice stack
   niri                     # scrollable-tiling Wayland compositor

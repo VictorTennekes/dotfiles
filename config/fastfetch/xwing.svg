@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Source art for the fastfetch logo. Regenerate xwing.txt with:
+       rsvg-convert -w 480 -h 480 xwing.svg -o /tmp/x.png
+       chafa -f symbols --symbols block+space -t 0.45 --size 24x13 /tmp/x.png > xwing.txt
+       (file-raw logo type passes the resulting truecolor ANSI through as-is) -->
+
+  <g stroke="#89b4fa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- four S-foils (the X) -->
+    <path d="M60 60 L18 26"/>
+    <path d="M60 60 L102 26"/>
+    <path d="M60 60 L18 94"/>
+    <path d="M60 60 L102 94"/>
+    <!-- laser cannon tips -->
+    <g fill="#f38ba8" stroke="none">
+      <circle cx="16" cy="24" r="4"/>
+      <circle cx="104" cy="24" r="4"/>
+      <circle cx="16" cy="96" r="4"/>
+      <circle cx="104" cy="96" r="4"/>
+    </g>
+    <!-- fuselage -->
+    <path d="M60 38 L66 50 L66 78 L60 90 L54 78 L54 50 Z" fill="#313244"/>
+    <!-- engine nacelles -->
+    <path d="M44 52 L54 56 M44 68 L54 64"/>
+    <path d="M76 52 L66 56 M76 68 L66 64"/>
+    <!-- cockpit -->
+    <circle cx="60" cy="58" r="4" fill="#f9e2af" stroke="none"/>
+  </g>
+</svg>

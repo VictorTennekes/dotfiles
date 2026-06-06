@@ -1,7 +1,11 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "arch_small",
+    // X-wing in attack position — S-foils locked. Rebellion lives here.
+    // Original vector art (linux/fonts source) rendered to colored terminal
+    // blocks with chafa; file-raw passes the truecolor ANSI through as-is.
+    "type": "file-raw",
+    "source": "~/.config/fastfetch/xwing.txt",
     "padding": {
       "top": 1,
       "right": 2

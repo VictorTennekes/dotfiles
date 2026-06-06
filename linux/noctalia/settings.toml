@@ -1,0 +1,112 @@
+[bar.default]
+background_opacity = 0.84999999999999998
+center = [ "clock", "media" ]
+end = [ "tray", "notifications", "clipboard", "network", "volume", "battery", "control-center" ]
+margin_edge = 0
+margin_ends = 0
+radius = 0
+start = [ "session", "wallpaper", "workspaces", "active_window" ]
+widget_spacing = 10
+
+[desktop_widgets]
+enabled = false
+
+[dock]
+launcher_position = "start"
+
+[location]
+sunrise = "08:00"
+sunset = "20:00"
+
+[lockscreen_widgets]
+enabled = true
+schema_version = 1
+widget_order = [ "lockscreen-login-box@eDP-1", "lockscreen-widget-0000000000000001" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    cx = 720.0
+    cy = 697.0
+    output = "eDP-1"
+    rotation = 0.0
+    scale = 1.0
+    type = "login_box"
+
+    [lockscreen_widgets.widget.lockscreen-widget-0000000000000001]
+    cx = 720.0
+    cy = 384.5
+    output = "eDP-1"
+    rotation = 0.0
+    scale = 2.0319149494171143
+    type = "clock"
+
+[nightlight]
+enabled = true
+start_time = "20:00"
+stop_time = "08:00"
+temperature_night = 3500
+
+[shell]
+font_family = "JetBrainsMono NF"
+offline_mode = true
+telemetry_enabled = false
+
+    [shell.panel]
+    launcher_categories = false
+    launcher_compact = true
+    transparency_mode = "soft"
+
+[system.monitor]
+enabled = false
+
+[theme]
+builtin = "Catppuccin"
+community_palette = "Catppuccin Lavender"
+source = "wallpaper"
+wallpaper_scheme = "m3-content"
+
+    [theme.templates]
+    enable_builtin_templates = false
+    enable_community_templates = false
+
+[wallpaper]
+directory = "/home/victortennekes/Pictures/wallpaper"
+
+    [wallpaper.default]
+    path = "/home/victortennekes/Pictures/wallpaper/otto-night.png"
+
+    [wallpaper.last]
+    path = "/home/victortennekes/Pictures/wallpaper/otto-night.png"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/victortennekes/Pictures/wallpaper/otto-night.png"
+
+[weather]
+enabled = false
+
+[widget.brightness]
+show_label = false
+
+[widget.clock]
+format = " {:%H:%M · %a %-d %b}"
+
+[widget.control-center]
+custom_image = "/home/victortennekes/.config/noctalia/rebel-alliance.png"
+
+[widget.spacer_1]
+type = "spacer"
+
+[widget.tray]
+drawer = true
+
+[widget.volume]
+show_label = false
+
+[widget.workspaces]
+empty_color = "on_surface"
+minimal = true
+occupied_color = "on_surface"

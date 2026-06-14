@@ -92,6 +92,25 @@ install_npm
 install_shell_installers
 sync_system_overrides
 
+# --- Boot tuning (apply synced GRUB defaults + trim rEFInd) -------------------
+# sync_system_overrides copied system/etc/default/grub above; regenerate Arch's
+# grub.cfg so TIMEOUT=0/hidden/console take effect (Fedora's cfg on the ESP is
+# untouched).
+if pacman -Qq grub >/dev/null 2>&1 && [[ -d /boot/grub ]]; then
+  step "Regenerating GRUB config"
+  sudo grub-mkconfig -o /boot/grub/grub.cfg || warn "grub-mkconfig failed"
+fi
+# rEFInd fronts the multiboot menu; drop its timeout to 1s (idempotent — only if
+# currently >2). Its config lives on the ESP, not /etc, so it isn't file-synced.
+REFIND_CONF=/efi/EFI/refind/refind.conf
+if sudo test -f "$REFIND_CONF" 2>/dev/null; then
+  refind_to=$(sudo grep -E '^[[:space:]]*timeout' "$REFIND_CONF" | grep -oE '[0-9]+' | head -1)
+  if [[ -n "${refind_to:-}" && "$refind_to" -gt 2 ]]; then
+    step "Lowering rEFInd timeout ${refind_to} → 1"
+    sudo sed -i -E 's/^([[:space:]]*timeout[[:space:]]+).*/\11/' "$REFIND_CONF"
+  fi
+fi
+
 # --- Services (systemd) ------------------------------------------------------
 if pacman -Qq tlp >/dev/null 2>&1; then
   step "Power management (TLP)"
@@ -107,6 +126,11 @@ if pacman -Qq pacman-contrib >/dev/null 2>&1; then
   sudo systemctl enable --now paccache.timer 2>/dev/null \
     || warn "could not enable paccache.timer"
 fi
+if command -v systemctl >/dev/null 2>&1; then
+  step "Weekly SSD TRIM (fstrim.timer)"
+  sudo systemctl enable --now fstrim.timer 2>/dev/null || warn "could not enable fstrim.timer"
+fi
+pacman -Qq earlyoom >/dev/null 2>&1 && enable_service earlyoom   # OOM protection for the desktop
 pacman -Qq networkmanager >/dev/null 2>&1 && enable_service NetworkManager
 pacman -Qq docker >/dev/null 2>&1 && { enable_service docker; sudo usermod -aG docker "$USER"; }
 

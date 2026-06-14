@@ -45,7 +45,6 @@ prefer-no-csd
 screenshot-path "/home/victortennekes/Pictures/Screenshots/Screenshot-%Y%m%d-%H%M%S.png"
 hotkey-overlay { skip-at-startup; }
 
-spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets,ssh"
 // Shell: Noctalia v5 (native Wayland/GLES). One process provides the bar,
 // notifications, OSD, launcher, idle management + auto-lock, and the
 // wallpaper — so there's no separate quickshell/mako/awww/hypridle here.

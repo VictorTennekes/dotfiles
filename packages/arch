@@ -90,6 +90,11 @@ PACMAN_PACKAGES=(
   # performance governor) — amd-pstate still boosts to max under load, but
   # idles cool instead of baking the chip during light use. See system/etc/tlp.d.
   tlp
+
+  # system resilience & maintenance
+  earlyoom         # kills the worst RAM hog before the kernel OOM freezes niri
+  reflector        # refresh/sort pacman mirrors: reflector --country <X> --sort rate ...
+  smartmontools    # SSD health: smartctl -a /dev/nvme0n1
 )
 
 # ==============================================================================

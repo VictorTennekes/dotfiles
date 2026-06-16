@@ -72,7 +72,7 @@ brew "repomix"           # Pack a repo into a single LLM-friendly file.
 # --- AI ---
 tap "typewhisper/tap"
 cask "chatgpt"
-cask "claude-code"
+cask "claude-code@latest"
 cask "claude"
 cask "typewhisper/tap/typewhisper"  # Local speech-to-text dictation for macOS.
 brew "gemini-cli"

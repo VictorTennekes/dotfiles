@@ -93,6 +93,8 @@ update:
 ifeq ($(OS),Darwin)
 	@echo "📦 Updating brew packages..."
 	@brew update && brew upgrade
+	@echo "📦 Upgrading version:latest casks (skipped by plain upgrade)..."
+	@brew upgrade --cask --greedy claude-code@latest
 	@brew bundle install --no-upgrade --file ./packages/Brewfile
 else ifeq ($(OS),Linux)
 	@case "$(DISTRO)" in \

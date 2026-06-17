@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal configuration for **macOS** and **Linux** (Arch, Fedora, Void),
+Personal configuration for **macOS** and **NixOS** (Framework 13),
 managed with Make and GNU Stow. XDG Base Directory compliant throughout.
 
 ---
@@ -10,7 +10,7 @@ managed with Make and GNU Stow. XDG Base Directory compliant throughout.
 - **Shell:** Zsh with [Antidote](https://github.com/mattmc3/antidote) for
   plugin management and [Starship](https://starship.rs/) prompt.
 - **Package Manager:** [Homebrew](https://brew.sh/) (`packages/Brewfile`) on
-  macOS; pacman/paru, dnf, or xbps on Linux.
+  macOS; declarative [NixOS](https://nixos.org/) (`nixos/`) on Linux.
 - **Terminal:** [Ghostty](https://ghostty.org/) with Catppuccin Mocha theme.
 - **Editor:** Neovim, managed separately at
   [victortennekes/nvim](https://github.com/victortennekes/nvim).
@@ -39,14 +39,12 @@ cd ~/.dotfiles
 make install
 ```
 
-`make install` auto-detects the OS via `uname -s`, then routes by distro on Linux:
+`make install` auto-detects the OS via `uname -s`:
 
-| Platform | Package manager | Package manifest |
-|----------|----------------|-----------------|
-| macOS    | Homebrew       | `packages/Brewfile` |
-| Arch     | pacman + paru  | `packages/arch` |
-| Fedora   | dnf + flatpak  | `packages/fedora` |
-| Void     | xbps           | `packages/void` |
+| Platform | Package manager      | Package manifest    |
+|----------|----------------------|---------------------|
+| macOS    | Homebrew             | `packages/Brewfile` |
+| NixOS    | `nixos-rebuild` (flake) | `nixos/packages.nix` |
 
 Work-only packages (dbt, terraform, k9s, Slack, …) are gated by hostname
 prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
@@ -57,7 +55,7 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 
 | Command        | Description                                       |
 |----------------|---------------------------------------------------|
-| `make install` | Full setup: packages + symlinks (per OS/distro)   |
+| `make install` | Full setup: packages + symlinks (per OS)          |
 | `make update`  | Pull dotfiles, update packages, re-link configs   |
 | `make dump`    | macOS: export current brew packages to Brewfile   |
 | `make lint`    | Validate zsh, JSON, and install scripts           |
@@ -70,10 +68,8 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 ```txt
 .dotfiles/
 ├── packages/
-│   ├── Brewfile      # macOS (brew, casks, mas)
-│   ├── arch          # Arch Linux (pacman + paru + npm + curl)
-│   ├── fedora        # Fedora (dnf + copr + flatpak + cargo + npm + curl)
-│   └── void          # Void Linux (xbps + runit)
+│   └── Brewfile      # macOS (brew, casks, mas)
+├── nixos/            # NixOS config for r2d2 (flake + disko + packages.nix)
 ├── config/           # Cross-platform app configs → ~/.config/
 │   ├── bat/
 │   ├── btop/
@@ -93,17 +89,10 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 │   └── noctalia/
 ├── home/             # Home-level dotfiles → ~/
 │   └── .zshenv
-├── system/           # System-level config (gamemode, libinput, tlp)
-│   └── etc/
 ├── scripts/
 │   ├── install       # Symlink dotfiles via stow
-│   ├── install-arch  # Arch package installer
-│   ├── install-fedora # Fedora package installer
-│   ├── install-void  # Void package installer
 │   ├── clean         # Remove stow symlinks
-│   ├── macos-defaults # Apply macOS system defaults
-│   └── lib/
-│       └── common.sh # Shared shell helpers
+│   └── macos-defaults # Apply macOS system defaults
 └── Makefile
 ```
 
@@ -117,8 +106,7 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
   back to `ssh-agent` or run Bitwarden CLI separately.
 - **Keyboard remapping.** macOS uses Karabiner (`darwin/`); Linux equivalent
   ([`kanata`](https://github.com/jtroo/kanata)) is not currently configured.
-- **Nerd Fonts.** Brew cask installs them on macOS; on Arch/Fedora install via
-  [`getnf`](https://github.com/getnf/getnf) or drop fonts into
-  `~/.local/share/fonts`.
+- **Nerd Fonts.** Brew cask installs them on macOS; on NixOS they're declared
+  in `nixos/configuration.nix` (`fonts.packages`).
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.

@@ -1,17 +1,31 @@
 # Dotfiles
 
-macOS dotfiles managed with Homebrew and GNU Stow.
+Cross-platform dotfiles managed with GNU Stow. Configs are
+plain files (in `config/`) stowed identically on every OS;
+each platform supplies its own packages. This keeps the repo
+portable — macOS uses Homebrew (`packages/Brewfile`), Linux is
+NixOS-only and installs packages declaratively (`nixos/`) but
+**still stows the same `config/` files** (no Home Manager).
+
+Hosts: `r2d2` (Framework 13 AMD — the Linux/tinkering box),
+plus the macOS daily driver (M1 MacBook Pro 16").
 
 ## Structure
 
-- `Brewfile` — all packages, casks, and Mac App Store
-  apps. Work packages gated behind `PC-` hostname.
-- `config/` — app configs stowed to `~/.config/`
-  (zsh, git, nvim, ghostty, btop, k9s, karabiner)
-- `home/` — home-level dotfiles stowed to `~/`
-  (.zshenv)
-- `scripts/install` — stow configs, clone nvim
-- `scripts/clean` — unstow all symlinks
+- `config/` — app configs stowed to `~/.config/`, shared
+  across all platforms (zsh, git, nvim, ghostty, btop, k9s,
+  lazygit, yazi, bat, mise, fastfetch)
+- `home/` — home-level dotfiles stowed to `~/` (.zshenv)
+- `packages/` — `Brewfile` (macOS package manifest). Work
+  packages gated behind `PC-` hostname.
+- `darwin/` — macOS-only configs (karabiner)
+- `linux/` — Linux-only configs (niri, noctalia)
+- `nixos/` — declarative NixOS config for r2d2 (flake +
+  disko + GNOME); see `nixos/README.md` for the install
+  runbook. `nixos/packages.nix` is the Linux package
+  manifest; dotfiles are still stowed from `config/`.
+- `scripts/` — `install` (stow + nvim), `clean`,
+  `macos-defaults`
 - `Makefile` — `install`, `update`, `dump`, `clean`
 
 ## Shell (Zsh)

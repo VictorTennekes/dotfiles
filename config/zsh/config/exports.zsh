@@ -27,16 +27,20 @@ if [[ "$OSTYPE" == darwin* ]]; then
   [[ -S "$_bw_sock" ]] && export SSH_AUTH_SOCK="$_bw_sock"
   unset _bw_sock
 elif [[ "$OSTYPE" == linux* ]]; then
-  _bw_sock="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
-  if [[ -S "$_bw_sock" ]]; then
-    export SSH_AUTH_SOCK="$_bw_sock"
-  elif [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
+  # Flatpak path first, then the native (nixpkgs/.deb) path.
+  _bw_found=0
+  for _bw_sock in \
+    "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" \
+    "$HOME/.bitwarden-ssh-agent.sock"; do
+    [[ -S "$_bw_sock" ]] && { export SSH_AUTH_SOCK="$_bw_sock"; _bw_found=1; break; }
+  done
+  if [[ "$_bw_found" -eq 0 && -z "${SSH_AUTH_SOCK:-}" ]]; then
     for _sock in /tmp/ssh-*/agent.* "$HOME/.gnupg/S.gpg-agent.ssh"; do
       [[ -S "$_sock" ]] && { export SSH_AUTH_SOCK="$_sock"; break; }
     done
     unset _sock
   fi
-  unset _bw_sock
+  unset _bw_sock _bw_found
 fi
 
 # --- App Configurations ---

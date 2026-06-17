@@ -26,19 +26,11 @@ mkdir -p "$HOME/.config"
 stow -d "$PROJECT_ROOT" -t "$HOME/.config" config
 
 # --- 2. Link platform-specific configs ---
+# macOS has stowed configs (karabiner); Linux is NixOS + GNOME, where desktop
+# config is declarative (Nix/dconf), so there's nothing to stow there.
 if [[ "$OS" == "Darwin" ]]; then
   echo "🔗 Linking macOS configs to ~/.config..."
   stow -d "$PROJECT_ROOT" -t "$HOME/.config" darwin
-else
-  echo "🔗 Linking Linux configs to ~/.config..."
-  stow -d "$PROJECT_ROOT" -t "$HOME/.config" linux
-
-  # Noctalia v5 reads its live config from ~/.local/state (not ~/.config), so
-  # stow can't reach it — symlink settings.toml in directly. Noctalia writes
-  # in place, so runtime tweaks flow back to the repo through the symlink.
-  echo "🔗 Linking Noctalia settings.toml to ~/.local/state..."
-  mkdir -p "$HOME/.local/state/noctalia"
-  ln -sf "$PROJECT_ROOT/linux/noctalia/settings.toml" "$HOME/.local/state/noctalia/settings.toml"
 fi
 
 # --- 3. Link home/ → ~/ via stow ---

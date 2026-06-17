@@ -18,8 +18,7 @@ managed with Make and GNU Stow. XDG Base Directory compliant throughout.
   signing via Bitwarden SSH agent (macOS).
 - **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
 - **TUIs:** `lazygit`, `btop`, `yazi`, `k9s`, `fastfetch`.
-- **Linux Desktop:** [Niri](https://github.com/YaLTeR/niri) (tiling Wayland
-  compositor) with Noctalia theme.
+- **Linux Desktop:** GNOME on Wayland (NixOS, see `nixos/`).
 
 ---
 
@@ -84,9 +83,6 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 │   └── zsh/
 ├── darwin/           # macOS-only configs → ~/.config/
 │   └── karabiner/
-├── linux/            # Linux-only configs → ~/.config/
-│   ├── niri/
-│   └── noctalia/
 ├── home/             # Home-level dotfiles → ~/
 │   └── .zshenv
 ├── scripts/

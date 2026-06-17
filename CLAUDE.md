@@ -19,7 +19,6 @@ plus the macOS daily driver (M1 MacBook Pro 16").
 - `packages/` — `Brewfile` (macOS package manifest). Work
   packages gated behind `PC-` hostname.
 - `darwin/` — macOS-only configs (karabiner)
-- `linux/` — Linux-only configs (niri, noctalia)
 - `nixos/` — declarative NixOS config for r2d2 (flake +
   disko + GNOME); see `nixos/README.md` for the install
   runbook. `nixos/packages.nix` is the Linux package

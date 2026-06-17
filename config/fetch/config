@@ -1,0 +1,27 @@
+# fetch — 3D spinning logo + live sysinfo (areofyl/fetch).
+# Mirrors the fastfetch readout in config/fastfetch/config.jsonc:
+# same fields, same order. Differences are tool limits, not choices —
+# fetch has no "de" field (fastfetch shows DE+WM; we keep wm), and it
+# supports one label color rather than fastfetch's blue/magenta/green
+# per-group accents, so we use the primary blue.
+
+# Info fields — order is display order
+os
+host
+kernel
+uptime
+packages
+shell
+wm
+terminal
+display
+cpu
+gpu
+memory
+disk
+battery
+colors
+
+# Styling
+label_color=blue
+separator=─

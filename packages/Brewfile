@@ -39,6 +39,8 @@ cask "ghostty"           # A modern GPU-accelerated terminal emulator.
 
 brew "antidote"          # A Zsh plugin manager.
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
+tap "areofyl/fetch"
+brew "areofyl/fetch/fetch-git"  # Spins the distro logo in 3D with live sysinfo; reuses fastfetch logos.
 brew "mise"              # Polyglot version manager (replaces pyenv, nvm, etc.).
 brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
 brew "zoxide"            # A smarter cd command.

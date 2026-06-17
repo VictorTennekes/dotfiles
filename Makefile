@@ -3,13 +3,14 @@
 # ==============================================================================
 INSTALL_SCRIPT       ?= scripts/install
 CLEAN_SCRIPT         ?= scripts/clean
-INSTALL_FEDORA       ?= scripts/install-fedora
-INSTALL_ARCH         ?= scripts/install-arch
-INSTALL_VOID         ?= scripts/install-void
 BREW_INSTALLER        = .brew_install.sh
 
+# NixOS flake dir — the host config is auto-selected by hostname (r2d2).
+NIXOS_FLAKE          ?= ./nixos
+
+REPO   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 OS     := $(shell uname -s)
-# Uniform Linux distro id from /etc/os-release (arch | fedora | void | …).
+# Distro id from /etc/os-release; on Linux we only support 'nixos'.
 DISTRO := $(shell . /etc/os-release 2>/dev/null && echo $$ID)
 
 # ==============================================================================
@@ -27,25 +28,16 @@ clean:
 	@echo "🧼 Clean complete."
 
 # ==============================================================================
-# PACKAGES — routed per OS
+# PACKAGES — macOS (Homebrew) or NixOS (declarative rebuild)
 # ==============================================================================
 packages:
 ifeq ($(OS),Darwin)
 	@$(MAKE) homebrew brew
 else ifeq ($(OS),Linux)
-	@$(MAKE) linux
+	@$(MAKE) nixos
 else
 	@echo "❌ Unsupported OS: $(OS)"; exit 1
 endif
-
-# --- Linux: route by /etc/os-release ID ---
-linux:
-	@case "$(DISTRO)" in \
-		arch)   $(MAKE) arch ;; \
-		fedora) $(MAKE) fedora ;; \
-		void)   $(MAKE) void ;; \
-		*) echo "❌ Unsupported Linux distro: '$(DISTRO)' (expected arch/fedora/void)"; exit 1 ;; \
-	esac
 
 # --- macOS: Homebrew ---
 homebrew: $(BREW_INSTALLER)
@@ -60,20 +52,13 @@ brew: homebrew packages/Brewfile
 	@echo "📦 Running brew bundle..."
 	@brew bundle install --no-upgrade --file ./packages/Brewfile
 
-# --- Linux: Fedora (dnf + flatpak + cargo + npm + curl installers) ---
-fedora: packages/fedora
-	@echo "📦 Installing Fedora packages..."
-	@bash $(INSTALL_FEDORA)
-
-# --- Linux: Arch (pacman + AUR/paru + npm + curl installers) ---
-arch: packages/arch
-	@echo "📦 Installing Arch packages..."
-	@bash $(INSTALL_ARCH)
-
-# --- Linux: Void (xbps + runit services) ---
-void: packages/void
-	@echo "📦 Installing Void packages..."
-	@bash $(INSTALL_VOID)
+# --- Linux: NixOS only (packages are declarative; host picked by hostname) ---
+nixos:
+	@if [ "$(DISTRO)" != "nixos" ]; then \
+		echo "❌ Linux support is NixOS-only (detected '$(DISTRO)')."; exit 1; \
+	fi
+	@echo "📦 Rebuilding NixOS configuration (sudo)..."
+	@sudo nixos-rebuild switch --flake $(NIXOS_FLAKE)
 
 # ==============================================================================
 # CONFIGURATION SYMLINKS
@@ -87,29 +72,18 @@ configs:
 # ==============================================================================
 update:
 	@echo "⬇️  Pulling latest dotfiles..."
-	@git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) diff --quiet 2>/dev/null || git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) stash
-	@git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) pull --rebase
-	@git -C $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))) stash pop 2>/dev/null || true
+	@git -C $(REPO) diff --quiet 2>/dev/null || git -C $(REPO) stash
+	@git -C $(REPO) pull --rebase
+	@git -C $(REPO) stash pop 2>/dev/null || true
 ifeq ($(OS),Darwin)
 	@echo "📦 Updating brew packages..."
 	@brew update && brew upgrade
 	@brew bundle install --no-upgrade --file ./packages/Brewfile
 else ifeq ($(OS),Linux)
-	@case "$(DISTRO)" in \
-		arch) echo "📦 Updating pacman packages..."; \
-			sudo pacman -Syu --noconfirm; \
-			command -v paru >/dev/null 2>&1 && paru -Sua --noconfirm || true; \
-			bash $(INSTALL_ARCH) ;; \
-		fedora) echo "📦 Updating dnf packages..."; \
-			sudo dnf upgrade -y; \
-			flatpak update --user -y || true; \
-			bash $(INSTALL_FEDORA) ;; \
-		void) echo "📦 Updating xbps packages..."; \
-			sudo xbps-install -Su || true; \
-			flatpak update --user -y || true; \
-			bash $(INSTALL_VOID) ;; \
-		*) echo "❌ Unsupported Linux distro: '$(DISTRO)'"; exit 1 ;; \
-	esac
+	@if [ "$(DISTRO)" != "nixos" ]; then echo "❌ Linux support is NixOS-only (detected '$(DISTRO)')."; exit 1; fi
+	@echo "📦 Updating NixOS flake inputs + rebuilding..."
+	@( cd $(NIXOS_FLAKE) && nix flake update )
+	@sudo nixos-rebuild switch --flake $(NIXOS_FLAKE)
 endif
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
@@ -121,7 +95,7 @@ ifeq ($(OS),Darwin)
 	@brew bundle dump --force --file ./packages/Brewfile
 	@echo "📋 Brewfile updated with current packages."
 else
-	@echo "ℹ️  dump is macOS-only (Brewfile). Edit packages/fedora by hand."
+	@echo "ℹ️  dump is macOS-only (Brewfile). On NixOS edit nixos/packages.nix by hand."
 endif
 
 # ==============================================================================
@@ -131,11 +105,10 @@ lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@if [ "$(OS)" = "Darwin" ]; then command -v python3 >/dev/null 2>&1 && python3 -m json.tool darwin/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || echo "  ⚠ Skipping Karabiner JSON check (python3 missing)"; fi
-	@bash -n scripts/lib/common.sh $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) $(INSTALL_FEDORA) $(INSTALL_ARCH) $(INSTALL_VOID) && echo "  ✓ Install scripts OK" || exit 1
-	@bash -n packages/fedora packages/arch packages/void && echo "  ✓ Package manifests OK" || exit 1
+	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) && echo "  ✓ Install scripts OK" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew fedora arch void linux packages configs update dump lint
+.PHONY: all install clean homebrew brew nixos packages configs update dump lint

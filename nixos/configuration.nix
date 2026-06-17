@@ -33,6 +33,12 @@
 
   time.timeZone = "Europe/Amsterdam";
   i18n.defaultLocale = "en_US.UTF-8";
+  # Default builds every glibc locale (~220MB). We only need en_US (+ C);
+  # add e.g. "nl_NL.UTF-8/UTF-8" here if you want Dutch formats.
+  i18n.supportedLocales = [
+    "en_US.UTF-8/UTF-8"
+    "C.UTF-8/UTF-8"
+  ];
   console.keyMap = "us";
 
   # ── Desktop: GNOME on Wayland (closest to the macOS feel) ───────────────────
@@ -45,15 +51,80 @@
   # the default dconf profile (a default, not a lock, so the GNOME Extensions app
   # and gnome-tweaks can still toggle/configure them and changes persist per-user).
   programs.dconf.profiles.user.databases = [{
-    settings."org/gnome/shell" = {
-      disable-user-extensions = false;
-      enabled-extensions = [
-        "blur-my-shell@aunetx"
-        "just-perfection-desktop@just-perfection"
-        "caffeine@patapon.info"
-      ];
+    settings = {
+      "org/gnome/shell" = {
+        disable-user-extensions = false;
+        enabled-extensions = [
+          "blur-my-shell@aunetx"
+          "just-perfection-desktop@just-perfection"
+          "caffeine@patapon.info"
+          "rounded-window-corners@fxgn"
+          "dash-to-dock@micxgx.gmail.com"
+        ];
+      };
+      # Dock on the left, floating + centered (not full-height), auto-hide; click
+      # a running app to minimize/preview. Restores minimized windows.
+      "org/gnome/shell/extensions/dash-to-dock" = {
+        dock-position = "LEFT";
+        extend-height = false;
+        dock-fixed = false;
+        autohide = true;
+        intellihide = false; # always hidden until you hover the edge (macOS-style)
+        transparency-mode = "DYNAMIC";
+        running-indicator-style = "DOTS";
+        click-action = "minimize-or-previews";
+        show-apps-at-top = false;
+        show-mounts = false;
+      };
+      # macOS feel: Super+Q closes the focused window (≈ Cmd+Q). Super+Tab
+      # (switch apps) and tap-Super (launcher/search) are already GNOME defaults.
+      "org/gnome/desktop/wm/keybindings".close = [ "<Super>q" ];
+      # Traffic-light window buttons on the left, like macOS.
+      "org/gnome/desktop/wm/preferences".button-layout = "close,minimize,maximize:";
+      # Inter (already in fonts.packages) ≈ SF Pro for UI/document text, plus
+      # GNOME's built-in accent color. Monospace stays the default (JetBrains).
+      "org/gnome/desktop/interface" = {
+        font-name = "Inter 11";
+        document-font-name = "Inter 11";
+        accent-color = "blue";
+      };
+      # Snappier shell animations via Just Perfection (1 default, 2 fast,
+      # 3 faster, 4 fastest). mkInt32 — the key is a GVariant 'i'.
+      "org/gnome/shell/extensions/just-perfection".animation = lib.gvariant.mkInt32 2;
     };
   }];
+
+  # Trim GNOME: drop default apps redundant with our real ones (browser = Zen/FF,
+  # editor = nvim/Zed, terminal = Ghostty, …), plus the screen-reader/TTS stack
+  # (orca → speech-dispatcher), which alone drags in ~645MB of mbrola voices.
+  # Kept: loupe (image viewer) + seahorse (keyring GUI).
+  environment.gnome.excludePackages = with pkgs; [
+    orca
+    speechd
+    epiphany gnome-tour yelp simple-scan snapshot baobab
+    gnome-maps gnome-weather gnome-contacts gnome-music gnome-calendar
+    gnome-clocks gnome-characters gnome-logs gnome-connections
+    gnome-font-viewer gnome-text-editor
+  ];
+
+  # Default browser = Zen (Firefox is gone). System-level default; a per-user
+  # ~/.config/mimeapps.list still wins over this, so set both on existing hosts.
+  xdg.mime.defaultApplications = {
+    "text/html" = "zen-beta.desktop";
+    "x-scheme-handler/http" = "zen-beta.desktop";
+    "x-scheme-handler/https" = "zen-beta.desktop";
+    "x-scheme-handler/about" = "zen-beta.desktop";
+    "x-scheme-handler/unknown" = "zen-beta.desktop";
+  };
+
+  # Default terminal for `Terminal=true` apps (btop, etc.). GNOME launches them
+  # via xdg-terminal-exec, which reads this list — without it, it grabs GNOME
+  # Console. (User ~/.config/xdg-terminals.list overrides this if present.)
+  environment.etc."xdg/xdg-terminals.list".text = "com.mitchellh.ghostty.desktop\n";
+
+  # No screen reader / TTS here → keep speech-dispatcher (and its ~645MB mbrola
+  # voices) out of the closure.
+  services.speechd.enable = false;
 
   # AMD Framework: power-profiles-daemon, NOT tlp (per nixos-hardware guidance).
   services.power-profiles-daemon.enable = true;

@@ -1,6 +1,12 @@
 [settings]
 experimental = true
 trusted_config_paths = ["~/.dotfiles"]
+# Use prebuilt toolchains instead of building from source. mise defaults to
+# compile=true on NixOS (where prebuilt normally can't run); with nix-ld enabled
+# the prebuilt binaries work, so we skip the (toolchain-less) source builds.
+# Correct on macOS/other Linux too, where prebuilt is already the default.
+node.compile = false
+python.compile = false
 
 [tools]
 node = "lts"

@@ -1,18 +1,18 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  // No custom logo: fastfetch falls back to the built-in distro logo (NixOS
+  // snowflake / Apple), keeping its per-character colors — which is also the
+  // logo `fetch` reuses to spin in 3D.
   "logo": {
-    // X-wing in Braille art. file-raw passes the glyphs through verbatim.
-    "type": "file-raw",
-    "source": "~/.config/fastfetch/xwing.txt",
     "padding": {
       "top": 1,
-      "right": 2
+      "right": 3
     }
   },
   "display": {
     "separator": "  ",
     "key": {
-      "width": 10
+      "width": 13
     }
   },
   "modules": [
@@ -27,6 +27,11 @@
     {
       "type": "os",
       "key": "OS",
+      "keyColor": "blue"
+    },
+    {
+      "type": "host",
+      "key": "Host",
       "keyColor": "blue"
     },
     {
@@ -49,10 +54,52 @@
       "key": "Shell",
       "keyColor": "blue"
     },
+    "break",
+    {
+      "type": "de",
+      "key": "DE",
+      "keyColor": "magenta"
+    },
     {
       "type": "wm",
       "key": "WM",
-      "keyColor": "blue"
+      "keyColor": "magenta"
+    },
+    {
+      "type": "terminal",
+      "key": "Terminal",
+      "keyColor": "magenta"
+    },
+    {
+      "type": "display",
+      "key": "Display",
+      "keyColor": "magenta"
+    },
+    "break",
+    {
+      "type": "cpu",
+      "key": "CPU",
+      "keyColor": "green"
+    },
+    {
+      "type": "gpu",
+      "key": "GPU",
+      "keyColor": "green"
+    },
+    {
+      "type": "memory",
+      "key": "Memory",
+      "keyColor": "green"
+    },
+    {
+      "type": "disk",
+      "key": "Disk",
+      "keyColor": "green"
+    },
+    {
+      "type": "battery",
+      "key": "Battery",
+      "keyColor": "green"
     },
     "break",
     {

@@ -46,16 +46,16 @@
     # ── Editors ─────────────────────────────────────────────────────────────────
     zed-editor
 
-    # ── AI / local inference ────────────────────────────────────────────────────
-    # NOTE: gfx1152 has a known ROCm GPU-hang bug. Plain `ollama` (CPU) is safe;
-    # switch to `ollama-rocm` only once that lands a fix for Krackan Point.
-    ollama
+    # ── AI ──────────────────────────────────────────────────────────────────────
+    # (Dropped local `ollama` — gfx1152 ROCm still hangs and the CPU build wasn't
+    # worth ~150MB. Re-add `ollama` if you want local inference back.)
     claude-code
     gemini-cli # `gemini` — was `npm i -g @google/gemini-cli` on Arch
     opencode
 
     # ── Desktop apps ──────────────────────────────────────────────────────────
-    firefox
+    # Zen is the only browser — Firefox was dropped: it pulled speech-dispatcher
+    # → mbrola voices (~645MB) for the Web Speech API, which Zen doesn't.
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default # Zen (stable), via flake
     bitwarden-desktop
     bitwarden-cli # `bw` — SSH agent + secrets; was `npm i -g @bitwarden/cli` on Arch
@@ -68,6 +68,8 @@
     gnomeExtensions.blur-my-shell
     gnomeExtensions.just-perfection
     gnomeExtensions.caffeine
+    gnomeExtensions.rounded-window-corners-reborn # macOS-like rounded windows (tiny)
+    gnomeExtensions.dash-to-dock # macOS-style dock (minimize/restore, running apps)
 
     # ── Audio / hardware utils (from the Arch niri stack worth keeping) ─────────
     pavucontrol
@@ -99,7 +101,7 @@
     "steam-original"
     "steam-run"
   ];
-  # Pulled in by an Electron desktop app (obsidian/signal); EOL upstream.
+  # Pulled in by bitwarden-desktop (Electron 39); EOL upstream.
   nixpkgs.config.permittedInsecurePackages = [ "electron-39.8.10" ];
 
   # ── Post-install / not-from-nixpkgs (do these after first boot) ─────────────

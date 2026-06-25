@@ -1,3 +1,6 @@
+[[ -n "$_ALIASES_SOURCED" ]] && return
+typeset -g _ALIASES_SOURCED=1
+
 # Aliases
 alias c='clear'
 alias cdf='cd $(fzf)'

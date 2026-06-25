@@ -13,14 +13,14 @@ fi
 if [[ "$OSTYPE" == darwin* ]]; then
   case "$1" in
     check)   brew doctor; return ;;
-    dry-run) brew update; brew upgrade --greedy --dry-run; return ;;
+    dry-run) NONINTERACTIVE=1 brew update; brew upgrade --greedy --dry-run; return ;;
   esac
-  brew update
+  NONINTERACTIVE=1 brew update
   if [[ -z "$(brew outdated)" ]]; then
     echo -e "${GREEN}Nothing to upgrade.${RESET}"
   else
-    brew upgrade
-    brew cleanup
+    NONINTERACTIVE=1 brew upgrade
+    NONINTERACTIVE=1 brew cleanup
   fi
 
 elif [[ "$OSTYPE" == linux* ]]; then

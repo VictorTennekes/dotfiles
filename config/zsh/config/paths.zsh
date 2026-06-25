@@ -1,5 +1,5 @@
 [[ -n "$_PATHS_SOURCED" ]] && return
-export _PATHS_SOURCED=1
+typeset -g _PATHS_SOURCED=1
 
 typeset -gU path
 

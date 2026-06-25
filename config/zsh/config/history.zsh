@@ -1,3 +1,6 @@
+[[ -n "$_HISTORY_SOURCED" ]] && return
+typeset -g _HISTORY_SOURCED=1
+
 HISTSIZE=50000
 SAVEHIST=50000
 

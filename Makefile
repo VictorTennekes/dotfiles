@@ -3,8 +3,6 @@
 # ==============================================================================
 INSTALL_SCRIPT       ?= scripts/install
 CLEAN_SCRIPT         ?= scripts/clean
-BREW_INSTALLER        = .brew_install.sh
-
 # NixOS flake dir — the host config is auto-selected by hostname (r2d2).
 NIXOS_FLAKE          ?= ./nixos
 
@@ -18,13 +16,12 @@ DISTRO := $(shell . /etc/os-release 2>/dev/null && echo $$ID)
 # ==============================================================================
 all: install
 
-install: packages configs
+install: packages configs zcompile
 	@echo "✅ All setup complete!"
 
 clean:
 	@echo "🧹 Cleaning up dotfiles..."
 	@bash $(CLEAN_SCRIPT)
-	@rm -f $(BREW_INSTALLER)
 	@echo "🧼 Clean complete."
 
 # ==============================================================================
@@ -40,17 +37,15 @@ else
 endif
 
 # --- macOS: Homebrew ---
-homebrew: $(BREW_INSTALLER)
+homebrew:
 	@echo "🍺 Checking/installing Homebrew..."
-	@command -v brew >/dev/null 2>&1 || /bin/bash $<
-
-$(BREW_INSTALLER):
-	@echo "⏳ Downloading Homebrew install script..."
-	@curl -fsSL 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh' > $@
+	@command -v brew >/dev/null 2>&1 || \
+		curl -fsSL 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh' | /bin/bash
 
 brew: homebrew packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew bundle install --no-upgrade --file ./packages/Brewfile
+	@brew trust areofyl/fetch 2>/dev/null || true
+	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 
 # --- Linux: NixOS only (packages are declarative; host picked by hostname) ---
 nixos:
@@ -74,13 +69,14 @@ update:
 	@echo "⬇️  Pulling latest dotfiles..."
 	@git -C $(REPO) diff --quiet 2>/dev/null || git -C $(REPO) stash
 	@git -C $(REPO) pull --rebase
-	@git -C $(REPO) stash pop 2>/dev/null || true
+	@git -C $(REPO) stash list | grep -q stash && \
+		{ git -C $(REPO) stash pop || { echo "❌ Stash pop had conflicts — resolve manually, then re-run"; exit 1; }; } || true
 ifeq ($(OS),Darwin)
 	@echo "📦 Updating brew packages..."
-	@brew update && brew upgrade
+	@NONINTERACTIVE=1 brew update && NONINTERACTIVE=1 brew upgrade
 	@echo "📦 Upgrading version:latest casks (skipped by plain upgrade)..."
-	@brew upgrade --cask --greedy claude-code@latest
-	@brew bundle install --no-upgrade --file ./packages/Brewfile
+	@NONINTERACTIVE=1 brew upgrade --cask --greedy claude-code@latest
+	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 else ifeq ($(OS),Linux)
 	@if [ "$(DISTRO)" != "nixos" ]; then echo "❌ Linux support is NixOS-only (detected '$(DISTRO)')."; exit 1; fi
 	@echo "📦 Updating NixOS flake inputs + rebuilding..."
@@ -89,7 +85,13 @@ else ifeq ($(OS),Linux)
 endif
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
+	@$(MAKE) zcompile
 	@echo "✅ Update complete!"
+
+zcompile:
+	@echo "⚡ Compiling zsh files..."
+	@zsh -c 'for f in config/zsh/config/*.zsh config/zsh/.zshrc home/.zshenv; do [[ -f $$f ]] && zcompile -U $$f; done'
+	@echo "  ✓ Zsh files compiled."
 
 # Dump currently installed packages — only meaningful on macOS (Brewfile).
 dump:
@@ -113,4 +115,4 @@ lint:
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew nixos packages configs update dump lint
+.PHONY: all install clean homebrew brew nixos packages configs zcompile update dump lint

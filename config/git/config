@@ -93,6 +93,7 @@
 
 [user]
 	signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH3q1jZWw7MRIxIf/GK5bo1+jL2HLXR+g3USNs/JJ0QK"
+	email = 19930858+VictorTennekes@users.noreply.github.com
 
 # Include local config
 [include]

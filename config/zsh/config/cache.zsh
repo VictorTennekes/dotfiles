@@ -1,3 +1,6 @@
+[[ -n "$_CACHE_SOURCED" ]] && return
+typeset -g _CACHE_SOURCED=1
+
 # --- Zsh Cache & History Location ---
 export ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 export HISTFILE="${ZSH_CACHE_DIR}/.zsh_history"

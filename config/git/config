@@ -58,8 +58,8 @@
 	editor = nvim
 	excludesfile = ~/.config/git/ignore
 	pager = delta
-	fsmonitor = true
-	untrackedCache = true
+	fsmonitor = false
+	untrackedCache = false
 
 [interactive]
 	diffFilter = delta --color-only

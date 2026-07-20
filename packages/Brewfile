@@ -26,6 +26,7 @@ brew "tealdeer"          # Fast tldr client for quick command examples.
 brew "vivid"             # A generator for LS_COLORS with themes.
 brew "hyperfine"         # A command-line benchmarking tool.
 brew "watch"             # Executes a program periodically, showing output fullscreen.
+brew "python@3.13"
 
 
 # ==============================================================================
@@ -37,8 +38,6 @@ cask "ghostty"           # A modern GPU-accelerated terminal emulator.
 
 brew "antidote"          # A Zsh plugin manager.
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
-tap "areofyl/fetch"
-brew "areofyl/fetch/fetch-git"  # Spins the distro logo in 3D with live sysinfo; reuses fastfetch logos.
 # node, go, and python are managed by mise
 brew "mise"              # Polyglot version manager (replaces pyenv, nvm, etc.).
 brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
@@ -66,7 +65,6 @@ cask "font-jetbrains-mono-nerd-font"
 brew "repomix"           # Pack a repo into a single LLM-friendly file.
 
 # --- AI ---
-cask "chatgpt"
 cask "claude-code@latest"
 cask "claude"
 brew "gemini-cli"
@@ -78,6 +76,7 @@ brew "opencode"
 
 # --- Browsers ---
 cask "zen"
+cask "helium-browser"
 
 # --- Productivity ---
 cask "Bitwarden"
@@ -90,14 +89,12 @@ cask "nordvpn"
 cask "alfred"
 cask "keepingyouawake"
 cask "appcleaner"
-tap "TheBoredTeam/boring-notch"
-cask "TheBoredTeam/boring-notch/boring-notch"  # A dynamic notch replacement for macOS.
-cask "jordanbaird-ice"      # A modern menu bar manager for macOS.
+cask "thaw"      # A modern menu bar manager for macOS.
 cask "karabiner-elements"   # A powerful and stable keyboard customizer.
 cask "keka"                 # A free file archiver for macOS.
 cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
-cask "rectangle-pro"        # Window management.
+cask "loop"                 # Window management (FOSS).
 brew "mole"
 
 # --- Messengers ---
@@ -110,10 +107,21 @@ cask "stremio"
 
 # --- Mac App Store Apps ---
 brew "mas" # Command-line interface for the Mac App Store.
+mas "Bitwarden", id: 1352778147
+mas "keymapp", id: 6472865291
 mas "NextDNS", id: 1464122853
 mas "Startup Manager", id: 1296723195
 mas "Telegram Messenger", id: 747648890
 mas "WhatsApp Messenger", id: 310633997
+
+# --- macOS default apps (kept installed, not actively used) ---
+mas "GarageBand", id: 682658836
+mas "iMovie", id: 408981434
+mas "Keynote", id: 409183694
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541
+mas "TestFlight", id: 899247664
+mas "Xcode", id: 497799835
 
 
 # ==============================================================================

@@ -44,8 +44,13 @@ homebrew:
 
 brew: homebrew packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew trust areofyl/fetch 2>/dev/null || true
+	@brew trust dbt-labs/dbt-cli hashicorp/tap 2>/dev/null || true
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
+
+# Sync installed packages to exactly match Brewfile (installs + removes).
+brew-sync: brew
+	@echo "🧹 Pruning packages not in Brewfile..."
+	@brew bundle cleanup --force --file ./packages/Brewfile
 
 # --- Linux: NixOS only (packages are declarative; host picked by hostname) ---
 nixos:
@@ -115,4 +120,4 @@ lint:
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew nixos packages configs zcompile update dump lint
+.PHONY: all install clean homebrew brew brew-sync nixos packages configs zcompile update dump lint

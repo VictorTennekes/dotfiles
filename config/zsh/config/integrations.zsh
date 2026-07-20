@@ -21,7 +21,7 @@ _cache_init() {
 (( $+commands[fzf] ))      && _cache_init fzf      "fzf --zsh"            "${commands[fzf]}"
 (( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh"      "${commands[zoxide]}"
 (( $+commands[starship] )) && _cache_init starship "starship init zsh"    "${commands[starship]}"
-(( $+commands[mise] ))     && _cache_init mise     "mise activate --shims zsh" "${commands[mise]}"
+(( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}"
 
 # Async autosuggestions — generate suggestions in background to keep ZLE responsive
 export ZSH_AUTOSUGGEST_USE_ASYNC=1

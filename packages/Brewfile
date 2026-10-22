@@ -68,7 +68,12 @@ brew "repomix"           # Pack a repo into a single LLM-friendly file.
 cask "claude-code@latest"
 cask "claude"
 brew "gemini-cli"
-brew "opencode"
+cask "t3-code"
+
+# --- Remote Setup ---
+brew "tailscale"
+brew "tmux"
+brew "herdr"             # Agent-aware multiplexer; "agents" session for phone SSH (tmux = fallback).
 
 # ==============================================================================
 # DESKTOP APPLICATIONS & UTILITIES

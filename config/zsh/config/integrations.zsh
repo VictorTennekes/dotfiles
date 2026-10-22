@@ -1,9 +1,11 @@
 # Cache tool init scripts to avoid subprocess spawns on every shell.
-# Caches regenerate when the binary is newer than the cache file.
+# Caches regenerate when any dependency (the binary, plus any extra files
+# passed after it) is newer than the cache file.
 _cache_init() {
-  local name="$1" cmd="$2" bin="$3"
+  local name="$1" cmd="$2" dep stale=0; shift 2
   local cache_file="${ZSH_CACHE_DIR}/${name}.zsh"
-  if [[ ! -s "$cache_file" || "$bin" -nt "$cache_file" ]]; then
+  for dep; do [[ "$dep" -nt "$cache_file" ]] && stale=1; done
+  if [[ ! -s "$cache_file" ]] || (( stale )); then
     eval "$cmd" > "$cache_file"
     # fzf's --zsh integration snapshots every zsh option and restores them with
     # `eval "options=(...)"`. That set includes the read-only `zle`/`monitor`
@@ -21,7 +23,9 @@ _cache_init() {
 (( $+commands[fzf] ))      && _cache_init fzf      "fzf --zsh"            "${commands[fzf]}"
 (( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh"      "${commands[zoxide]}"
 (( $+commands[starship] )) && _cache_init starship "starship init zsh"    "${commands[starship]}"
-(( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}"
+# mise's output embeds a PATH snapshot, so PATH edits must regenerate it too.
+(( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}" \
+  "${ZDOTDIR}/config/paths.zsh" "${ZDOTDIR}/config/exports.zsh"
 # mise's precmd hook forks `mise hook-env` on every prompt (~12ms). Keep only
 # the chpwd hook: env refreshes on cd, not per prompt.
 (( $+functions[_mise_hook_precmd] )) && add-zsh-hook -d precmd _mise_hook_precmd

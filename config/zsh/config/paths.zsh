@@ -1,8 +1,6 @@
 [[ -n "$_PATHS_SOURCED" ]] && return
 typeset -g _PATHS_SOURCED=1
 
+# (N/): only directories that exist.
 typeset -gU path
-
-[[ -d "$HOME/.local/bin" ]]              && export PATH="$HOME/.local/bin:$PATH"
-[[ -d "$HOME/.krew/bin" ]]               && export PATH="$HOME/.krew/bin:$PATH"
-[[ -d "$HOME/go/bin" ]]                  && export PATH="$HOME/go/bin:$PATH"
+path=($HOME/go/bin(N/) $HOME/.krew/bin(N/) $HOME/bin(N/) $HOME/.local/bin(N/) $path)

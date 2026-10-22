@@ -26,5 +26,4 @@ function _register_kube_completions() {
     add-zsh-hook -d precmd _register_kube_completions
   fi
 }
-autoload -Uz add-zsh-hook
 add-zsh-hook precmd _register_kube_completions

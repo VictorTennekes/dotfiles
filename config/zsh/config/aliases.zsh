@@ -1,8 +1,8 @@
-[[ -n "$_ALIASES_SOURCED" ]] && return
-typeset -g _ALIASES_SOURCED=1
-
 # Aliases
 alias c='clear'
+# attach to the 'agents' session (create if missing); SSH logins do this automatically
+#   (see ssh.zsh). herdr = tmux-like, shows per-pane agent status.
+alias ta='herdr --session agents'
 alias cdf='cd $(fzf)'
 alias dots="cd ~/.dotfiles"
 alias g='git'

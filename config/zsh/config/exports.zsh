@@ -84,5 +84,3 @@ if [[ -z "$LS_COLORS" ]]; then
   fi
   unset _vivid_cache
 fi
-
-# Machine-specific overrides live in ~/.config/zsh/local.zsh (not tracked in dotfiles)

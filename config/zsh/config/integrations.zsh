@@ -25,9 +25,3 @@ _cache_init() {
 # mise's precmd hook forks `mise hook-env` on every prompt (~12ms). Keep only
 # the chpwd hook: env refreshes on cd, not per prompt.
 (( $+functions[_mise_hook_precmd] )) && add-zsh-hook -d precmd _mise_hook_precmd
-
-# Autosuggestions: sync (the history strategy is a cheap lookup; async forks a
-# subshell per keystroke) and bind widgets once instead of on every precmd
-# (~10ms per prompt otherwise).
-export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
-export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20

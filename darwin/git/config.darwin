@@ -1,0 +1,7 @@
+# Stowed to ~/.config/git/config.darwin on macOS only; included from config/git/config.
+[credential "https://github.com"]
+	helper =
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/opt/homebrew/bin/gh auth git-credential

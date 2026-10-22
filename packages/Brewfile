@@ -1,7 +1,9 @@
 # ==============================================================================
-# PREAMBLE - Get hostname for conditional installs
+# PREAMBLE - Detect work laptop for conditional installs
 # ==============================================================================
-hostname = `hostname`.strip
+# Marker file (`touch ~/.work-laptop` once, on the work machine) — survives
+# hostname renames, unlike matching on a hostname prefix.
+is_work_laptop = File.exist?(File.expand_path('~/.work-laptop'))
 
 
 # ==============================================================================
@@ -45,7 +47,6 @@ brew "zoxide"            # A smarter cd command.
 
 # TUI's
 brew "btop"
-brew "lazygit"
 
 # ==============================================================================
 # DEVELOPMENT & EDITORS
@@ -62,9 +63,8 @@ brew "tree-sitter-cli"
 # --- Fonts ---
 cask "font-jetbrains-mono-nerd-font"
 
-brew "repomix"           # Pack a repo into a single LLM-friendly file.
-
 # --- AI ---
+brew "repomix"           # Pack a repo into a single LLM-friendly file.
 cask "claude-code@latest"
 cask "claude"
 brew "gemini-cli"
@@ -81,6 +81,8 @@ cask "helium-browser"
 # --- Productivity ---
 cask "Bitwarden"
 brew "bitwarden-cli"
+cask "obsidian"
+cask "robbietilton-compositor"  # Photoshop alternative.
 
 cask "keyboardcleantool"
 cask "nordvpn"
@@ -89,13 +91,15 @@ cask "nordvpn"
 cask "alfred"
 cask "keepingyouawake"
 cask "appcleaner"
-cask "thaw"      # A modern menu bar manager for macOS.
+cask "thaw"                 # A modern menu bar manager for macOS.
 cask "karabiner-elements"   # A powerful and stable keyboard customizer.
-cask "keka"                 # A free file archiver for macOS.
+cask "macpacker"            # Archive manager (FOSS).
+cask "raspberry-pi-imager"  # Install OS images on microSD cards for Raspberry Pi.
 cask "lulu"                 # A free macOS firewall.
 cask "pearcleaner"
 cask "loop"                 # Window management (FOSS).
 brew "mole"
+cask "transmission"
 
 # --- Messengers ---
 cask "signal"
@@ -107,7 +111,6 @@ cask "stremio"
 
 # --- Mac App Store Apps ---
 brew "mas" # Command-line interface for the Mac App Store.
-mas "Bitwarden", id: 1352778147
 mas "keymapp", id: 6472865291
 mas "NextDNS", id: 1464122853
 mas "Startup Manager", id: 1296723195
@@ -127,10 +130,10 @@ mas "Xcode", id: 497799835
 # ==============================================================================
 # WORK-SPECIFIC SETUP
 # ==============================================================================
-# These packages will only be installed on machines with a hostname
-# starting with 'PC-'.
+# These packages will only be installed on the work laptop (see
+# `is_work_laptop` above — gated by ~/.work-laptop marker file).
 
-if hostname.start_with?('PC-')
+if is_work_laptop
   # --- Developer Tools ---
   tap "dbt-labs/dbt-cli"
   brew "dbt-labs/dbt-cli/dbt"

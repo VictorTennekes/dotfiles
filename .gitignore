@@ -30,3 +30,6 @@ config/zsh/.zsh_sessions
 # Noctalia — colors.json is regenerated from the active wallpaper, so it churns
 # on every wallpaper change. settings.json + colorschemes stay tracked.
 linux/noctalia/colors.json
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

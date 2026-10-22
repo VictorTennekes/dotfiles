@@ -19,7 +19,7 @@ if [[ "$OSTYPE" == darwin* ]]; then
   if [[ -z "$(brew outdated)" ]]; then
     echo -e "${GREEN}Nothing to upgrade.${RESET}"
   else
-    NONINTERACTIVE=1 brew upgrade
+    NONINTERACTIVE=1 brew upgrade -y
     NONINTERACTIVE=1 brew cleanup
   fi
 

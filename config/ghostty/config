@@ -50,4 +50,4 @@ notify-on-command-finish-action = no-bell,no-notify
 # macOS-only options (silently no-op on Linux, but Ghostty may warn at startup)
 macos-option-as-alt = true
 macos-titlebar-proxy-icon = hidden
-macos-titlebar-style = tabs
+macos-titlebar-style = native

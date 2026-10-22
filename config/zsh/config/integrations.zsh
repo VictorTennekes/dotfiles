@@ -22,7 +22,12 @@ _cache_init() {
 (( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh"      "${commands[zoxide]}"
 (( $+commands[starship] )) && _cache_init starship "starship init zsh"    "${commands[starship]}"
 (( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}"
+# mise's precmd hook forks `mise hook-env` on every prompt (~12ms). Keep only
+# the chpwd hook: env refreshes on cd, not per prompt.
+(( $+functions[_mise_hook_precmd] )) && add-zsh-hook -d precmd _mise_hook_precmd
 
-# Async autosuggestions — generate suggestions in background to keep ZLE responsive
-export ZSH_AUTOSUGGEST_USE_ASYNC=1
+# Autosuggestions: sync (the history strategy is a cheap lookup; async forks a
+# subshell per keystroke) and bind widgets once instead of on every precmd
+# (~10ms per prompt otherwise).
+export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20

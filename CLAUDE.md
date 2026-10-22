@@ -3,26 +3,24 @@
 Cross-platform dotfiles managed with GNU Stow. Configs are
 plain files (in `config/`) stowed identically on every OS;
 each platform supplies its own packages. This keeps the repo
-portable — macOS uses Homebrew (`packages/Brewfile`), Linux is
-NixOS-only and installs packages declaratively (`nixos/`) but
-**still stows the same `config/` files** (no Home Manager).
+portable — macOS uses Homebrew (`packages/Brewfile`), Linux
+uses CachyOS (Arch-based) with packages installed by hand via
+pacman/AUR (no manifest) but **still stows the same `config/`
+files**.
 
-Hosts: `r2d2` (Framework 13 AMD — the Linux/tinkering box),
-plus the macOS daily driver (M1 MacBook Pro 16").
+Hosts: `quicksilver` (Framework 13 AMD — the Linux/tinkering
+box, CachyOS + KDE Plasma), plus the macOS daily driver (M1
+MacBook Pro 16").
 
 ## Structure
 
 - `config/` — app configs stowed to `~/.config/`, shared
   across all platforms (zsh, git, nvim, ghostty, btop, k9s,
-  lazygit, yazi, bat, mise, fastfetch)
+  yazi, bat, mise, fastfetch)
 - `home/` — home-level dotfiles stowed to `~/` (.zshenv)
-- `packages/` — `Brewfile` (macOS package manifest). Work
-  packages gated behind `PC-` hostname.
-- `darwin/` — macOS-only configs (karabiner)
-- `nixos/` — declarative NixOS config for r2d2 (flake +
-  disko + GNOME); see `nixos/README.md` for the install
-  runbook. `nixos/packages.nix` is the Linux package
-  manifest; dotfiles are still stowed from `config/`.
+- `packages/` — `Brewfile` (macOS). Work packages gated
+  behind `~/.work-laptop` marker file. Linux has no manifest.
+- `darwin/` — macOS-only configs (karabiner, git credential helper)
 - `scripts/` — `install` (stow + nvim), `clean`,
   `macos-defaults`
 - `Makefile` — `install`, `update`, `dump`, `clean`

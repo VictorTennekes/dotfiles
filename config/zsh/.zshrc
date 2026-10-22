@@ -6,6 +6,7 @@ source ${ZDOTDIR}/config/aliases.zsh
 source ${ZDOTDIR}/config/completions.zsh
 source ${ZDOTDIR}/config/functions.zsh
 source ${ZDOTDIR}/config/integrations.zsh
+source ${ZDOTDIR}/config/prompt.zsh
 
 # antidote: regenerate the static bundle if zsh_plugins.txt is newer (or it
 # was bundled on a different machine — paths in the output are absolute).
@@ -21,6 +22,11 @@ if [[ ! -s "$_antidote_bundle" || "${ZDOTDIR}/zsh_plugins.txt" -nt "$_antidote_b
 fi
 [[ -s "$_antidote_bundle" ]] && source "$_antidote_bundle"
 unset _antidote_bundle
+
+# zsh-autosuggestions enables async at load time; async delivery needs `zle -F`,
+# which never fires on this zsh once fsh/zsh-defer are loaded (see prompt.zsh),
+# so suggestions silently stop. Sync is a cheap in-process history lookup.
+zsh-defer -c 'unset ZSH_AUTOSUGGEST_USE_ASYNC'
 
 # Keybindings — deferred so widgets exist when bindings register
 zsh-defer bindkey '^[[A' history-substring-search-up

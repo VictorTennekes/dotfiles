@@ -3,13 +3,9 @@
 # ==============================================================================
 INSTALL_SCRIPT       ?= scripts/install
 CLEAN_SCRIPT         ?= scripts/clean
-# NixOS flake dir — the host config is auto-selected by hostname (r2d2).
-NIXOS_FLAKE          ?= ./nixos
 
 REPO   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 OS     := $(shell uname -s)
-# Distro id from /etc/os-release; on Linux we only support 'nixos'.
-DISTRO := $(shell . /etc/os-release 2>/dev/null && echo $$ID)
 
 # ==============================================================================
 # MAIN TARGETS
@@ -25,13 +21,13 @@ clean:
 	@echo "🧼 Clean complete."
 
 # ==============================================================================
-# PACKAGES — macOS (Homebrew) or NixOS (declarative rebuild)
+# PACKAGES — macOS (Homebrew); Linux (CachyOS) packages are installed by hand
 # ==============================================================================
 packages:
 ifeq ($(OS),Darwin)
 	@$(MAKE) homebrew brew
 else ifeq ($(OS),Linux)
-	@$(MAKE) nixos
+	@echo "ℹ️  Linux: no package manifest — install packages with pacman/paru by hand."
 else
 	@echo "❌ Unsupported OS: $(OS)"; exit 1
 endif
@@ -44,21 +40,13 @@ homebrew:
 
 brew: homebrew packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew trust dbt-labs/dbt-cli hashicorp/tap 2>/dev/null || true
+	@brew trust dbt-labs/dbt-cli hashicorp/tap lightdash/lightdash 2>/dev/null || true
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 
 # Sync installed packages to exactly match Brewfile (installs + removes).
 brew-sync: brew
 	@echo "🧹 Pruning packages not in Brewfile..."
 	@brew bundle cleanup --force --file ./packages/Brewfile
-
-# --- Linux: NixOS only (packages are declarative; host picked by hostname) ---
-nixos:
-	@if [ "$(DISTRO)" != "nixos" ]; then \
-		echo "❌ Linux support is NixOS-only (detected '$(DISTRO)')."; exit 1; \
-	fi
-	@echo "📦 Rebuilding NixOS configuration (sudo)..."
-	@sudo nixos-rebuild switch --flake $(NIXOS_FLAKE)
 
 # ==============================================================================
 # CONFIGURATION SYMLINKS
@@ -78,15 +66,13 @@ update:
 		{ git -C $(REPO) stash pop || { echo "❌ Stash pop had conflicts — resolve manually, then re-run"; exit 1; }; } || true
 ifeq ($(OS),Darwin)
 	@echo "📦 Updating brew packages..."
-	@NONINTERACTIVE=1 brew update && NONINTERACTIVE=1 brew upgrade
+	@NONINTERACTIVE=1 brew update && NONINTERACTIVE=1 brew upgrade -y
 	@echo "📦 Upgrading version:latest casks (skipped by plain upgrade)..."
-	@NONINTERACTIVE=1 brew upgrade --cask --greedy claude-code@latest
+	@NONINTERACTIVE=1 brew upgrade -y --cask --greedy claude-code@latest
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 else ifeq ($(OS),Linux)
-	@if [ "$(DISTRO)" != "nixos" ]; then echo "❌ Linux support is NixOS-only (detected '$(DISTRO)')."; exit 1; fi
-	@echo "📦 Updating NixOS flake inputs + rebuilding..."
-	@( cd $(NIXOS_FLAKE) && nix flake update )
-	@sudo nixos-rebuild switch --flake $(NIXOS_FLAKE)
+	@echo "📦 Updating system packages..."
+	@if command -v paru >/dev/null 2>&1; then paru -Syu; else sudo pacman -Syu; fi
 endif
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
@@ -98,13 +84,13 @@ zcompile:
 	@zsh -c 'for f in config/zsh/config/*.zsh config/zsh/.zshrc home/.zshenv; do [[ -f $$f ]] && zcompile -U $$f; done'
 	@echo "  ✓ Zsh files compiled."
 
-# Dump currently installed packages — only meaningful on macOS (Brewfile).
+# Dump currently installed packages — macOS only (Brewfile).
 dump:
 ifeq ($(OS),Darwin)
 	@brew bundle dump --force --file ./packages/Brewfile
 	@echo "📋 Brewfile updated with current packages."
 else
-	@echo "ℹ️  dump is macOS-only (Brewfile). On NixOS edit nixos/packages.nix by hand."
+	@echo "ℹ️  dump is macOS-only (Brewfile)."
 endif
 
 # ==============================================================================
@@ -120,4 +106,4 @@ lint:
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew brew-sync nixos packages configs zcompile update dump lint
+.PHONY: all install clean homebrew brew brew-sync packages configs zcompile update dump lint

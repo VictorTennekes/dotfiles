@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal configuration for **macOS** and **NixOS** (Framework 13),
+Personal configuration for **macOS** and **CachyOS** (Framework 13),
 managed with Make and GNU Stow. XDG Base Directory compliant throughout.
 
 ---
@@ -10,15 +10,17 @@ managed with Make and GNU Stow. XDG Base Directory compliant throughout.
 - **Shell:** Zsh with [Antidote](https://github.com/mattmc3/antidote) for
   plugin management and [Starship](https://starship.rs/) prompt.
 - **Package Manager:** [Homebrew](https://brew.sh/) (`packages/Brewfile`) on
-  macOS; declarative [NixOS](https://nixos.org/) (`nixos/`) on Linux.
+  macOS; pacman/AUR via `paru` on Linux (no manifest, installed by hand).
 - **Terminal:** [Ghostty](https://ghostty.org/) with Catppuccin Mocha theme.
 - **Editor:** Neovim, managed separately at
   [victortennekes/nvim](https://github.com/victortennekes/nvim).
 - **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
   signing via Bitwarden SSH agent (macOS).
 - **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
-- **TUIs:** `lazygit`, `btop`, `yazi`, `k9s`, `fastfetch`.
-- **Linux Desktop:** GNOME on Wayland (NixOS, see `nixos/`).
+- **TUIs:** `btop`, `yazi`, `k9s`, `fastfetch`.
+- **Linux Desktop:** KDE Plasma on Wayland (CachyOS), themed with a
+  Mac OS 9 Platinum look
+  ([nielsvm/kde-look-and-feel-platinum](https://github.com/nielsvm/kde-look-and-feel-platinum)).
 
 ---
 
@@ -43,10 +45,10 @@ make install
 | Platform | Package manager      | Package manifest    |
 |----------|----------------------|---------------------|
 | macOS    | Homebrew             | `packages/Brewfile` |
-| NixOS    | `nixos-rebuild` (flake) | `nixos/packages.nix` |
+| CachyOS  | `paru` (pacman+AUR)  | none (by hand)      |
 
-Work-only packages (dbt, terraform, k9s, Slack, …) are gated by hostname
-prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
+Work-only packages (dbt, terraform, k9s, Slack, …) are gated by a marker
+file, `~/.work-laptop`. Create it once on the work machine: `touch ~/.work-laptop`.
 
 ---
 
@@ -68,7 +70,6 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 .dotfiles/
 ├── packages/
 │   └── Brewfile      # macOS (brew, casks, mas)
-├── nixos/            # NixOS config for r2d2 (flake + disko + packages.nix)
 ├── config/           # Cross-platform app configs → ~/.config/
 │   ├── bat/
 │   ├── btop/
@@ -76,7 +77,6 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
 │   ├── ghostty/
 │   ├── git/
 │   ├── k9s/
-│   ├── lazygit/
 │   ├── mise/
 │   ├── nvim/
 │   ├── yazi/
@@ -102,7 +102,7 @@ prefix `PC-` on all platforms. Override with `IS_WORK=true make install`.
   back to `ssh-agent` or run Bitwarden CLI separately.
 - **Keyboard remapping.** macOS uses Karabiner (`darwin/`); Linux equivalent
   ([`kanata`](https://github.com/jtroo/kanata)) is not currently configured.
-- **Nerd Fonts.** Brew cask installs them on macOS; on NixOS they're declared
-  in `nixos/configuration.nix` (`fonts.packages`).
+- **Nerd Fonts.** Brew cask installs them on macOS; on CachyOS install via
+  the `ttf-nerd-fonts-symbols` (or per-font) AUR/pacman package.
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.

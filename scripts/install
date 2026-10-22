@@ -20,14 +20,27 @@ else
     echo "✅ 'nvim' config already exists. Skipping clone."
 fi
 
+# --- 0b. Install pokemon-colorscripts on macOS (CachyOS gets it via AUR) ---
+if [[ "$OS" == "Darwin" ]] && ! command -v pokemon-colorscripts &>/dev/null; then
+    echo "📦 'pokemon-colorscripts' not found — installing to ~/.local..."
+    POKEMON_SRC="$HOME/.local/share/pokemon-colorscripts"
+    git clone --depth 1 https://gitlab.com/phoneybadger/pokemon-colorscripts.git "$POKEMON_SRC" || {
+        echo "❌ Failed to clone pokemon-colorscripts."
+    }
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$POKEMON_SRC/pokemon-colorscripts.py" "$HOME/.local/bin/pokemon-colorscripts"
+else
+    echo "✅ 'pokemon-colorscripts' already installed or not on macOS. Skipping."
+fi
+
 # --- 1. Link config/ → ~/.config/ via stow (cross-platform) ---
 echo "🔗 Linking config directories to ~/.config..."
 mkdir -p "$HOME/.config"
 stow -d "$PROJECT_ROOT" -t "$HOME/.config" config
 
 # --- 2. Link platform-specific configs ---
-# macOS has stowed configs (karabiner); Linux is NixOS + GNOME, where desktop
-# config is declarative (Nix/dconf), so there's nothing to stow there.
+# macOS has stowed configs (karabiner); Linux (CachyOS + KDE Plasma) has no
+# platform-specific stow package yet — desktop theming is applied manually.
 if [[ "$OS" == "Darwin" ]]; then
   echo "🔗 Linking macOS configs to ~/.config..."
   stow -d "$PROJECT_ROOT" -t "$HOME/.config" darwin

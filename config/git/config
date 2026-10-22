@@ -98,3 +98,7 @@
 # Include local config
 [include]
     path = ~/.gitconfig.local
+# macOS-only settings: darwin/git/config.darwin is stowed next to this file on
+# macOS only; git silently skips a missing include on Linux.
+[include]
+	path = config.darwin

@@ -8,8 +8,7 @@ export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 # was bundled on a different machine — paths in the output are absolute).
 _antidote_bundle="${ZSH_CACHE_DIR}/zsh_plugins_${HOST}.zsh"
 if [[ ! -s "$_antidote_bundle" || "${ZDOTDIR}/zsh_plugins.txt" -nt "$_antidote_bundle" ]]; then
-  _antidote_zsh="${HOMEBREW_PREFIX:+${HOMEBREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh}"
-  [[ -r "$_antidote_zsh" ]] || _antidote_zsh="$HOME/.local/share/antidote/antidote.zsh"
+  _antidote_zsh="$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
   if [[ -r "$_antidote_zsh" ]]; then
     source "$_antidote_zsh"
     antidote bundle <"${ZDOTDIR}/zsh_plugins.txt" >|"$_antidote_bundle"

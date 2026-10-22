@@ -5,8 +5,8 @@
 [[ -n "$_EXPORTS_SOURCED" ]] && return
 typeset -g _EXPORTS_SOURCED=1
 
-# --- Homebrew (macOS only — avoid eval fork by hardcoding prefix) ---
-if [[ "$OSTYPE" == darwin* && -z "$HOMEBREW_PREFIX" ]]; then
+# --- Homebrew (avoid eval fork by hardcoding prefix) ---
+if [[ -z "$HOMEBREW_PREFIX" ]]; then
   if [[ -x /opt/homebrew/bin/brew ]]; then
     export HOMEBREW_PREFIX="/opt/homebrew"
   elif [[ -x /usr/local/bin/brew ]]; then
@@ -22,41 +22,23 @@ if [[ "$OSTYPE" == darwin* && -z "$HOMEBREW_PREFIX" ]]; then
 fi
 
 # --- Bitwarden SSH agent ---
-if [[ "$OSTYPE" == darwin* ]]; then
-  # Bitwarden's macOS socket path has flip-flopped across versions (flat
-  # $HOME path since 2026.7.0 per app.log, Containers path again on later
-  # updates on this machine) — whichever path isn't currently in use is
-  # left behind as a dead orphaned socket file, and `-S` can't tell dead
-  # from live. Probe each candidate and keep whichever actually answers
-  # (ssh-add exit 2 == no agent listening there).
-  for _bw_sock in \
-    "$HOME/.bitwarden-ssh-agent.sock" \
-    "$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"; do
-    if [[ -S "$_bw_sock" ]]; then
-      SSH_AUTH_SOCK="$_bw_sock" command ssh-add -l &>/dev/null
-      [[ $? -ne 2 ]] && { export SSH_AUTH_SOCK="$_bw_sock"; break; }
-    fi
-  done
-  unset _bw_sock
-elif [[ "$OSTYPE" == linux* ]]; then
-  # Flatpak path first, then the native (nixpkgs/.deb) path.
-  _bw_found=0
-  for _bw_sock in \
-    "$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock" \
-    "$HOME/.bitwarden-ssh-agent.sock"; do
-    [[ -S "$_bw_sock" ]] && { export SSH_AUTH_SOCK="$_bw_sock"; _bw_found=1; break; }
-  done
-  if [[ "$_bw_found" -eq 0 && -z "${SSH_AUTH_SOCK:-}" ]]; then
-    for _sock in /tmp/ssh-*/agent.* "$HOME/.gnupg/S.gpg-agent.ssh"; do
-      [[ -S "$_sock" ]] && { export SSH_AUTH_SOCK="$_sock"; break; }
-    done
-    unset _sock
+# Bitwarden's macOS socket path has flip-flopped across versions (flat
+# $HOME path since 2026.7.0 per app.log, Containers path again on later
+# updates on this machine) — whichever path isn't currently in use is
+# left behind as a dead orphaned socket file, and `-S` can't tell dead
+# from live. Probe each candidate and keep whichever actually answers
+# (ssh-add exit 2 == no agent listening there).
+for _bw_sock in \
+  "$HOME/.bitwarden-ssh-agent.sock" \
+  "$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"; do
+  if [[ -S "$_bw_sock" ]]; then
+    SSH_AUTH_SOCK="$_bw_sock" command ssh-add -l &>/dev/null
+    [[ $? -ne 2 ]] && { export SSH_AUTH_SOCK="$_bw_sock"; break; }
   fi
-  unset _bw_sock _bw_found
-fi
+done
+unset _bw_sock
 
 # --- App Configurations ---
-[[ "$OSTYPE" == linux* ]] && export BROWSER="zen-browser"
 export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
 export FZF_DEFAULT_OPTS=" \

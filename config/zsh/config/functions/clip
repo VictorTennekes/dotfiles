@@ -1,29 +1,15 @@
-# Cross-platform clipboard copy.
+# Clipboard copy: OSC 52 over SSH (reaches the local terminal), else pbcopy.
 # With a file argument: copy that file's contents.
 # Otherwise: read from stdin.
 local _copy
 if [[ -n "$SSH_TTY" || -n "$SSH_CLIENT" ]]; then
   _osc52_copy() {
-    local b64
-    if [[ "$OSTYPE" == darwin* ]]; then
-      b64=$(base64)
-    else
-      b64=$(base64 -w0 2>/dev/null || base64)
-    fi
+    local b64=$(base64)
     printf "\e]52;c;%s\a" "${b64//[$'\n\r']}"
   }
   _copy=(_osc52_copy)
-elif (( $+commands[pbcopy] )); then
-  _copy=(pbcopy)
-elif [[ -n "$WAYLAND_DISPLAY" ]] && (( $+commands[wl-copy] )); then
-  _copy=(wl-copy)
-elif (( $+commands[xclip] )); then
-  _copy=(xclip -selection clipboard)
-elif (( $+commands[xsel] )); then
-  _copy=(xsel --clipboard --input)
 else
-  echo "clip: no clipboard tool found (install wl-clipboard or xclip)" >&2
-  return 1
+  _copy=(pbcopy)
 fi
 
 if [[ $# -gt 0 ]]; then

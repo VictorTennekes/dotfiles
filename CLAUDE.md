@@ -1,26 +1,17 @@
 # Dotfiles
 
-Cross-platform dotfiles managed with GNU Stow. Configs are
-plain files (in `config/`) stowed identically on every OS;
-each platform supplies its own packages. This keeps the repo
-portable — macOS uses Homebrew (`packages/Brewfile`), Linux
-uses CachyOS (Arch-based) with packages installed by hand via
-pacman/AUR (no manifest) but **still stows the same `config/`
-files**.
-
-Hosts: `quicksilver` (Framework 13 AMD — the Linux/tinkering
-box, CachyOS + KDE Plasma), plus the macOS daily driver (M1
-MacBook Pro 16").
+macOS-only dotfiles managed with GNU Stow; packages via
+Homebrew (`packages/Brewfile`). No Linux support (the
+Framework laptop runs Omarchy, configured outside this repo).
 
 ## Structure
 
-- `config/` — app configs stowed to `~/.config/`, shared
-  across all platforms (zsh, git, nvim, ghostty, btop, k9s,
-  yazi, bat, mise, fastfetch)
+- `config/` — app configs stowed to `~/.config/` (zsh, git,
+  nvim, ghostty, btop, k9s, yazi, bat, mise, fastfetch,
+  karabiner, tmux)
 - `home/` — home-level dotfiles stowed to `~/` (.zshenv)
-- `packages/` — `Brewfile` (macOS). Work packages gated
-  behind `~/.work-laptop` marker file. Linux has no manifest.
-- `darwin/` — macOS-only configs (karabiner, git credential helper)
+- `packages/` — `Brewfile`. Work packages gated behind
+  `~/.work-laptop` marker file.
 - `scripts/` — `install` (stow + nvim), `clean`,
   `macos-defaults`
 - `Makefile` — `install`, `update`, `dump`, `clean`

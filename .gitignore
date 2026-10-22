@@ -6,7 +6,7 @@
 Brewfile.lock.json
 
 # Karabiner
-darwin/karabiner/automatic_backups
+config/karabiner/automatic_backups
 
 # K9S
 config/k9s/benchmarks
@@ -18,18 +18,11 @@ config/nvim/
 
 # Zsh
 config/zsh/local.zsh
-config/zsh/zsh_plugins.zsh
-config/zsh/work
-config/zsh/.zsh_history
 config/zsh/.zsh_sessions
 
 # Compiled zsh files
 *.zwc
 .zcompdump*
-
-# Noctalia — colors.json is regenerated from the active wallpaper, so it churns
-# on every wallpaper change. settings.json + colorschemes stay tracked.
-linux/noctalia/colors.json
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/

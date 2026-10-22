@@ -21,6 +21,7 @@ else
   NONINTERACTIVE=1 brew upgrade -y
   NONINTERACTIVE=1 brew cleanup
 fi
+"$HOME/.dotfiles/scripts/mosh-firewall"
 
 # Force-refresh the antidote bundle (same file plugins.zsh sources)
 if [[ -r "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" ]]; then

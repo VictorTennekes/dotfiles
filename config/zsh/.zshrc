@@ -1,8 +1,9 @@
 autoload -Uz add-zsh-hook
 
-# Order matters: cache sets ZSH_CACHE_DIR, completion zstyles precede zephyr,
+# Order matters: cache sets ZSH_CACHE_DIR, ssh execs into herdr as soon as
+# PATH is ready (skipping the rest), completion zstyles precede zephyr,
 # prompt undoes starship's prompt_subst from integrations.
-for _f in cache exports paths history aliases completions functions integrations prompt ssh plugins; do
+for _f in cache exports paths ssh history aliases completions functions integrations prompt plugins; do
   source "${ZDOTDIR}/config/${_f}.zsh"
 done
 unset _f

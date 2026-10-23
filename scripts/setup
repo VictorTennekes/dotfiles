@@ -36,6 +36,9 @@ if ! command -v gum >/dev/null 2>&1; then
   brew install gum || exit 1
 fi
 
+# Pipelines below use `grep ... >/dev/null`, never `grep -q`: with pipefail, -q's
+# early exit can SIGPIPE the producer (curl, launchctl) into a false failure.
+
 # --- UI helpers ----------------------------------------------------------------
 # ANSI palette indices (0-15) only, so everything follows the terminal theme;
 # gum's confirm buttons otherwise use fixed 256-color pink/grey.
@@ -118,10 +121,12 @@ github_user() {
 }
 github_has() { # <keys|ssh_signing_keys> <key name>
   curl -fsS "https://api.github.com/users/$GH_USER/$1" 2>/dev/null |
-    grep -qF "$(pubkey "$2" | awk '{print $2}')"
+    grep -F "$(pubkey "$2" | awk '{print $2}')" >/dev/null
 }
 check_github_keys() {
+  # GitHub's SSH endpoint occasionally drops a connection; retry once.
   [[ -n "$GH_USER" ]] || GH_USER=$(github_user)
+  [[ -n "$GH_USER" ]] || { sleep 2; GH_USER=$(github_user); }
   [[ -n "$GH_USER" ]] || return 1
   local k; for k in daily remote; do
     github_has keys "$k" && github_has ssh_signing_keys "$k" || return 1
@@ -146,7 +151,7 @@ fix_github_keys() {
 }
 
 glab_ok() { glab auth status >/dev/null 2>&1; }
-gitlab_has() { glab ssh-key list 2>/dev/null | grep -qF "$(pubkey "$1" | awk '{print $2}')"; }
+gitlab_has() { glab ssh-key list 2>/dev/null | grep -F "$(pubkey "$1" | awk '{print $2}')" >/dev/null; }
 check_gitlab_keys() { glab_ok && gitlab_has daily && gitlab_has remote; }
 fix_gitlab_keys() {
   glab_ok || glab auth login -h gitlab.com
@@ -173,6 +178,39 @@ fix_signing() {
   done
 }
 
+# Apps started outside a shell (Dock, Spotlight, launchd services) get macOS's
+# default agent, so their commit signing can't reach Secretive. A login item
+# points the whole GUI session at Secretive's socket.
+AGENT_PLIST="$HOME/Library/LaunchAgents/dotfiles.ssh-auth-sock.plist"
+# Read the GUI (Aqua) domain explicitly: `launchctl getenv` answers for the
+# caller's own session, which is the background one over SSH/herdr. No grep -q:
+# with pipefail, an early exit SIGPIPEs launchctl's large output into a failure.
+check_gui_agent() {
+  [[ -f "$AGENT_PLIST" ]] &&
+    launchctl print "gui/$(id -u)" 2>/dev/null | grep -F "SSH_AUTH_SOCK => $SECRETIVE_SOCK" >/dev/null
+}
+fix_gui_agent() {
+  mkdir -p "$(dirname "$AGENT_PLIST")"
+  cat >"$AGENT_PLIST" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>dotfiles.ssh-auth-sock</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/launchctl</string><string>setenv</string>
+    <string>SSH_AUTH_SOCK</string><string>$SECRETIVE_SOCK</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+PLIST
+  launchctl bootout "gui/$(id -u)" "$AGENT_PLIST" 2>/dev/null
+  launchctl bootstrap "gui/$(id -u)" "$AGENT_PLIST"
+  sleep 1
+}
+
 check_remote_login() { nc -z -G 1 localhost 22 >/dev/null 2>&1; }
 fix_remote_login() {
   open "x-apple.systempreferences:com.apple.Sharing-Settings.extension"
@@ -194,19 +232,19 @@ fix_authorized_keys() {
 
 ts_prefs() { tailscale debug prefs 2>/dev/null; }
 check_tailscale() {
-  pgrep -x tailscaled >/dev/null && ! tailscale status 2>&1 | grep -qiE 'logged out|NeedsLogin'
+  pgrep -x tailscaled >/dev/null && ! tailscale status 2>&1 | grep -iE 'logged out|NeedsLogin' >/dev/null
 }
 fix_tailscale() {
   sudo brew services start tailscale
   manual "Run 'sudo tailscale up' in another terminal and finish the login in the browser."
 }
 
-check_ts_operator() { ts_prefs | grep -q "\"OperatorUser\": \"$USER\""; }
+check_ts_operator() { ts_prefs | grep "\"OperatorUser\": \"$USER\"" >/dev/null; }
 fix_ts_operator()   { sudo tailscale set --operator="$USER"; }
 
 check_mosh_firewall() {
   local bin; bin=$(realpath /opt/homebrew/bin/mosh-server 2>/dev/null) || return 1
-  "$FW" --listapps | grep -A1 -F "$bin " | grep -q 'Allow incoming'
+  "$FW" --listapps | grep -A1 -F "$bin " | grep 'Allow incoming' >/dev/null
 }
 fix_mosh_firewall() { bash "$ROOT/scripts/mosh-firewall"; }
 
@@ -245,7 +283,8 @@ if (( CHECK_ONLY )) && ! glab_ok; then
 else
   step "Keys on GitLab (auth + signing)" check_gitlab_keys fix_gitlab_keys
 fi &&
-step "Commit signing + allowed_signers" check_signing fix_signing
+step "Commit signing + allowed_signers" check_signing fix_signing &&
+step "GUI apps use Secretive agent" check_gui_agent fix_gui_agent
 
 section "Remote access"
 step "Remote Login on"          check_remote_login    fix_remote_login

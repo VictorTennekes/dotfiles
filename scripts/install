@@ -56,4 +56,12 @@ stow -d "$PROJECT_ROOT" -t "$HOME/.config" config "$OS_CONFIG"
 echo "🔗 Linking home files to ~..."
 stow -d "$PROJECT_ROOT" -t "$HOME" home
 
+# --- 4. Reload Hyprland if it's running ---
+# It auto-reloads on file changes, so a git checkout/pull can catch
+# hyprland.lua mid-rewrite and leave it on its fallback config.
+if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && command -v hyprctl &>/dev/null; then
+    echo "🔄 Reloading Hyprland..."
+    hyprctl reload >/dev/null
+fi
+
 echo "✅ Done."

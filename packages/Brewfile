@@ -68,7 +68,7 @@ cask "font-jetbrains-mono-nerd-font"
 brew "repomix"           # Pack a repo into a single LLM-friendly file.
 cask "claude-code@latest"
 cask "claude"
-brew "gemini-cli"
+cask "antigravity-cli"
 cask "t3-code"
 
 # --- Remote Setup ---
@@ -84,7 +84,6 @@ brew "herdr"             # Agent-aware multiplexer; "agents" session for phone S
 
 # --- Browsers ---
 cask "zen"
-cask "helium-browser"
 
 # --- Productivity ---
 cask "Bitwarden"

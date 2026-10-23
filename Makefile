@@ -5,6 +5,9 @@ INSTALL_SCRIPT       ?= scripts/install
 CLEAN_SCRIPT         ?= scripts/clean
 
 REPO   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+OS     := $(shell uname -s)
+# bash, not sh: the Arch dump target uses process substitution
+SHELL  := /bin/bash
 
 # ==============================================================================
 # MAIN TARGETS
@@ -25,7 +28,7 @@ clean:
 	@echo "🧼 Clean complete."
 
 # ==============================================================================
-# PACKAGES — Homebrew
+# PACKAGES — Homebrew (macOS); Arch uses packages/arch.txt + aur.txt via setup
 # ==============================================================================
 packages: homebrew brew
 
@@ -60,25 +63,45 @@ update:
 	@git -C $(REPO) pull --rebase
 	@git -C $(REPO) stash list | grep -q stash && \
 		{ git -C $(REPO) stash pop || { echo "❌ Stash pop had conflicts — resolve manually, then re-run"; exit 1; }; } || true
+	@$(MAKE) update-packages
+	@echo "🔗 Re-linking configs..."
+	@bash $(INSTALL_SCRIPT)
+	@$(MAKE) zcompile
+	@echo "✅ Update complete!"
+
+ifeq ($(OS),Darwin)
+update-packages:
 	@echo "📦 Updating brew packages..."
 	@NONINTERACTIVE=1 brew update && NONINTERACTIVE=1 brew upgrade -y
 	@echo "📦 Upgrading version:latest casks (skipped by plain upgrade)..."
 	@NONINTERACTIVE=1 brew upgrade -y --cask --greedy claude-code@latest
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
-	@echo "🔗 Re-linking configs..."
-	@bash $(INSTALL_SCRIPT)
-	@$(MAKE) zcompile
-	@echo "✅ Update complete!"
+else
+update-packages:
+	@echo "📦 Updating packages (pacman + AUR)..."
+	@paru -Syu
+	@grep -hvE '^[[:space:]]*(#|$$)' packages/arch.txt | sudo pacman -S --needed --noconfirm -
+	@grep -hvE '^[[:space:]]*(#|$$)' packages/aur.txt | paru -S --needed --noconfirm -
+endif
 
 zcompile:
 	@echo "⚡ Compiling zsh files..."
 	@zsh -c 'for f in config/zsh/config/*.zsh config/zsh/.zshrc home/.zshenv; do [[ -f $$f ]] && zcompile -U $$f; done'
 	@echo "  ✓ Zsh files compiled."
 
+ifeq ($(OS),Darwin)
 # Dump currently installed packages to the Brewfile.
 dump:
 	@brew bundle dump --force --file ./packages/Brewfile
 	@echo "📋 Brewfile updated with current packages."
+else
+# The Arch lists are curated (grouped, commented), so don't overwrite them:
+# show explicitly installed packages that aren't listed yet.
+dump:
+	@echo "📋 Installed but not in packages/arch.txt or aur.txt:"
+	@comm -23 <(pacman -Qqe | grep -vE -- '-debug$$|^paru$$' | sort) \
+		<(grep -hvE '^[[:space:]]*(#|$$)' packages/arch.txt packages/aur.txt | sort)
+endif
 
 # ==============================================================================
 # VALIDATION
@@ -86,11 +109,13 @@ dump:
 lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
-	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
-	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup && echo "  ✓ Install scripts OK" || exit 1
+	@python3 -m json.tool config-macos/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
+	@python3 -m json.tool config-linux/swaync/config.json > /dev/null && echo "  ✓ swaync JSON OK" || exit 1
+	@if command -v luac >/dev/null; then luac -p config-linux/hypr/*.lua && echo "  ✓ Hyprland Lua OK" || exit 1; fi
+	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup config-linux/hypr/scripts/* config-linux/waybar/scripts/* && echo "  ✓ Scripts OK" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install doctor clean homebrew brew brew-sync packages configs zcompile update dump lint
+.PHONY: all install doctor clean homebrew brew brew-sync packages configs zcompile update update-packages dump lint

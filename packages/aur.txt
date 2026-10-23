@@ -1,0 +1,6 @@
+# AUR packages, installed by scripts/setup with paru (which it bootstraps).
+
+zen-browser-bin
+bitwarden-bin
+t3code-bin
+sddm-astronaut-theme

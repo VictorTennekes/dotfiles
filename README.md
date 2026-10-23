@@ -14,7 +14,7 @@ XDG Base Directory compliant throughout.
 - **Editor:** Neovim, managed separately at
   [victortennekes/nvim](https://github.com/victortennekes/nvim).
 - **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
-  signing with Secure Enclave keys via [Secretive](https://github.com/maxgoedjen/secretive).
+  signing with a per-machine SSH key.
 - **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
 - **TUIs:** `btop`, `yazi`, `k9s`, `fastfetch`.
 
@@ -88,9 +88,9 @@ file, `~/.work-laptop`. Create it once on the work machine: `touch ~/.work-lapto
 
 - **Clipboard.** The `clip` zsh function uses `pbcopy`, or OSC 52 over SSH
   so copies land on the local terminal.
-- **SSH agent.** Secretive. Git defaults to the `remote` key (no approval),
-  so apps and phone/herdr sessions never block; local terminals use the
-  `daily` key (Touch ID per use).
+- **Git key.** One plain `~/.ssh/id_ed25519` per machine for auth and
+  signing; it keeps working with the screen locked, so T3 Code and phone
+  sessions can push while you're away.
 - **Keyboard remapping.** Karabiner (`config/karabiner/`).
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.

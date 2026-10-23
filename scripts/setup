@@ -13,8 +13,7 @@ CHECK_ONLY=0
 [[ "${1:-}" == --check ]] && CHECK_ONLY=1
 FAILED=0
 
-SECRETIVE_DATA="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data"
-SECRETIVE_SOCK="$SECRETIVE_DATA/socket.ssh"
+KEY="$HOME/.ssh/id_ed25519"   # this machine's git key: auth + signing
 SSHD_DROPIN=/etc/ssh/sshd_config.d/010-keys-only.conf
 
 # --- Bootstrap: everything below needs Homebrew and gum -----------------------
@@ -64,17 +63,7 @@ step() {
   if $check; then ok "$name"; else bad "$name (still failing)"; FAILED=1; return 1; fi
 }
 
-# Secretive names its public keys by hash and leaves stale .pub files behind
-# when a key is deleted, so pick the file for this name whose key the agent
-# actually holds.
-secretive_pub() {
-  local f live; live=$(SSH_AUTH_SOCK="$SECRETIVE_SOCK" ssh-add -L 2>/dev/null)
-  for f in "$SECRETIVE_DATA"/PublicKeys/*.pub; do
-    grep -q " $1@secretive\." "$f" 2>/dev/null &&
-      grep -qF "$(awk '{print $2}' "$f")" <<<"$live" && { echo "$f"; return; }
-  done
-}
-pubkey() { awk '{print $1" "$2}' "$HOME/.ssh/secretive-$1.pub" 2>/dev/null; }
+pubkey() { awk '{print $1" "$2}' "$KEY.pub" 2>/dev/null; }
 gh_ok() { gh auth status >/dev/null 2>&1; }
 
 # --- Checks and fixes ------------------------------------------------------------
@@ -82,49 +71,23 @@ check_packages() { brew bundle check --no-upgrade --file "$ROOT/packages/Brewfil
 fix_packages()   { make -C "$ROOT" brew; }
 
 check_links() {
-  [[ -L "$HOME/.zshenv" && -L "$HOME/.config/zsh" && -L "$HOME/.config/ssh" ]]
+  [[ -L "$HOME/.zshenv" && -L "$HOME/.config/zsh" ]]
 }
 fix_links() { bash "$ROOT/scripts/install" && make -C "$ROOT" zcompile; }
 
-check_secretive_agent() { [[ -S "$SECRETIVE_SOCK" ]]; }
-fix_secretive_agent() {
-  open -a Secretive
-  manual "Secretive: finish the setup wizard so its agent runs at login."
-}
-
-check_secretive_keys() { [[ -n "$(secretive_pub daily)" && -n "$(secretive_pub remote)" ]]; }
-fix_secretive_keys() {
-  open -a Secretive
-  manual "In Secretive, create two keys:" \
-    "  daily   Require Authentication ON  (Touch ID per use)" \
-    "  remote  Require Authentication OFF (phone/agent sessions)"
-}
-
-check_key_links() {
-  [[ "$(readlink "$HOME/.ssh/secretive-daily.pub")" == "$(secretive_pub daily)" &&
-     "$(readlink "$HOME/.ssh/secretive-remote.pub")" == "$(secretive_pub remote)" ]]
-}
-fix_key_links() {
+# One plain key file per machine. It works while the screen is locked, which
+# unattended use (T3 Code, phone sessions) needs; Secure Enclave keys don't.
+check_ssh_key() { [[ -f "$KEY" && -f "$KEY.pub" ]]; }
+fix_ssh_key() {
   mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
-  ln -sf "$(secretive_pub daily)" "$HOME/.ssh/secretive-daily.pub"
-  ln -sf "$(secretive_pub remote)" "$HOME/.ssh/secretive-remote.pub"
+  ssh-keygen -q -t ed25519 -N "" -C "$USER@$(scutil --get LocalHostName)" -f "$KEY"
 }
 
-check_ssh_include() { grep -qx 'Include ~/.config/ssh/config' "$HOME/.ssh/config" 2>/dev/null; }
-fix_ssh_include() {
-  # Prepend: first value wins in ssh_config, so the include must come first.
-  local tmp; tmp=$(mktemp)
-  { echo 'Include ~/.config/ssh/config'; echo; cat "$HOME/.ssh/config" 2>/dev/null; } >"$tmp"
-  mv "$tmp" "$HOME/.ssh/config" && chmod 600 "$HOME/.ssh/config"
-}
-
-# GitHub keys are checked via GitHub's public key endpoints: no gh login or
-# token scopes needed, and no Touch ID (the username comes from a test login
-# with the no-approval "remote" key).
+# GitHub keys are checked via GitHub's public key endpoints (no token scopes
+# needed); the username comes from a test login with the key.
 GH_USER=""
 github_user() {
-  ssh -T -o IdentitiesOnly=yes -o IdentityAgent="$SECRETIVE_SOCK" \
-    -i "$HOME/.ssh/secretive-remote.pub" git@github.com 2>&1 | sed -n 's/^Hi \([^!]*\)!.*/\1/p'
+  ssh -T -o IdentitiesOnly=yes -i "$KEY" git@github.com 2>&1 | sed -n 's/^Hi \([^!]*\)!.*/\1/p'
 }
 # Anonymous API calls are capped at 60/hour; use gh's token when it has one
 # (5000/hour, and public key lists need no extra scopes).
@@ -135,18 +98,14 @@ github_get() {
 github_rate_limited() {
   github_get rate_limit | jq -e '.resources.core.remaining == 0' >/dev/null
 }
-github_has() { # <keys|ssh_signing_keys> <key name>
-  github_get "users/$GH_USER/$1" |
-    grep -F "$(pubkey "$2" | awk '{print $2}')" >/dev/null
+github_has() { # <keys|ssh_signing_keys>
+  github_get "users/$GH_USER/$1" | grep -F "$(pubkey | awk '{print $2}')" >/dev/null
 }
 check_github_keys() {
   # GitHub's SSH endpoint occasionally drops a connection; retry once.
   [[ -n "$GH_USER" ]] || GH_USER=$(github_user)
   [[ -n "$GH_USER" ]] || { sleep 2; GH_USER=$(github_user); }
-  [[ -n "$GH_USER" ]] || return 1
-  local k; for k in daily remote; do
-    github_has keys "$k" && github_has ssh_signing_keys "$k" || return 1
-  done
+  [[ -n "$GH_USER" ]] && github_has keys && github_has ssh_signing_keys
 }
 fix_github_keys() {
   # Managing keys needs two scopes a default gh login doesn't have.
@@ -157,42 +116,27 @@ fix_github_keys() {
     gh auth refresh -h github.com -s "$scopes"
   fi
   GH_USER=$(gh api user --jq .login)
-  local k t title; for k in daily remote; do
-    title="$(scutil --get ComputerName) $k (Secretive)"
-    for t in authentication signing; do
-      local list=keys; [[ $t == signing ]] && list=ssh_signing_keys
-      github_has "$list" "$k" || gh ssh-key add "$HOME/.ssh/secretive-$k.pub" --type "$t" --title "$title"
-    done
-  done
+  local title; title=$(scutil --get ComputerName)
+  github_has keys || gh ssh-key add "$KEY.pub" --type authentication --title "$title"
+  github_has ssh_signing_keys || gh ssh-key add "$KEY.pub" --type signing --title "$title"
 }
 
 glab_ok() { glab auth status >/dev/null 2>&1; }
-gitlab_has() { glab ssh-key list 2>/dev/null | grep -F "$(pubkey "$1" | awk '{print $2}')" >/dev/null; }
-check_gitlab_keys() { glab_ok && gitlab_has daily && gitlab_has remote; }
+gitlab_has() { glab ssh-key list 2>/dev/null | grep -F "$(pubkey | awk '{print $2}')" >/dev/null; }
+check_gitlab_keys() { glab_ok && gitlab_has; }
 fix_gitlab_keys() {
   glab_ok || glab auth login -h gitlab.com
-  local k; for k in daily remote; do
-    gitlab_has "$k" || glab ssh-key add "$HOME/.ssh/secretive-$k.pub" \
-      -t "$(scutil --get ComputerName) $k (Secretive)" --usage-type auth_and_signing
-  done
+  gitlab_has || glab ssh-key add "$KEY.pub" -t "$(scutil --get ComputerName)" --usage-type auth_and_signing
 }
 
 check_signing() {
-  local key email
-  key=$(git config --file "$HOME/.gitconfig.local" user.signingkey)
-  email=$(git config user.email)
-  [[ "$key" == "$HOME/.ssh/secretive-remote.pub" ]] &&
-    grep -qF "$email $(pubkey daily)" "$HOME/.ssh/allowed_signers" 2>/dev/null &&
-    grep -qF "$email $(pubkey remote)" "$HOME/.ssh/allowed_signers" 2>/dev/null
+  [[ "$(git config --file "$HOME/.gitconfig.local" user.signingkey)" == "$KEY" ]] &&
+    grep -qF "$(git config user.email) $(pubkey)" "$HOME/.ssh/allowed_signers" 2>/dev/null
 }
 fix_signing() {
-  # Default signer is "remote" (no approval); terminals opt into daily (ssh.zsh).
-  git config --file "$HOME/.gitconfig.local" user.signingkey "$HOME/.ssh/secretive-remote.pub"
-  local email k; email=$(git config user.email)
-  for k in daily remote; do
-    grep -qF "$email $(pubkey "$k")" "$HOME/.ssh/allowed_signers" 2>/dev/null ||
-      echo "$email $(pubkey "$k")" >>"$HOME/.ssh/allowed_signers"
-  done
+  git config --file "$HOME/.gitconfig.local" user.signingkey "$KEY"
+  local line; line="$(git config user.email) $(pubkey)"
+  grep -qF "$line" "$HOME/.ssh/allowed_signers" 2>/dev/null || echo "$line" >>"$HOME/.ssh/allowed_signers"
 }
 
 check_remote_login() { nc -z -G 1 localhost 22 >/dev/null 2>&1; }
@@ -256,11 +200,8 @@ if (( ! CHECK_ONLY )) && gum confirm --default=false "Apply macOS defaults (Dock
   bash "$ROOT/scripts/macos-defaults"
 fi
 
-section "SSH keys (Secretive)"
-step "Secretive agent running"  check_secretive_agent fix_secretive_agent &&
-step "daily + remote keys"      check_secretive_keys  fix_secretive_keys &&
-step "Key links in .ssh"        check_key_links       fix_key_links &&
-step ".ssh/config include"      check_ssh_include     fix_ssh_include &&
+section "Git key"
+step "SSH key (.ssh/id_ed25519)" check_ssh_key fix_ssh_key &&
 if github_rate_limited; then
   gum style --foreground 3 "  ? Keys on GitHub (API rate limit hit, try again later)"
 else

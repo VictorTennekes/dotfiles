@@ -21,11 +21,6 @@ if [[ -z "$HOMEBREW_PREFIX" ]]; then
   fi
 fi
 
-# --- SSH agent: Secretive (keys live in the Secure Enclave) ---
-_secretive_sock="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
-[[ -S "$_secretive_sock" ]] && export SSH_AUTH_SOCK="$_secretive_sock"
-unset _secretive_sock
-
 # --- App Configurations ---
 export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'

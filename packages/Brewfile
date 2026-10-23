@@ -86,7 +86,6 @@ cask "zen"
 
 # --- Productivity ---
 cask "Bitwarden"
-cask "secretive"         # SSH keys in the Secure Enclave (git auth + signing).
 brew "bitwarden-cli"
 cask "obsidian"
 cask "robbietilton-compositor"  # Photoshop alternative.

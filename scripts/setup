@@ -210,6 +210,12 @@ fix_tailscale() {
 check_ts_operator() { ts_prefs | grep "\"OperatorUser\": \"$USER\"" >/dev/null; }
 fix_ts_operator()   { sudo tailscale set --operator="$USER"; }
 
+# Stay awake on the charger only (display still sleeps and locks), so the Mac
+# is always reachable when plugged in and battery life is untouched.
+ac_sleep() { pmset -g custom | awk '/Power:$/{s=$0} s=="AC Power:" && $1=="sleep"{print $2}'; }
+check_ac_awake() { [[ "$(ac_sleep)" == 0 ]]; }
+fix_ac_awake()   { sudo pmset -c sleep 0; }
+
 check_mosh_firewall() {
   local bin; bin=$(realpath /opt/homebrew/bin/mosh-server 2>/dev/null) || return 1
   "$FW" --listapps | grep -A1 -F "$bin " | grep 'Allow incoming' >/dev/null
@@ -259,6 +265,7 @@ step "sshd keys-only"           check_sshd_keys_only  fix_sshd_keys_only
 step "authorized_keys present"  check_authorized_keys fix_authorized_keys
 step "Tailscale logged in"      check_tailscale       fix_tailscale &&
 step "Tailscale operator"       check_ts_operator     fix_ts_operator
+step "Awake on charger"         check_ac_awake        fix_ac_awake
 step "mosh through firewall"    check_mosh_firewall   fix_mosh_firewall
 step "SwiftBar plugin folder"   check_swiftbar        fix_swiftbar
 

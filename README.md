@@ -14,7 +14,7 @@ XDG Base Directory compliant throughout.
 - **Editor:** Neovim, managed separately at
   [victortennekes/nvim](https://github.com/victortennekes/nvim).
 - **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
-  signing via Bitwarden SSH agent.
+  signing with Secure Enclave keys via [Secretive](https://github.com/maxgoedjen/secretive).
 - **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
 - **TUIs:** `btop`, `yazi`, `k9s`, `fastfetch`.
 
@@ -44,7 +44,8 @@ file, `~/.work-laptop`. Create it once on the work machine: `touch ~/.work-lapto
 
 | Command        | Description                                       |
 |----------------|---------------------------------------------------|
-| `make install` | Full setup: packages + symlinks                   |
+| `make install` | Guided setup: packages, links, keys, remote access |
+| `make doctor`  | Same checks as install, report only               |
 | `make update`  | Pull dotfiles, update packages, re-link configs   |
 | `make dump`    | Export current brew packages to Brewfile          |
 | `make lint`    | Validate zsh, JSON, and install scripts           |
@@ -74,6 +75,7 @@ file, `~/.work-laptop`. Create it once on the work machine: `touch ~/.work-lapto
 ├── home/             # Home-level dotfiles → ~/
 │   └── .zshenv
 ├── scripts/
+│   ├── setup         # Guided install / --check doctor
 │   ├── install       # Symlink dotfiles via stow
 │   ├── clean         # Remove stow symlinks
 │   └── macos-defaults # Apply macOS system defaults
@@ -86,7 +88,8 @@ file, `~/.work-laptop`. Create it once on the work machine: `touch ~/.work-lapto
 
 - **Clipboard.** The `clip` zsh function uses `pbcopy`, or OSC 52 over SSH
   so copies land on the local terminal.
-- **SSH agent.** Bitwarden's SSH agent socket (whichever path answers).
+- **SSH agent.** Secretive. `daily` key needs Touch ID per use; `remote`
+  key (no approval) is used automatically in SSH and herdr sessions.
 - **Keyboard remapping.** Karabiner (`config/karabiner/`).
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.

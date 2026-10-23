@@ -71,9 +71,6 @@ defaults write com.apple.menuextra.clock ShowDayOfWeek -bool true
 defaults write com.apple.menuextra.clock ShowSeconds -bool false
 defaults write com.apple.menuextra.clock FlashDateSeparators -bool false
 
-# --- SwiftBar (server-mode toggle lives in the stowed plugin dir) ---
-defaults write com.ameba.SwiftBar PluginDirectory -string "${HOME}/.config/swiftbar"
-
 # Restart affected apps
 echo "Restarting Dock and Finder..."
 killall Dock 2>/dev/null || true

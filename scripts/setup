@@ -1,0 +1,243 @@
+#!/bin/bash
+# Guided, re-runnable setup for this Mac. Every step checks first, fixes only
+# what is missing, then re-checks. Steps that need a human (GUI apps, GitHub
+# settings) pause with exact instructions.
+#
+#   scripts/setup          guided install / repair   (make install)
+#   scripts/setup --check  report only, change nothing (make doctor)
+
+set -uo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+CHECK_ONLY=0
+[[ "${1:-}" == --check ]] && CHECK_ONLY=1
+FAILED=0
+
+SECRETIVE_DATA="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data"
+SECRETIVE_SOCK="$SECRETIVE_DATA/socket.ssh"
+SSHD_DROPIN=/etc/ssh/sshd_config.d/010-keys-only.conf
+FW=/usr/libexec/ApplicationFirewall/socketfilterfw
+
+# --- Bootstrap: everything below needs Homebrew and gum -----------------------
+if ! xcode-select -p >/dev/null 2>&1; then
+  (( CHECK_ONLY )) && { echo "✗ Command Line Tools missing"; exit 1; }
+  echo "→ Installing Command Line Tools; finish the dialog, then re-run this script."
+  xcode-select --install
+  exit 1
+fi
+if ! command -v brew >/dev/null 2>&1 && [[ ! -x /opt/homebrew/bin/brew ]]; then
+  (( CHECK_ONLY )) && { echo "✗ Homebrew missing"; exit 1; }
+  echo "→ Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || exit 1
+fi
+eval "$(/opt/homebrew/bin/brew shellenv)"
+if ! command -v gum >/dev/null 2>&1; then
+  (( CHECK_ONLY )) && { echo "✗ gum missing (run make install)"; exit 1; }
+  brew install gum || exit 1
+fi
+
+# --- UI helpers ----------------------------------------------------------------
+ok()      { gum style --foreground 2 "  ✓ $*"; }
+bad()     { gum style --foreground 1 "  ✗ $*"; }
+section() { echo; gum style --bold --foreground 5 "$*"; }
+
+# Show manual instructions and wait until the user confirms they're done.
+manual() {
+  gum style --border rounded --border-foreground 3 --padding "0 1" --margin "0 2" "$@"
+  gum confirm "Done?" || { bad "stopped"; exit 1; }
+}
+
+# step <name> <check-fn> <fix-fn>: check; in guided mode fix and re-check.
+step() {
+  local name=$1 check=$2 fix=$3
+  if $check; then ok "$name"; return 0; fi
+  if (( CHECK_ONLY )); then bad "$name"; FAILED=1; return 1; fi
+  gum style --foreground 4 "  → $name"
+  $fix
+  if $check; then ok "$name"; else bad "$name (still failing)"; FAILED=1; return 1; fi
+}
+
+# Secretive names its public keys by hash; find one by key name ("daily"/"remote").
+secretive_pub() { grep -l " $1@secretive\." "$SECRETIVE_DATA"/PublicKeys/*.pub 2>/dev/null | head -1; }
+pubkey() { awk '{print $1" "$2}' "$HOME/.ssh/secretive-$1.pub" 2>/dev/null; }
+gh_ok() { gh auth status >/dev/null 2>&1; }
+
+# --- Checks and fixes ------------------------------------------------------------
+check_packages() { brew bundle check --no-upgrade --file "$ROOT/packages/Brewfile" >/dev/null 2>&1; }
+fix_packages()   { make -C "$ROOT" brew; }
+
+check_links() {
+  [[ -L "$HOME/.zshenv" && -L "$HOME/.config/zsh" && -L "$HOME/.config/ssh" ]]
+}
+fix_links() { bash "$ROOT/scripts/install" && make -C "$ROOT" zcompile; }
+
+check_secretive_agent() { [[ -S "$SECRETIVE_SOCK" ]]; }
+fix_secretive_agent() {
+  open -a Secretive
+  manual "Secretive: finish the setup wizard so its agent runs at login."
+}
+
+check_secretive_keys() { [[ -n "$(secretive_pub daily)" && -n "$(secretive_pub remote)" ]]; }
+fix_secretive_keys() {
+  open -a Secretive
+  manual "In Secretive, create two keys:" \
+    "  daily   Require Authentication ON  (Touch ID per use)" \
+    "  remote  Require Authentication OFF (phone/agent sessions)"
+}
+
+check_key_links() {
+  [[ "$(readlink "$HOME/.ssh/secretive-daily.pub")" == "$(secretive_pub daily)" &&
+     "$(readlink "$HOME/.ssh/secretive-remote.pub")" == "$(secretive_pub remote)" ]]
+}
+fix_key_links() {
+  mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+  ln -sf "$(secretive_pub daily)" "$HOME/.ssh/secretive-daily.pub"
+  ln -sf "$(secretive_pub remote)" "$HOME/.ssh/secretive-remote.pub"
+}
+
+check_ssh_include() { grep -qx 'Include ~/.config/ssh/config' "$HOME/.ssh/config" 2>/dev/null; }
+fix_ssh_include() {
+  # Prepend: first value wins in ssh_config, so the include must come first.
+  local tmp; tmp=$(mktemp)
+  { echo 'Include ~/.config/ssh/config'; echo; cat "$HOME/.ssh/config" 2>/dev/null; } >"$tmp"
+  mv "$tmp" "$HOME/.ssh/config" && chmod 600 "$HOME/.ssh/config"
+}
+
+# GitHub keys are checked through the API, so checks never trigger Touch ID.
+github_has() { # <api path> <key name>
+  gh api "$1" --paginate --jq '.[].key' 2>/dev/null | grep -qF "$(pubkey "$2" | awk '{print $2}')"
+}
+check_github_keys() {
+  gh_ok || return 1
+  local k; for k in daily remote; do
+    github_has user/keys "$k" && github_has user/ssh_signing_keys "$k" || return 1
+  done
+}
+fix_github_keys() {
+  # Managing keys needs two scopes a default gh login doesn't have.
+  local scopes=admin:public_key,admin:ssh_signing_key
+  if ! gh_ok; then
+    gh auth login -h github.com -s "$scopes"
+  elif ! gh api user/ssh_signing_keys >/dev/null 2>&1; then
+    gh auth refresh -h github.com -s "$scopes"
+  fi
+  local k t title; for k in daily remote; do
+    title="$(scutil --get ComputerName) $k (Secretive)"
+    for t in authentication signing; do
+      local path=user/keys; [[ $t == signing ]] && path=user/ssh_signing_keys
+      github_has "$path" "$k" || gh ssh-key add "$HOME/.ssh/secretive-$k.pub" --type "$t" --title "$title"
+    done
+  done
+}
+
+check_signing() {
+  local key email
+  key=$(git config --file "$HOME/.gitconfig.local" user.signingkey)
+  email=$(git config user.email)
+  [[ "$key" == "$HOME/.ssh/secretive-daily.pub" ]] &&
+    grep -qF "$email $(pubkey daily)" "$HOME/.ssh/allowed_signers" 2>/dev/null &&
+    grep -qF "$email $(pubkey remote)" "$HOME/.ssh/allowed_signers" 2>/dev/null
+}
+fix_signing() {
+  git config --file "$HOME/.gitconfig.local" user.signingkey "$HOME/.ssh/secretive-daily.pub"
+  local email k; email=$(git config user.email)
+  for k in daily remote; do
+    grep -qF "$email $(pubkey "$k")" "$HOME/.ssh/allowed_signers" 2>/dev/null ||
+      echo "$email $(pubkey "$k")" >>"$HOME/.ssh/allowed_signers"
+  done
+}
+
+check_remote_login() { nc -z -G 1 localhost 22 >/dev/null 2>&1; }
+fix_remote_login() {
+  open "x-apple.systempreferences:com.apple.Sharing-Settings.extension"
+  manual "System Settings → General → Sharing: turn on Remote Login."
+}
+
+check_sshd_keys_only() { [[ -f "$SSHD_DROPIN" ]]; }
+fix_sshd_keys_only() {
+  printf '%s\n' "# Remote Login answers on every network; only allow key-based logins." \
+    "PasswordAuthentication no" "KbdInteractiveAuthentication no" | sudo tee "$SSHD_DROPIN" >/dev/null
+  sudo sshd -t || { sudo rm -f "$SSHD_DROPIN"; bad "sshd rejected the config, removed it"; }
+}
+
+check_authorized_keys() { [[ -s "$HOME/.ssh/authorized_keys" ]]; }
+fix_authorized_keys() {
+  manual "Termius (phone): Keychain → generate an ed25519 key → Export to host," \
+    "or paste its public key as a line in ~/.ssh/authorized_keys."
+}
+
+ts_prefs() { tailscale debug prefs 2>/dev/null; }
+check_tailscale() {
+  pgrep -x tailscaled >/dev/null && ! tailscale status 2>&1 | grep -qiE 'logged out|NeedsLogin'
+}
+fix_tailscale() {
+  sudo brew services start tailscale
+  manual "Run 'sudo tailscale up' in another terminal and finish the login in the browser."
+}
+
+check_ts_operator() { ts_prefs | grep -q "\"OperatorUser\": \"$USER\""; }
+fix_ts_operator()   { sudo tailscale set --operator="$USER"; }
+
+check_mosh_firewall() {
+  local bin; bin=$(realpath /opt/homebrew/bin/mosh-server 2>/dev/null) || return 1
+  "$FW" --listapps | grep -A1 -F "$bin " | grep -q 'Allow incoming'
+}
+fix_mosh_firewall() { bash "$ROOT/scripts/mosh-firewall"; }
+
+check_swiftbar() {
+  [[ "$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null)" == "$HOME/.config/swiftbar" ]]
+}
+fix_swiftbar() {
+  defaults write com.ameba.SwiftBar PluginDirectory -string "$HOME/.config/swiftbar"
+  open -a SwiftBar
+  manual "SwiftBar → Preferences: enable 'Launch at login'."
+}
+
+# --- Run -------------------------------------------------------------------------
+gum style --border double --border-foreground 5 --padding "0 2" \
+  "dotfiles setup" "$( (( CHECK_ONLY )) && echo 'check only, no changes' || echo 'guided install')"
+
+section "Base"
+if (( ! CHECK_ONLY )) && [[ ! -f "$HOME/.work-laptop" ]] &&
+   gum confirm --default=false "Is this the work laptop? (installs work packages)"; then
+  touch "$HOME/.work-laptop"
+fi
+step "Homebrew packages"        check_packages        fix_packages
+step "Config symlinks (stow)"   check_links           fix_links
+if (( ! CHECK_ONLY )) && gum confirm --default=false "Apply macOS defaults (Dock, Finder, keyboard)?"; then
+  bash "$ROOT/scripts/macos-defaults"
+fi
+
+section "SSH keys (Secretive)"
+step "Secretive agent running"  check_secretive_agent fix_secretive_agent &&
+step "daily + remote keys"      check_secretive_keys  fix_secretive_keys &&
+step "Key links in .ssh"        check_key_links       fix_key_links &&
+step ".ssh/config include"      check_ssh_include     fix_ssh_include &&
+step "Keys on GitHub (auth + signing)" check_github_keys fix_github_keys &&
+step "Commit signing + allowed_signers" check_signing fix_signing
+
+section "Remote access"
+step "Remote Login on"          check_remote_login    fix_remote_login
+step "sshd keys-only"           check_sshd_keys_only  fix_sshd_keys_only
+step "authorized_keys present"  check_authorized_keys fix_authorized_keys
+step "Tailscale logged in"      check_tailscale       fix_tailscale &&
+step "Tailscale operator"       check_ts_operator     fix_ts_operator
+step "mosh through firewall"    check_mosh_firewall   fix_mosh_firewall
+step "SwiftBar plugin folder"   check_swiftbar        fix_swiftbar
+
+# Private overlay (work config etc.) lives in a separate, private repo.
+if [[ -x "$HOME/.dotfiles-private/setup" ]]; then
+  section "Private overlay"
+  "$HOME/.dotfiles-private/setup" "$@" || FAILED=1
+fi
+
+if (( ! CHECK_ONLY )); then
+  section "Manual, not checkable from here"
+  gum style --margin "0 2" \
+    "• GitLab: add ~/.ssh/secretive-{daily,remote}.pub at gitlab.com/-/user_settings/ssh_keys" \
+    "• Termius host: enable Mosh, server command /opt/homebrew/bin/mosh-server new"
+fi
+
+echo
+if (( FAILED )); then bad "Some checks failed."; exit 1; fi
+ok "All good."

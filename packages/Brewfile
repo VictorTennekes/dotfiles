@@ -24,6 +24,7 @@ brew "git"               # Distributed revision control system.
 brew "git-machete"       # Manage stacked branches and PR chains.
 brew "ripgrep"           # A line-oriented search tool that recursively searches your current directory.
 brew "stow"              # Symlink farm manager for dotfiles.
+brew "gum"               # Styled prompts for scripts/setup.
 brew "tealdeer"          # Fast tldr client for quick command examples.
 brew "vivid"             # A generator for LS_COLORS with themes.
 brew "hyperfine"         # A command-line benchmarking tool.
@@ -87,6 +88,7 @@ cask "helium-browser"
 
 # --- Productivity ---
 cask "Bitwarden"
+cask "secretive"         # SSH keys in the Secure Enclave (git auth + signing).
 brew "bitwarden-cli"
 cask "obsidian"
 cask "robbietilton-compositor"  # Photoshop alternative.

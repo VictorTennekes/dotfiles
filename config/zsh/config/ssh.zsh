@@ -11,9 +11,9 @@ if [[ -n "$SSH_CONNECTION" && -z "$HERDR_ENV" && -z "$TMUX" && -t 0 ]]; then
 fi
 
 # Inside the "agents" session (or any SSH shell) git must not need the laptop
-# screen: Bitwarden's SSH agent pops a GUI approval per signature, which nobody
-# can click from a phone. Use the local remote key for auth + commit signing.
+# screen: the daily Secretive key wants Touch ID per use, which nobody can give
+# from a phone. Use the no-approval "remote" key for auth + commit signing.
 if [[ "$HERDR_SESSION" == agents || -n "$SSH_CONNECTION" ]]; then
-  export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_ed25519_remote -o IdentitiesOnly=yes -o IdentityAgent=none"
-  export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.signingkey GIT_CONFIG_VALUE_0="$HOME/.ssh/id_ed25519_remote"
+  export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/secretive-remote.pub -o IdentitiesOnly=yes"
+  export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.signingkey GIT_CONFIG_VALUE_0="$HOME/.ssh/secretive-remote.pub"
 fi

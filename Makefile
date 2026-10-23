@@ -11,8 +11,13 @@ REPO   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 # ==============================================================================
 all: install
 
-install: packages configs zcompile
-	@echo "✅ All setup complete!"
+# Guided, re-runnable setup (packages, links, keys, remote access).
+install:
+	@bash scripts/setup
+
+# Same checks as install, but report only.
+doctor:
+	@bash scripts/setup --check
 
 clean:
 	@echo "🧹 Cleaning up dotfiles..."
@@ -83,10 +88,10 @@ lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
-	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/mosh-firewall && echo "  ✓ Install scripts OK" || exit 1
+	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/mosh-firewall scripts/setup && echo "  ✓ Install scripts OK" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install clean homebrew brew brew-sync packages configs zcompile update dump lint
+.PHONY: all install doctor clean homebrew brew brew-sync packages configs zcompile update dump lint

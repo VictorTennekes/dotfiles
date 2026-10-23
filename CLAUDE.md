@@ -12,9 +12,11 @@ Framework laptop runs Omarchy, configured outside this repo).
 - `home/` — home-level dotfiles stowed to `~/` (.zshenv)
 - `packages/` — `Brewfile`. Work packages gated behind
   `~/.work-laptop` marker file.
-- `scripts/` — `install` (stow + nvim), `clean`,
+- `scripts/` — `setup` (guided install + `--check` doctor),
+  `install` (stow + nvim), `clean`,
   `macos-defaults`
-- `Makefile` — `install`, `update`, `dump`, `clean`
+- `Makefile` — `install` (runs `scripts/setup`), `doctor`,
+  `update`, `dump`, `clean`
 
 ## Shell (Zsh)
 
@@ -42,4 +44,7 @@ Framework laptop runs Omarchy, configured outside this repo).
 
 - Catppuccin Mocha theme everywhere
 - XDG Base Directory compliance
-- Bitwarden for secrets and SSH agent
+- Bitwarden for passwords; Secretive (Secure Enclave) for SSH
+  keys: `daily` (Touch ID) and `remote` (no approval, for
+  phone/agent sessions). Per-machine signing key lives in
+  `~/.gitconfig.local`, written by `scripts/setup`.

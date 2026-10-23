@@ -21,22 +21,10 @@ if [[ -z "$HOMEBREW_PREFIX" ]]; then
   fi
 fi
 
-# --- Bitwarden SSH agent ---
-# Bitwarden's macOS socket path has flip-flopped across versions (flat
-# $HOME path since 2026.7.0 per app.log, Containers path again on later
-# updates on this machine) — whichever path isn't currently in use is
-# left behind as a dead orphaned socket file, and `-S` can't tell dead
-# from live. Probe each candidate and keep whichever actually answers
-# (ssh-add exit 2 == no agent listening there).
-for _bw_sock in \
-  "$HOME/.bitwarden-ssh-agent.sock" \
-  "$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"; do
-  if [[ -S "$_bw_sock" ]]; then
-    SSH_AUTH_SOCK="$_bw_sock" command ssh-add -l &>/dev/null
-    [[ $? -ne 2 ]] && { export SSH_AUTH_SOCK="$_bw_sock"; break; }
-  fi
-done
-unset _bw_sock
+# --- SSH agent: Secretive (keys live in the Secure Enclave) ---
+_secretive_sock="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+[[ -S "$_secretive_sock" ]] && export SSH_AUTH_SOCK="$_secretive_sock"
+unset _secretive_sock
 
 # --- App Configurations ---
 export BAT_THEME="Catppuccin Mocha"

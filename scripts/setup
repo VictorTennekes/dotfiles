@@ -108,14 +108,23 @@ fix_ssh_include() {
   mv "$tmp" "$HOME/.ssh/config" && chmod 600 "$HOME/.ssh/config"
 }
 
-# GitHub keys are checked through the API, so checks never trigger Touch ID.
-github_has() { # <api path> <key name>
-  gh api "$1" --paginate --jq '.[].key' 2>/dev/null | grep -qF "$(pubkey "$2" | awk '{print $2}')"
+# GitHub keys are checked via GitHub's public key endpoints: no gh login or
+# token scopes needed, and no Touch ID (the username comes from a test login
+# with the no-approval "remote" key).
+GH_USER=""
+github_user() {
+  ssh -T -o IdentitiesOnly=yes -o IdentityAgent="$SECRETIVE_SOCK" \
+    -i "$HOME/.ssh/secretive-remote.pub" git@github.com 2>&1 | sed -n 's/^Hi \([^!]*\)!.*/\1/p'
+}
+github_has() { # <keys|ssh_signing_keys> <key name>
+  curl -fsS "https://api.github.com/users/$GH_USER/$1" 2>/dev/null |
+    grep -qF "$(pubkey "$2" | awk '{print $2}')"
 }
 check_github_keys() {
-  gh_ok || return 1
+  [[ -n "$GH_USER" ]] || GH_USER=$(github_user)
+  [[ -n "$GH_USER" ]] || return 1
   local k; for k in daily remote; do
-    github_has user/keys "$k" && github_has user/ssh_signing_keys "$k" || return 1
+    github_has keys "$k" && github_has ssh_signing_keys "$k" || return 1
   done
 }
 fix_github_keys() {
@@ -126,11 +135,12 @@ fix_github_keys() {
   elif ! gh api user/ssh_signing_keys >/dev/null 2>&1; then
     gh auth refresh -h github.com -s "$scopes"
   fi
+  GH_USER=$(gh api user --jq .login)
   local k t title; for k in daily remote; do
     title="$(scutil --get ComputerName) $k (Secretive)"
     for t in authentication signing; do
-      local path=user/keys; [[ $t == signing ]] && path=user/ssh_signing_keys
-      github_has "$path" "$k" || gh ssh-key add "$HOME/.ssh/secretive-$k.pub" --type "$t" --title "$title"
+      local list=keys; [[ $t == signing ]] && list=ssh_signing_keys
+      github_has "$list" "$k" || gh ssh-key add "$HOME/.ssh/secretive-$k.pub" --type "$t" --title "$title"
     done
   done
 }
@@ -229,12 +239,7 @@ step "Secretive agent running"  check_secretive_agent fix_secretive_agent &&
 step "daily + remote keys"      check_secretive_keys  fix_secretive_keys &&
 step "Key links in .ssh"        check_key_links       fix_key_links &&
 step ".ssh/config include"      check_ssh_include     fix_ssh_include &&
-if (( CHECK_ONLY )) && ! gh_ok; then
-  # gh's keyring login is unreadable from SSH/herdr sessions; don't call that a failure.
-  gum style --foreground 3 "  ? Keys on GitHub (can't check: gh not logged in here)"
-else
-  step "Keys on GitHub (auth + signing)" check_github_keys fix_github_keys
-fi &&
+step "Keys on GitHub (auth + signing)" check_github_keys fix_github_keys &&
 if (( CHECK_ONLY )) && ! glab_ok; then
   gum style --foreground 3 "  ? Keys on GitLab (can't check: glab not logged in here)"
 else

@@ -65,7 +65,6 @@ update:
 	@echo "📦 Upgrading version:latest casks (skipped by plain upgrade)..."
 	@NONINTERACTIVE=1 brew upgrade -y --cask --greedy claude-code@latest
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
-	@bash scripts/mosh-firewall
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
 	@$(MAKE) zcompile
@@ -88,7 +87,7 @@ lint:
 	@echo "🔍 Validating configs..."
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@python3 -m json.tool config/karabiner/karabiner.json > /dev/null && echo "  ✓ Karabiner JSON OK" || exit 1
-	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/mosh-firewall scripts/setup && echo "  ✓ Install scripts OK" || exit 1
+	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup && echo "  ✓ Install scripts OK" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================

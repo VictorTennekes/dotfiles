@@ -64,8 +64,16 @@ step() {
   if $check; then ok "$name"; else bad "$name (still failing)"; FAILED=1; return 1; fi
 }
 
-# Secretive names its public keys by hash; find one by key name ("daily"/"remote").
-secretive_pub() { grep -l " $1@secretive\." "$SECRETIVE_DATA"/PublicKeys/*.pub 2>/dev/null | head -1; }
+# Secretive names its public keys by hash and leaves stale .pub files behind
+# when a key is deleted, so pick the file for this name whose key the agent
+# actually holds.
+secretive_pub() {
+  local f live; live=$(SSH_AUTH_SOCK="$SECRETIVE_SOCK" ssh-add -L 2>/dev/null)
+  for f in "$SECRETIVE_DATA"/PublicKeys/*.pub; do
+    grep -q " $1@secretive\." "$f" 2>/dev/null &&
+      grep -qF "$(awk '{print $2}' "$f")" <<<"$live" && { echo "$f"; return; }
+  done
+}
 pubkey() { awk '{print $1" "$2}' "$HOME/.ssh/secretive-$1.pub" 2>/dev/null; }
 gh_ok() { gh auth status >/dev/null 2>&1; }
 

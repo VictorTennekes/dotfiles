@@ -218,7 +218,12 @@ step "Secretive agent running"  check_secretive_agent fix_secretive_agent &&
 step "daily + remote keys"      check_secretive_keys  fix_secretive_keys &&
 step "Key links in .ssh"        check_key_links       fix_key_links &&
 step ".ssh/config include"      check_ssh_include     fix_ssh_include &&
-step "Keys on GitHub (auth + signing)" check_github_keys fix_github_keys &&
+if (( CHECK_ONLY )) && ! gh_ok; then
+  # gh's keyring login is unreadable from SSH/herdr sessions; don't call that a failure.
+  gum style --foreground 3 "  ? Keys on GitHub (can't check: gh not logged in here)"
+else
+  step "Keys on GitHub (auth + signing)" check_github_keys fix_github_keys
+fi &&
 step "Commit signing + allowed_signers" check_signing fix_signing
 
 section "Remote access"

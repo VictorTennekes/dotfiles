@@ -142,12 +142,14 @@ fix_bt_off_at_boot() {
 
 # Tailscale only runs when wanted: tailscaled isn't started at boot, and the
 # Waybar toggle starts/stops it. A polkit rule lets wheel do that without a
-# password (checked with pkcheck: rules.d itself isn't readable by users).
+# password. rules.d isn't readable by users, so the check asks systemd for a
+# no-op instead (start if running, stop if stopped): it still has to pass the
+# polkit check first, and fails rather than prompting.
 TS_RULE=/etc/polkit-1/rules.d/50-tailscaled.rules
 check_ts_on_demand() {
+  local noop=stop; systemctl is-active -q tailscaled && noop=start
   ! systemctl is-enabled -q tailscaled 2>/dev/null &&
-    pkcheck --action-id org.freedesktop.systemd1.manage-units --process $$ \
-      --detail unit tailscaled.service --detail verb start >/dev/null 2>&1
+    systemctl --no-ask-password "$noop" tailscaled 2>/dev/null
 }
 fix_ts_on_demand() {
   sudo systemctl disable tailscaled

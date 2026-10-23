@@ -179,39 +179,6 @@ fix_signing() {
   done
 }
 
-# Apps started outside a shell (Dock, Spotlight, launchd services) get macOS's
-# default agent, so their commit signing can't reach Secretive. A login item
-# points the whole GUI session at Secretive's socket.
-AGENT_PLIST="$HOME/Library/LaunchAgents/dotfiles.ssh-auth-sock.plist"
-# Read the GUI (Aqua) domain explicitly: `launchctl getenv` answers for the
-# caller's own session, which is the background one over SSH/herdr. No grep -q:
-# with pipefail, an early exit SIGPIPEs launchctl's large output into a failure.
-check_gui_agent() {
-  [[ -f "$AGENT_PLIST" ]] &&
-    launchctl print "gui/$(id -u)" 2>/dev/null | grep -F "SSH_AUTH_SOCK => $SECRETIVE_SOCK" >/dev/null
-}
-fix_gui_agent() {
-  mkdir -p "$(dirname "$AGENT_PLIST")"
-  cat >"$AGENT_PLIST" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key><string>dotfiles.ssh-auth-sock</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/bin/launchctl</string><string>setenv</string>
-    <string>SSH_AUTH_SOCK</string><string>$SECRETIVE_SOCK</string>
-  </array>
-  <key>RunAtLoad</key><true/>
-</dict>
-</plist>
-PLIST
-  launchctl bootout "gui/$(id -u)" "$AGENT_PLIST" 2>/dev/null
-  launchctl bootstrap "gui/$(id -u)" "$AGENT_PLIST"
-  sleep 1
-}
-
 check_remote_login() { nc -z -G 1 localhost 22 >/dev/null 2>&1; }
 fix_remote_login() {
   open "x-apple.systempreferences:com.apple.Sharing-Settings.extension"
@@ -284,8 +251,7 @@ if (( CHECK_ONLY )) && ! glab_ok; then
 else
   step "Keys on GitLab (auth + signing)" check_gitlab_keys fix_gitlab_keys
 fi &&
-step "Commit signing + allowed_signers" check_signing fix_signing &&
-step "GUI apps use Secretive agent" check_gui_agent fix_gui_agent
+step "Commit signing + allowed_signers" check_signing fix_signing
 
 section "Remote access"
 step "Remote Login on"          check_remote_login    fix_remote_login

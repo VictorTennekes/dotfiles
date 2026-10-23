@@ -90,6 +90,8 @@
 
 [gpg "ssh"]
 	allowedSignersFile = ~/.ssh/allowed_signers
+	# Always signs via Secretive, even from apps that only see macOS's agent.
+	program = ~/.config/git/ssh-sign
 
 # user.signingkey is per machine: scripts/setup writes it to ~/.gitconfig.local.
 [user]

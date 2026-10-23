@@ -1,0 +1,5 @@
+#!/bin/sh
+# git's ssh signer (gpg.ssh.program). Apps launched outside a shell get
+# macOS's own ssh-agent socket, which overrides `launchctl setenv`; point
+# ssh-keygen at Secretive explicitly so signing works from any caller.
+SSH_AUTH_SOCK="$HOME/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh" exec ssh-keygen "$@"

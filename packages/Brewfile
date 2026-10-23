@@ -73,6 +73,7 @@ cask "t3-code"
 # --- Remote Setup ---
 brew "tailscale"
 brew "tmux"
+cask "swiftbar"          # Menu bar host for config/swiftbar/server-mode toggle.
 brew "mosh"              # Instant local echo + survives sleep/roaming; Termius connects with it.
 brew "herdr"             # Agent-aware multiplexer; "agents" session for phone SSH (tmux = fallback).
 

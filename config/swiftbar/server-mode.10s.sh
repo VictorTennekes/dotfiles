@@ -31,22 +31,24 @@ case "$1" in
 esac
 
 # --- Menu bar rendering (SwiftBar runs this every 10s) ---
+# Same symbol both ways: outline = off, filled = on (battery pause shows in the menu).
+icon=externaldrive.connected.to.line.below
 "$TS" status >/dev/null 2>&1 && ts=up || ts=down
 pmset -g batt | grep -q "'AC Power'" && ac=1 || ac=0
 
 if running; then
   if (( ac )); then
-    echo "| sfimage=server.rack sfcolor=#a6e3a1"
+    echo "| sfimage=$icon.fill"
     echo "---"
     echo "Server mode: ON (Tailscale $ts)"
   else
-    echo "| sfimage=server.rack sfcolor=#fab387"
+    echo "| sfimage=$icon.fill"
     echo "---"
     echo "Server mode: paused, on battery (Tailscale $ts)"
   fi
   echo "Turn off | bash='$0' param1=off terminal=false refresh=true"
 else
-  echo "| sfimage=moon.zzz"
+  echo "| sfimage=$icon"
   echo "---"
   echo "Server mode: OFF (Tailscale $ts)"
   echo "Turn on | bash='$0' param1=on terminal=false refresh=true"

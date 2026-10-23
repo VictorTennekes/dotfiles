@@ -10,23 +10,46 @@ if [[ "$1" == "help" || "$1" == "--help" ]]; then
   return 0
 fi
 
-case "$1" in
-  check)   brew doctor; return ;;
-  dry-run) NONINTERACTIVE=1 brew update; brew upgrade --greedy --dry-run; return ;;
+# Homebrew on macOS, pacman + AUR (paru) on Arch
+case $OSTYPE in
+  darwin*)
+    case "$1" in
+      check)   brew doctor; return ;;
+      dry-run) NONINTERACTIVE=1 brew update; brew upgrade --greedy --dry-run; return ;;
+    esac
+    NONINTERACTIVE=1 brew update
+    if [[ -z "$(brew outdated)" ]]; then
+      echo -e "${GREEN}Nothing to upgrade.${RESET}"
+    else
+      NONINTERACTIVE=1 brew upgrade -y
+      NONINTERACTIVE=1 brew cleanup
+    fi
+    ;;
+  linux*)
+    case "$1" in
+      check)   pacman -Dk; return ;;
+      dry-run) checkupdates; paru -Qua; return ;;
+    esac
+    paru -Syu
+    # antidote is a git clone here, not a package
+    git -C "${XDG_DATA_HOME:-$HOME/.local/share}/antidote" pull -q
+    # Firmware (BIOS, touchpad, ...) via LVFS; only reports, never flashes
+    fwupdmgr refresh >/dev/null 2>&1
+    fwupdmgr get-updates >/dev/null 2>&1 &&
+      echo -e "${YELLOW}Firmware updates available: run 'fwupdmgr update'${RESET}"
+    ;;
 esac
-NONINTERACTIVE=1 brew update
-if [[ -z "$(brew outdated)" ]]; then
-  echo -e "${GREEN}Nothing to upgrade.${RESET}"
-else
-  NONINTERACTIVE=1 brew upgrade -y
-  NONINTERACTIVE=1 brew cleanup
-fi
 
 # Force-refresh the antidote bundle (same file plugins.zsh sources)
-if [[ -r "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" ]]; then
+for _antidote_zsh in "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" \
+                     "${XDG_DATA_HOME:-$HOME/.local/share}/antidote/antidote.zsh"; do
+  [[ -r "$_antidote_zsh" ]] && break
+done
+if [[ -r "$_antidote_zsh" ]]; then
   echo -e "${YELLOW}Regenerating zsh plugins...${RESET}"
-  source "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh"
+  source "$_antidote_zsh"
   antidote bundle < "${ZDOTDIR}/zsh_plugins.txt" >| "${ZSH_CACHE_DIR}/zsh_plugins_${HOST}.zsh"
 fi
+unset _antidote_zsh
 
 echo -e "${GREEN}Done!${RESET}"

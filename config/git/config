@@ -91,17 +91,12 @@
 [gpg "ssh"]
 	allowedSignersFile = ~/.ssh/allowed_signers
 
-# user.signingkey is per machine: scripts/setup writes it to ~/.gitconfig.local.
+# Per machine (scripts/setup writes them to ~/.gitconfig.local): user.signingkey
+# and the gh credential helper, which needs gh's absolute path (GUI apps on
+# macOS lack Homebrew on PATH, and the path differs per OS).
 [user]
 	email = 19930858+VictorTennekes@users.noreply.github.com
 
 # Include local config
 [include]
     path = ~/.gitconfig.local
-# Use gh for GitHub HTTPS auth (the empty helper clears any inherited ones).
-[credential "https://github.com"]
-	helper =
-	helper = !/opt/homebrew/bin/gh auth git-credential
-[credential "https://gist.github.com"]
-	helper =
-	helper = !/opt/homebrew/bin/gh auth git-credential

@@ -21,6 +21,10 @@ if [[ -z "$HOMEBREW_PREFIX" ]]; then
   fi
 fi
 
+# --- Editor ---
+export EDITOR=nvim
+export VISUAL=nvim
+
 # --- App Configurations ---
 export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'

@@ -1,4 +1,5 @@
-# Clipboard copy: OSC 52 over SSH (reaches the local terminal), else pbcopy.
+# Clipboard copy: OSC 52 over SSH (reaches the local terminal), else pbcopy
+# (macOS) or wl-copy (Wayland).
 # With a file argument: copy that file's contents.
 # Otherwise: read from stdin.
 local _copy
@@ -9,7 +10,7 @@ if [[ -n "$SSH_TTY" || -n "$SSH_CLIENT" ]]; then
   }
   _copy=(_osc52_copy)
 else
-  _copy=(pbcopy)
+  (( $+commands[pbcopy] )) && _copy=(pbcopy) || _copy=(wl-copy)
 fi
 
 if [[ $# -gt 0 ]]; then

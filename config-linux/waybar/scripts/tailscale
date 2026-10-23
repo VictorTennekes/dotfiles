@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Waybar Tailscale module. No args: print status JSON. "toggle": connect/disconnect.
+# Works without sudo because this user is the Tailscale operator.
+if [[ $1 == toggle ]]; then
+  if [[ $(tailscale status --json 2>/dev/null | jq -r .BackendState) == Running ]]; then
+    tailscale down
+  else
+    tailscale up --operator="$USER"
+  fi
+  pkill -RTMIN+8 waybar   # refresh the icon immediately
+  exit
+fi
+
+json=$(tailscale status --json 2>/dev/null) || { echo '{"text":"󰖂","class":"off","tooltip":"Tailscale: not running"}'; exit; }
+state=$(jq -r .BackendState <<<"$json")
+if [[ $state == Running ]]; then
+  ip=$(jq -r '.Self.TailscaleIPs[0]' <<<"$json")
+  peers=$(jq -r '[.Peer[] | select(.Online) | (.DNSName | split(".")[0])] | join(", ")' <<<"$json")
+  printf '{"text":"󰖂","class":"on","tooltip":"Tailscale: connected (%s)\\nOnline: %s"}\n' "$ip" "${peers:-none}"
+else
+  printf '{"text":"󰖂","class":"off","tooltip":"Tailscale: %s (click to connect)"}\n' "$state"
+fi

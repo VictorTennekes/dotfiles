@@ -1,13 +1,19 @@
 #!/bin/bash
-# Removes symlinks created by stow.
+# Removes symlinks created by stow (shared config/ plus this OS's config-<os>/).
 
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
 
+case "$(uname -s)" in
+    Darwin) OS_CONFIG=config-macos ;;
+    Linux)  OS_CONFIG=config-linux ;;
+    *)      echo "❌ Unsupported OS: $(uname -s)"; exit 1 ;;
+esac
+
 echo "🧹 Removing config symlinks..."
-stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D config
+stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D config "$OS_CONFIG"
 
 echo "🧹 Removing home symlinks..."
 stow -d "$PROJECT_ROOT" -t "$HOME" -D home

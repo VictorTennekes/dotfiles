@@ -1,0 +1,79 @@
+/* Catppuccin Mocha */
+@define-color base     #1e1e2e;
+@define-color mantle   #181825;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color overlay0 #6c7086;
+@define-color subtext0 #a6adc8;
+@define-color text     #cdd6f4;
+@define-color mauve    #cba6f7;
+@define-color red      #f38ba8;
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 13px;
+}
+
+.notification-row { outline: none; }
+.notification-row:focus,
+.notification-row:hover { background: transparent; }
+
+.notification {
+  background: alpha(@base, 0.95);
+  border: 1px solid @surface1;
+  border-radius: 12px;
+  margin: 6px 8px;
+  padding: 0;
+  box-shadow: none;
+}
+.notification.critical { border-color: @red; }
+
+.notification-content { padding: 10px; }
+.summary   { color: @text; font-weight: bold; }
+.time      { color: @overlay0; font-size: 11px; }
+.body      { color: @subtext0; }
+
+.notification-default-action,
+.notification-action {
+  background: transparent;
+  border: none;
+  color: @text;
+}
+.notification-default-action:hover,
+.notification-action:hover { background: @surface0; border-radius: 12px; }
+
+.close-button {
+  background: @surface0;
+  color: @text;
+  border-radius: 100%;
+  margin: 8px;
+  min-width: 22px;
+  min-height: 22px;
+}
+.close-button:hover { background: @red; color: @base; }
+
+.control-center {
+  background: alpha(@mantle, 0.95);
+  border: 1px solid @surface1;
+  border-radius: 14px;
+  color: @text;
+}
+.control-center-list { background: transparent; }
+
+.widget-title { color: @mauve; font-weight: bold; margin: 10px 12px 4px; }
+.widget-title > button {
+  background: @surface0;
+  color: @text;
+  border: none;
+  border-radius: 8px;
+  padding: 2px 10px;
+}
+.widget-title > button:hover { background: @red; color: @base; }
+
+.widget-dnd { margin: 4px 12px; color: @subtext0; }
+.widget-dnd > switch { background: @surface0; border-radius: 12px; }
+.widget-dnd > switch:checked { background: @mauve; }
+.widget-dnd > switch slider { background: @text; border-radius: 12px; }
+
+.widget-mpris { margin: 4px 8px; }
+.widget-mpris-player { background: @surface0; border-radius: 12px; padding: 8px; }

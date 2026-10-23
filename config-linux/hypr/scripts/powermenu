@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Power menu (Super+Escape)
+choice=$(printf '%s\n' "󰌾  Lock" "󰤄  Suspend" "󰍃  Logout" "󰜉  Reboot" "󰐥  Shut down" |
+  fuzzel --dmenu --prompt '󰐥  ' --lines 5 --width 20) || exit 0
+case "$choice" in
+  *Lock)      loginctl lock-session ;;
+  *Suspend)   systemctl suspend ;;
+  *Logout)    hyprctl dispatch 'hl.dsp.exit()' ;;
+  *Reboot)    systemctl reboot ;;
+  *"Shut down") systemctl poweroff ;;
+esac

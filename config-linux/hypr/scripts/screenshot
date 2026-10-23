@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# macOS-style screenshots: saved to ~/Screenshots and copied to the clipboard.
+#   screen = whole monitor (Super+Shift+3), region = drag a box (Super+Shift+4),
+#   edit = region, then annotate in satty (Super+Shift+5)
+set -euo pipefail
+dir="$HOME/Screenshots"; mkdir -p "$dir"
+file="$dir/Screenshot $(date '+%Y-%m-%d at %H.%M.%S').png"
+
+case "${1:-region}" in
+  screen) grim -o "$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')" "$file" ;;
+  region) grim -g "$(slurp -d -b 1e1e2e66 -c cba6f7)" "$file" ;;
+  edit)   grim -g "$(slurp -d -b 1e1e2e66 -c cba6f7)" - |
+            satty --filename - --output-filename "$file" --copy-command wl-copy --early-exit
+          exit 0 ;;
+esac
+
+wl-copy < "$file"
+notify-send -a Screenshot -i "$file" "Screenshot saved" "${file/#$HOME/\~}"

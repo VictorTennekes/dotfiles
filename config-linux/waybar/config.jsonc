@@ -1,0 +1,147 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 30,
+  "margin-top": 6,
+  "margin-left": 8,
+  "margin-right": 8,
+  "spacing": 6,
+  "reload_style_on_change": true,
+
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "tray",
+    "group/hardware",
+    "power-profiles-daemon",
+    "custom/tailscale",
+    "bluetooth",
+    "network",
+    "pulseaudio",
+    "battery",
+    "custom/notification"
+  ],
+
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "format-icons": { "default": "●", "active": "●", "empty": "○" },
+    "persistent-workspaces": { "*": 5 },
+    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
+    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'"
+  },
+
+  "hyprland/window": {
+    "max-length": 50,
+    "separate-outputs": true
+  },
+
+  // macOS menu bar style: "Fri 8:24 PM"; hover for the date, click for a calendar
+  "clock": {
+    "format": "{:%a %I:%M %p}",
+    "tooltip-format": "<tt>{calendar}</tt>",
+    "calendar": {
+      "mode": "month",
+      "weeks-pos": "left",
+      "format": {
+        "months": "<span color='#cba6f7'><b>{}</b></span>",
+        "weekdays": "<span color='#89b4fa'><b>{}</b></span>",
+        "weeks": "<span color='#6c7086'>W{}</span>",
+        "today": "<span color='#f38ba8'><b><u>{}</u></b></span>"
+      }
+    }
+  },
+
+  "tray": { "icon-size": 15, "spacing": 8 },
+
+  // Collapsed by default: click the chip to show CPU / memory / temperature
+  "group/hardware": {
+    "orientation": "horizontal",
+    "drawer": { "transition-duration": 250, "click-to-reveal": true, "transition-left-to-right": false },
+    "modules": ["custom/hw", "cpu", "memory", "temperature"]
+  },
+  "custom/hw": { "format": "󰵆", "tooltip-format": "Hardware (click)" },
+  "cpu": { "interval": 10, "format": "󰻠 {usage}%", "on-click": "footclient btop" },
+  "memory": { "interval": 30, "format": "󰍛 {percentage}%", "tooltip-format": "{used:0.1f}G / {total:0.1f}G" },
+  "temperature": { "interval": 10, "format": "󰔏 {temperatureC}°", "critical-threshold": 90 },
+
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+    "format-icons": {
+      "default": "󰾅",
+      "performance": "󰓅",
+      "balanced": "󰾅",
+      "power-saver": "󰾆"
+    }
+  },
+
+  // Click to connect/disconnect (no sudo: this user is the Tailscale operator)
+  "custom/tailscale": {
+    "exec": "~/.config/waybar/scripts/tailscale",
+    "on-click": "~/.config/waybar/scripts/tailscale toggle",
+    "return-type": "json",
+    "interval": 30,
+    "signal": 8
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-off": "󰂲",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱",
+    "tooltip-format-connected": "{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias} {device_battery_percentage}%",
+    "on-click": "footclient --app-id=org.tui.floating bluetui"
+  },
+
+  "network": {
+    "format-wifi": "{icon}",
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰤮",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
+    "tooltip-format-disconnected": "Disconnected",
+    "interval": 10,
+    "on-click": "footclient --app-id=org.tui.floating impala"
+  },
+
+  "pulseaudio": {
+    "format": "{icon}",
+    "format-muted": "󰝟",
+    "format-icons": { "headphone": "󰋋", "default": ["󰕿", "󰖀", "󰕾"] },
+    "tooltip-format": "{desc}: {volume}%",
+    "scroll-step": 5,
+    "on-click": "footclient --app-id=org.tui.floating wiremix",
+    "on-click-right": "swayosd-client --output-volume mute-toggle"
+  },
+
+  "battery": {
+    "interval": 30,
+    "states": { "warning": 25, "critical": 10 },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󰚥 {capacity}%",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "tooltip-format": "{timeTo}\n{power:.1f} W"
+  },
+
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󰂚<span foreground='#f38ba8'><sup>●</sup></span>",
+      "none": "󰂚",
+      "dnd-notification": "󰂛<span foreground='#f38ba8'><sup>●</sup></span>",
+      "dnd-none": "󰂛",
+      "inhibited-notification": "󰂚",
+      "inhibited-none": "󰂚",
+      "dnd-inhibited-notification": "󰂛",
+      "dnd-inhibited-none": "󰂛"
+    },
+    "return-type": "json",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  }
+}

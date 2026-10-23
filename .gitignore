@@ -6,7 +6,7 @@
 Brewfile.lock.json
 
 # Karabiner
-config/karabiner/automatic_backups
+config-macos/karabiner/automatic_backups
 
 # K9S
 config/k9s/benchmarks

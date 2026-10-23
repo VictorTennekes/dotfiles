@@ -45,6 +45,8 @@ Framework laptop runs Omarchy, configured outside this repo).
 - Catppuccin Mocha theme everywhere
 - XDG Base Directory compliance
 - Bitwarden for passwords; Secretive (Secure Enclave) for SSH
-  keys: `daily` (Touch ID) and `remote` (no approval, for
-  phone/agent sessions). Per-machine signing key lives in
-  `~/.gitconfig.local`, written by `scripts/setup`.
+  keys. Default git key (auth + signing) is `remote` (no
+  approval) so apps, T3 Code, phone and herdr sessions never
+  block; local interactive terminals opt into `daily` (Touch ID)
+  via `config/zsh/config/ssh.zsh`. Per-machine signing key lives
+  in `~/.gitconfig.local`, written by `scripts/setup`.

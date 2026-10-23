@@ -10,10 +10,11 @@ if [[ -n "$SSH_CONNECTION" && -z "$HERDR_ENV" && -z "$TMUX" && -t 0 ]]; then
   print -u2 "ssh.zsh: agents session failed, rescue shell."
 fi
 
-# Inside the "agents" session (or any SSH shell) git must not need the laptop
-# screen: the daily Secretive key wants Touch ID per use, which nobody can give
-# from a phone. Use the no-approval "remote" key for auth + commit signing.
-if [[ "$HERDR_SESSION" == agents || -n "$SSH_CONNECTION" ]]; then
-  export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/secretive-remote.pub -o IdentitiesOnly=yes"
-  export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.signingkey GIT_CONFIG_VALUE_0="$HOME/.ssh/secretive-remote.pub"
+# Git keys default to the no-approval Secretive "remote" key (config/ssh/config,
+# ~/.gitconfig.local), so apps, T3 Code, phone and herdr sessions never wait on
+# Touch ID. Local interactive terminals opt into "daily" (Touch ID per use) for
+# auth + signing; ssh tries it first since Secretive lists it first.
+if [[ -z "$SSH_CONNECTION" && "$HERDR_SESSION" != agents && -z "$T3CODE_CLI_PATH" ]]; then
+  export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/secretive-daily.pub"
+  export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.signingkey GIT_CONFIG_VALUE_0="$HOME/.ssh/secretive-daily.pub"
 fi

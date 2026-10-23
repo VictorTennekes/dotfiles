@@ -2,11 +2,12 @@
 # so these win over anything later in that file. Machine-specific hosts stay
 # in ~/.ssh/config itself.
 #
-# Git hosts use the Secretive agent. No IdentityFile here on purpose:
-# ssh_config IdentityFile entries accumulate with `-i`, so pinning "daily"
-# here would make it offered first even when SSH/phone sessions ask for
-# "remote" (config/zsh/config/ssh.zsh), triggering an unanswerable Touch ID
-# prompt. Locally the agent offers "daily" first (Touch ID).
+# Default git key is the Secretive "remote" key (no approval), so apps, T3
+# Code, phone and herdr sessions never wait on Touch ID. Local interactive
+# terminals add the "daily" key with -i (config/zsh/config/ssh.zsh); ssh offers
+# allowed keys in the agent's order, and Secretive lists daily first.
 Host github.com gitlab.com
   User git
   IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+  IdentityFile ~/.ssh/secretive-remote.pub
+  IdentitiesOnly yes

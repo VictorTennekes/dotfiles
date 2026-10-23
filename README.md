@@ -88,8 +88,9 @@ file, `~/.work-laptop`. Create it once on the work machine: `touch ~/.work-lapto
 
 - **Clipboard.** The `clip` zsh function uses `pbcopy`, or OSC 52 over SSH
   so copies land on the local terminal.
-- **SSH agent.** Secretive. `daily` key needs Touch ID per use; `remote`
-  key (no approval) is used automatically in SSH and herdr sessions.
+- **SSH agent.** Secretive. Git defaults to the `remote` key (no approval),
+  so apps and phone/herdr sessions never block; local terminals use the
+  `daily` key (Touch ID per use).
 - **Keyboard remapping.** Karabiner (`config/karabiner/`).
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.

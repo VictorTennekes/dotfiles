@@ -165,12 +165,13 @@ check_signing() {
   local key email
   key=$(git config --file "$HOME/.gitconfig.local" user.signingkey)
   email=$(git config user.email)
-  [[ "$key" == "$HOME/.ssh/secretive-daily.pub" ]] &&
+  [[ "$key" == "$HOME/.ssh/secretive-remote.pub" ]] &&
     grep -qF "$email $(pubkey daily)" "$HOME/.ssh/allowed_signers" 2>/dev/null &&
     grep -qF "$email $(pubkey remote)" "$HOME/.ssh/allowed_signers" 2>/dev/null
 }
 fix_signing() {
-  git config --file "$HOME/.gitconfig.local" user.signingkey "$HOME/.ssh/secretive-daily.pub"
+  # Default signer is "remote" (no approval); terminals opt into daily (ssh.zsh).
+  git config --file "$HOME/.gitconfig.local" user.signingkey "$HOME/.ssh/secretive-remote.pub"
   local email k; email=$(git config user.email)
   for k in daily remote; do
     grep -qF "$email $(pubkey "$k")" "$HOME/.ssh/allowed_signers" 2>/dev/null ||

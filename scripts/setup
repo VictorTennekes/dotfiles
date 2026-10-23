@@ -123,7 +123,7 @@ fix_system_files() {
 }
 
 SERVICES=(iwd systemd-resolved bluetooth power-profiles-daemon systemd-timesyncd
-          fstrim.timer paccache.timer tailscaled sddm)
+          fstrim.timer paccache.timer sddm)
 check_services() {
   local s; for s in "${SERVICES[@]}"; do systemctl is-enabled -q "$s" 2>/dev/null || return 1; done
   ! systemctl is-enabled -q NetworkManager 2>/dev/null   # iwd manages Wi-Fi
@@ -131,6 +131,27 @@ check_services() {
 fix_services() {
   systemctl is-enabled -q NetworkManager 2>/dev/null && sudo systemctl disable NetworkManager
   sudo systemctl enable "${SERVICES[@]}"
+}
+
+# Bluetooth daemon runs, but the radio stays off at boot; switch it on when
+# needed (Waybar: right-click the icon, or bluetui).
+check_bt_off_at_boot() { grep -q '^AutoEnable=false' /etc/bluetooth/main.conf; }
+fix_bt_off_at_boot() {
+  sudo sed -i 's/^#\?AutoEnable=.*/AutoEnable=false/' /etc/bluetooth/main.conf
+}
+
+# Tailscale only runs when wanted: tailscaled isn't started at boot, and the
+# Waybar toggle starts/stops it. A polkit rule lets wheel do that without a
+# password (checked with pkcheck: rules.d itself isn't readable by users).
+TS_RULE=/etc/polkit-1/rules.d/50-tailscaled.rules
+check_ts_on_demand() {
+  ! systemctl is-enabled -q tailscaled 2>/dev/null &&
+    pkcheck --action-id org.freedesktop.systemd1.manage-units --process $$ \
+      --detail unit tailscaled.service --detail verb start >/dev/null 2>&1
+}
+fix_ts_on_demand() {
+  sudo systemctl disable tailscaled
+  sudo install -m644 "$ROOT/system-linux/polkit/50-tailscaled.rules" "$TS_RULE"
 }
 
 RESOLV_STUB=/run/systemd/resolve/stub-resolv.conf
@@ -272,7 +293,7 @@ check_tailscale() {
 }
 fix_tailscale() {
   if [[ $OS == macos ]]; then sudo brew services start tailscale
-  else sudo systemctl enable --now tailscaled; fi
+  else sudo systemctl start tailscaled; fi   # not enabled: on demand
   manual "Run 'sudo tailscale up' in another terminal and finish the login in the browser."
 }
 
@@ -319,6 +340,8 @@ else
   section "System"
   step "System files (/etc)"      check_system_files    fix_system_files
   step "Services enabled"         check_services        fix_services
+  step "Bluetooth off at boot"    check_bt_off_at_boot  fix_bt_off_at_boot
+  step "Tailscale on demand"      check_ts_on_demand    fix_ts_on_demand
   step "DNS via systemd-resolved" check_resolv          fix_resolv
   step "pacman colors"            check_pacman_color    fix_pacman_color
   step "Login screen theme"       check_sddm_theme      fix_sddm_theme
@@ -348,8 +371,13 @@ if [[ $OS == macos ]]; then
   step "sshd keys-only"           check_sshd_keys_only  fix_sshd_keys_only
   step "authorized_keys present"  check_authorized_keys fix_authorized_keys
 fi
-step "Tailscale logged in"      check_tailscale       fix_tailscale &&
-step "Tailscale operator"       check_ts_operator     fix_ts_operator
+if [[ $OS == arch ]] && ! systemctl is-active -q tailscaled; then
+  # Off by design until toggled from Waybar; its state can't be read meanwhile.
+  gum style --foreground 3 "  - Tailscale (off; start it from the Waybar icon)"
+else
+  step "Tailscale logged in"      check_tailscale       fix_tailscale &&
+  step "Tailscale operator"       check_ts_operator     fix_ts_operator
+fi
 if [[ $OS == macos ]]; then
   step "Awake on charger"         check_ac_awake        fix_ac_awake
   step "SwiftBar plugin folder"   check_swiftbar        fix_swiftbar

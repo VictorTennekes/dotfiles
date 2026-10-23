@@ -91,7 +91,10 @@
     "format-connected": "󰂱",
     "tooltip-format-connected": "{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias} {device_battery_percentage}%",
-    "on-click": "footclient --app-id=org.tui.floating bluetui"
+    "tooltip-format-off": "Bluetooth off (right-click to turn on)",
+    // Radio is off at boot; right-click toggles it, left-click opens bluetui
+    "on-click": "footclient --app-id=org.tui.floating bluetui",
+    "on-click-right": "bluetoothctl show | grep -q 'Powered: yes' && bluetoothctl power off || bluetoothctl power on"
   },
 
   "network": {

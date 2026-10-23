@@ -135,6 +135,17 @@ fix_github_keys() {
   done
 }
 
+glab_ok() { glab auth status >/dev/null 2>&1; }
+gitlab_has() { glab ssh-key list 2>/dev/null | grep -qF "$(pubkey "$1" | awk '{print $2}')"; }
+check_gitlab_keys() { glab_ok && gitlab_has daily && gitlab_has remote; }
+fix_gitlab_keys() {
+  glab_ok || glab auth login -h gitlab.com
+  local k; for k in daily remote; do
+    gitlab_has "$k" || glab ssh-key add "$HOME/.ssh/secretive-$k.pub" \
+      -t "$(scutil --get ComputerName) $k (Secretive)" --usage-type auth_and_signing
+  done
+}
+
 check_signing() {
   local key email
   key=$(git config --file "$HOME/.gitconfig.local" user.signingkey)
@@ -224,6 +235,11 @@ if (( CHECK_ONLY )) && ! gh_ok; then
 else
   step "Keys on GitHub (auth + signing)" check_github_keys fix_github_keys
 fi &&
+if (( CHECK_ONLY )) && ! glab_ok; then
+  gum style --foreground 3 "  ? Keys on GitLab (can't check: glab not logged in here)"
+else
+  step "Keys on GitLab (auth + signing)" check_gitlab_keys fix_gitlab_keys
+fi &&
 step "Commit signing + allowed_signers" check_signing fix_signing
 
 section "Remote access"
@@ -244,7 +260,6 @@ fi
 if (( ! CHECK_ONLY )); then
   section "Manual, not checkable from here"
   gum style --margin "0 2" \
-    "• GitLab: add ~/.ssh/secretive-{daily,remote}.pub at gitlab.com/-/user_settings/ssh_keys" \
     "• Termius host: enable Mosh, server command /opt/homebrew/bin/mosh-server new"
 fi
 

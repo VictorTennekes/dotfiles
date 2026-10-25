@@ -2,7 +2,6 @@
 .DS_Store
 
 # Homebrew
-.brew_install.sh
 Brewfile.lock.json
 
 # K9S

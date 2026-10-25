@@ -21,7 +21,7 @@ and GNU Stow. XDG Base Directory compliant throughout.
 - **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
   signing with a per-machine SSH key.
 - **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
-- **TUIs:** `btop`, `yazi`, `k9s`, `fastfetch`.
+- **TUIs:** `btop`, `k9s`, `fastfetch`; `yazi` on Linux.
 
 ---
 
@@ -70,11 +70,11 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 │   └── aur.txt       # Arch: AUR (paru)
 ├── config/           # Shared app configs → ~/.config/ (both OSes)
 │   ├── bat/  btop/  fastfetch/  git/  k9s/  mise/
-│   ├── nvim/  tmux/  yazi/  zsh/
+│   ├── nvim/  tmux/  zsh/
 ├── config-macos/     # macOS-only → ~/.config/
 │   ├── ghostty/  swiftbar/
 ├── config-linux/     # Linux-only → ~/.config/
-│   ├── hypr/  waybar/  swaync/  swayosd/  fuzzel/  foot/
+│   ├── hypr/  waybar/  swaync/  swayosd/  fuzzel/  foot/  yazi/
 ├── system-linux/     # /etc files installed by setup on Arch
 ├── home/             # Home-level dotfiles → ~/
 │   └── .zshenv

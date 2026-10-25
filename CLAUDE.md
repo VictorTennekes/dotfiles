@@ -7,10 +7,10 @@ pacman + paru (`packages/arch.txt`, `packages/aur.txt`) on Arch.
 ## Structure
 
 - `config/` — shared app configs stowed to `~/.config/` on both OSes
-  (zsh, git, nvim, btop, k9s, yazi, bat, mise, fastfetch, tmux)
+  (zsh, git, nvim, btop, k9s, bat, mise, fastfetch, tmux)
 - `config-macos/` — macOS-only (ghostty, swiftbar)
 - `config-linux/` — Linux-only (hypr, waybar, swaync, swayosd, fuzzel,
-  foot)
+  foot, yazi)
 - `system-linux/` — `/etc` files that `scripts/setup` installs on Arch
   (zram, sysctl, journald, iwd, SDDM)
 - `home/` — home-level dotfiles stowed to `~/` (.zshenv)

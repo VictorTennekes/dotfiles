@@ -98,7 +98,6 @@ cask "alfred"
 cask "keepingyouawake"
 cask "appcleaner"
 cask "thaw"                 # A modern menu bar manager for macOS.
-cask "karabiner-elements"   # A powerful and stable keyboard customizer.
 cask "macpacker"            # Archive manager (FOSS).
 cask "raspberry-pi-imager"  # Install OS images on microSD cards for Raspberry Pi.
 cask "lulu"                 # A free macOS firewall.

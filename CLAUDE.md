@@ -8,7 +8,7 @@ pacman + paru (`packages/arch.txt`, `packages/aur.txt`) on Arch.
 
 - `config/` — shared app configs stowed to `~/.config/` on both OSes
   (zsh, git, nvim, btop, k9s, yazi, bat, mise, fastfetch, tmux)
-- `config-macos/` — macOS-only (ghostty, karabiner, swiftbar)
+- `config-macos/` — macOS-only (ghostty, swiftbar)
 - `config-linux/` — Linux-only (hypr, waybar, swaync, swayosd, fuzzel,
   foot)
 - `system-linux/` — `/etc` files that `scripts/setup` installs on Arch

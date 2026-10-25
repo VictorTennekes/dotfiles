@@ -5,9 +5,6 @@
 .brew_install.sh
 Brewfile.lock.json
 
-# Karabiner
-config-macos/karabiner/automatic_backups
-
 # K9S
 config/k9s/benchmarks
 config/k9s/clusters

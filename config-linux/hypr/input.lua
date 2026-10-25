@@ -1,7 +1,7 @@
 hl.config({
     input = {
         kb_layout  = "us",
-        -- Caps Lock -> Escape (same as Karabiner on the Mac)
+        -- Caps Lock -> Escape
         kb_options = "caps:escape",
 
         -- macOS KeyRepeat=2 (30ms -> ~33/s) and InitialKeyRepeat=15 (225ms)

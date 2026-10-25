@@ -72,7 +72,7 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 │   ├── bat/  btop/  fastfetch/  git/  k9s/  mise/
 │   ├── nvim/  tmux/  yazi/  zsh/
 ├── config-macos/     # macOS-only → ~/.config/
-│   ├── ghostty/  karabiner/  swiftbar/
+│   ├── ghostty/  swiftbar/
 ├── config-linux/     # Linux-only → ~/.config/
 │   ├── hypr/  waybar/  swaync/  swayosd/  fuzzel/  foot/
 ├── system-linux/     # /etc files installed by setup on Arch
@@ -101,8 +101,8 @@ branches on the OS (brew vs paru).
   signing; it keeps working with the screen locked, so T3 Code and phone
   sessions can push while you're away. Per-machine git settings (signing
   key, gh credential helper) live in `~/.gitconfig.local`, written by setup.
-- **Keyboard remapping.** Karabiner on macOS (`config-macos/karabiner/`);
-  Caps Lock → Escape via `kb_options` in Hyprland on Linux.
+- **Keyboard remapping.** Caps Lock → Escape via `kb_options` in Hyprland
+  on Linux; none on macOS.
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.
 - **Wallpapers (Linux)** aren't in the repo. swaybg and hyprlock both use

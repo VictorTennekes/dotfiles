@@ -4,9 +4,8 @@
 export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 
-# antidote: regenerate the static bundle if zsh_plugins.txt is newer (or it
-# was bundled on a different machine — paths in the output are absolute).
-_antidote_bundle="${ZSH_CACHE_DIR}/zsh_plugins_${HOST}.zsh"
+# antidote: regenerate the static bundle if zsh_plugins.txt is newer.
+_antidote_bundle="${ZSH_CACHE_DIR}/zsh_plugins.zsh"
 if [[ ! -s "$_antidote_bundle" || "${ZDOTDIR}/zsh_plugins.txt" -nt "$_antidote_bundle" ]]; then
   # Homebrew on macOS, a git clone in ~/.local/share elsewhere
   for _antidote_zsh in "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" \

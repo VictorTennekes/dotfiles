@@ -40,15 +40,16 @@ case $OSTYPE in
     ;;
 esac
 
-# Force-refresh the antidote bundle (same file plugins.zsh sources)
+# Update the zsh plugins and refresh the bundle (same file plugins.zsh sources)
 for _antidote_zsh in "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" \
                      "${XDG_DATA_HOME:-$HOME/.local/share}/antidote/antidote.zsh"; do
   [[ -r "$_antidote_zsh" ]] && break
 done
 if [[ -r "$_antidote_zsh" ]]; then
-  echo -e "${YELLOW}Regenerating zsh plugins...${RESET}"
+  echo -e "${YELLOW}Updating zsh plugins...${RESET}"
   source "$_antidote_zsh"
-  antidote bundle < "${ZDOTDIR}/zsh_plugins.txt" >| "${ZSH_CACHE_DIR}/zsh_plugins_${HOST}.zsh"
+  antidote update
+  antidote bundle < "${ZDOTDIR}/zsh_plugins.txt" >| "${ZSH_CACHE_DIR}/zsh_plugins.zsh"
 fi
 unset _antidote_zsh
 

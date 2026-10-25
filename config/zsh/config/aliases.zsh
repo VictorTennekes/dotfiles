@@ -18,15 +18,12 @@ alias f="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --b
 
 # System info
 alias ff="fastfetch"
-# fastfetch with a random pokemon as logo instead of the distro logo
-alias ffp="fastfetch --logo-type file-raw --logo <(pokemon-colorscripts -rn charizard,marshtomp,greninja,meganium,mewtwo,suicune,umbreon,sylveon --no-title)"
 
 # LLM helpers
 alias tc='eza --tree --git-ignore -I .git | clip'
 
 # System replacements — guarded so a fresh machine without these tools still works
 (( $+commands[bat]    )) && alias cat='bat'
-(( $+commands[zoxide] )) && alias cd='z'
 if (( $+commands[eza] )); then
   alias ls='eza --icons --group-directories-first'
   alias ll='eza --icons --group-directories-first -la'

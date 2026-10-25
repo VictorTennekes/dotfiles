@@ -31,7 +31,7 @@ _cache_init() {
 
 # Use ${commands[...]} (zsh hash lookup) instead of $(command -v ...) to avoid forks
 (( $+commands[fzf] ))      && _cache_init fzf      "fzf --zsh"            "${commands[fzf]}"
-(( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh"      "${commands[zoxide]}"
+(( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh --cmd cd" "${commands[zoxide]}"
 (( $+commands[starship] )) && _cache_init starship "starship init zsh"    "${commands[starship]}"
 (( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}"
 # mise's precmd hook forks `mise hook-env` on every prompt (~12ms). Keep only

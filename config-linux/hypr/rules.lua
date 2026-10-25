@@ -14,7 +14,7 @@ hl.window_rule({
 -- Small utility windows float, centered
 hl.window_rule({
     name  = "float-utilities",
-    match = { class = "^(org.pulseaudio.pavucontrol|blueberry.py|nwg-look|xdg-desktop-portal-gtk|hyprland-share-picker|com.gabm.satty|org.tui.floating)$" },
+    match = { class = "^(xdg-desktop-portal-gtk|hyprland-share-picker|com.gabm.satty|org.tui.floating)$" },
     float  = true,
     center = true,
     size   = "900 600",

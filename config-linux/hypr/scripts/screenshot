@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # macOS-style screenshots: saved to ~/Screenshots and copied to the clipboard.
-#   screen = whole monitor (Super+Shift+3), region = drag a box (Super+Shift+4),
-#   edit = region, then annotate in satty (Super+Shift+5)
+#   screen = whole monitor (Alt+Shift+3), region = drag a box (Alt+Shift+4),
+#   edit = region, then annotate in satty (Alt+Shift+5)
 set -euo pipefail
 dir="$HOME/Screenshots"; mkdir -p "$dir"
 file="$dir/Screenshot $(date '+%Y-%m-%d at %H.%M.%S').png"

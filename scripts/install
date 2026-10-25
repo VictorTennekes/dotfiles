@@ -25,19 +25,6 @@ else
     echo "✅ 'nvim' config already exists. Skipping clone."
 fi
 
-# --- 0b. Install pokemon-colorscripts (not in Homebrew or the Arch repos) ---
-if ! command -v pokemon-colorscripts &>/dev/null; then
-    echo "📦 'pokemon-colorscripts' not found — installing to ~/.local..."
-    POKEMON_SRC="$HOME/.local/share/pokemon-colorscripts"
-    git clone --depth 1 https://gitlab.com/phoneybadger/pokemon-colorscripts.git "$POKEMON_SRC" || {
-        echo "❌ Failed to clone pokemon-colorscripts."
-    }
-    mkdir -p "$HOME/.local/bin"
-    ln -sf "$POKEMON_SRC/pokemon-colorscripts.py" "$HOME/.local/bin/pokemon-colorscripts"
-else
-    echo "✅ 'pokemon-colorscripts' already installed. Skipping."
-fi
-
 # --- 1. Drop links left dangling by configs that moved inside the repo ---
 # (e.g. ~/.config/ghostty -> config/ghostty after it moved to config-macos/)
 find "$HOME/.config" "$HOME" -maxdepth 1 -type l ! -exec test -e {} \; -print 2>/dev/null |

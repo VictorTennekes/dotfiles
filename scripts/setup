@@ -184,8 +184,14 @@ fix_wallpaper() {
     "ln -sfn <file> ~/Pictures/Wallpapers/current"
 }
 
+# A stow dry run prints a LINK (or conflict) line for anything not linked yet.
 check_links() {
-  [[ -L "$HOME/.zshenv" && -L "$HOME/.config/zsh" ]]
+  command -v stow >/dev/null || return 1
+  local os_config=config-linux out
+  [[ $OS == macos ]] && os_config=config-macos
+  out=$({ stow -n -v -d "$ROOT" -t "$HOME/.config" config "$os_config"
+          stow -n -v -d "$ROOT" -t "$HOME" home; } 2>&1)
+  ! grep -E '^LINK|conflict' <<<"$out" >/dev/null
 }
 fix_links() { bash "$ROOT/scripts/install"; }
 
@@ -203,11 +209,12 @@ GH_USER=""
 github_user() {
   ssh -T -o IdentitiesOnly=yes -i "$KEY" git@github.com 2>&1 | sed -n 's/^Hi \([^!]*\)!.*/\1/p'
 }
-# Anonymous API calls are capped at 60/hour; use gh's token when it has one
-# (5000/hour, and public key lists need no extra scopes).
+# Anonymous API calls are capped at 60/hour; go through gh when it's logged in
+# (5000/hour, public key lists need no extra scopes, and the token stays off
+# the command line).
 github_get() {
-  local token; token=$(gh auth token 2>/dev/null)
-  curl -fsS ${token:+-H "Authorization: Bearer $token"} "https://api.github.com/$1" 2>/dev/null
+  if gh_ok; then gh api "$1" 2>/dev/null
+  else curl -fsS "https://api.github.com/$1" 2>/dev/null; fi
 }
 github_rate_limited() {
   github_get rate_limit | jq -e '.resources.core.remaining == 0' >/dev/null
@@ -276,7 +283,10 @@ fix_remote_login() {
   manual "System Settings → General → Sharing: turn on Remote Login."
 }
 
-check_sshd_keys_only() { [[ -f "$SSHD_DROPIN" ]]; }
+check_sshd_keys_only() {
+  grep -x 'PasswordAuthentication no' "$SSHD_DROPIN" >/dev/null 2>&1 &&
+    grep -x 'KbdInteractiveAuthentication no' "$SSHD_DROPIN" >/dev/null 2>&1
+}
 fix_sshd_keys_only() {
   printf '%s\n' "# Remote Login answers on every network; only allow key-based logins." \
     "PasswordAuthentication no" "KbdInteractiveAuthentication no" | sudo tee "$SSHD_DROPIN" >/dev/null

@@ -28,18 +28,12 @@ clean:
 	@echo "🧼 Clean complete."
 
 # ==============================================================================
-# PACKAGES — Homebrew (macOS); Arch uses packages/arch.txt + aur.txt via setup
+# PACKAGES — Homebrew (macOS, bootstrapped by setup); Arch uses
+# packages/arch.txt + aur.txt via setup
 # ==============================================================================
-packages: homebrew brew
-
-homebrew:
-	@echo "🍺 Checking/installing Homebrew..."
-	@command -v brew >/dev/null 2>&1 || \
-		curl -fsSL 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh' | /bin/bash
-
-brew: homebrew packages/Brewfile
+brew: packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew trust dbt-labs/dbt-cli hashicorp/tap lightdash/lightdash 2>/dev/null || true
+	@brew trust dbt-labs/dbt-cli hashicorp/tap 2>/dev/null || true
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 
 # Sync installed packages to exactly match Brewfile (installs + removes).
@@ -48,25 +42,14 @@ brew-sync: brew
 	@brew bundle cleanup --force --file ./packages/Brewfile
 
 # ==============================================================================
-# CONFIGURATION SYMLINKS
-# ==============================================================================
-configs:
-	@echo "🔗 Symlinking configuration files..."
-	@bash $(INSTALL_SCRIPT)
-
-# ==============================================================================
 # MAINTENANCE
 # ==============================================================================
 update:
 	@echo "⬇️  Pulling latest dotfiles..."
-	@git -C $(REPO) diff --quiet 2>/dev/null || git -C $(REPO) stash
-	@git -C $(REPO) pull --rebase
-	@git -C $(REPO) stash list | grep -q stash && \
-		{ git -C $(REPO) stash pop || { echo "❌ Stash pop had conflicts — resolve manually, then re-run"; exit 1; }; } || true
+	@git -C $(REPO) pull --rebase --autostash
 	@$(MAKE) update-packages
 	@echo "🔗 Re-linking configs..."
 	@bash $(INSTALL_SCRIPT)
-	@$(MAKE) zcompile
 	@echo "✅ Update complete!"
 
 ifeq ($(OS),Darwin)
@@ -83,11 +66,6 @@ update-packages:
 	@grep -hvE '^[[:space:]]*(#|$$)' packages/arch.txt | sudo pacman -S --needed --noconfirm -
 	@grep -hvE '^[[:space:]]*(#|$$)' packages/aur.txt | paru -S --needed --noconfirm -
 endif
-
-zcompile:
-	@echo "⚡ Compiling zsh files..."
-	@zsh -c 'for f in config/zsh/config/*.zsh config/zsh/.zshrc home/.zshenv; do [[ -f $$f ]] && zcompile -U $$f; done'
-	@echo "  ✓ Zsh files compiled."
 
 ifeq ($(OS),Darwin)
 # Dump currently installed packages to the Brewfile.
@@ -118,4 +96,4 @@ lint:
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
-.PHONY: all install doctor clean homebrew brew brew-sync packages configs zcompile update update-packages dump lint
+.PHONY: all install doctor clean brew brew-sync update update-packages dump lint

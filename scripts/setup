@@ -187,7 +187,7 @@ fix_wallpaper() {
 check_links() {
   [[ -L "$HOME/.zshenv" && -L "$HOME/.config/zsh" ]]
 }
-fix_links() { bash "$ROOT/scripts/install" && make -C "$ROOT" zcompile; }
+fix_links() { bash "$ROOT/scripts/install"; }
 
 # One plain key file per machine. It works while the screen is locked, which
 # unattended use (T3 Code, phone sessions) needs; Secure Enclave keys don't.

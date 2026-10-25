@@ -1,10 +1,12 @@
 # Cache tool init scripts to avoid subprocess spawns on every shell.
-# Caches regenerate when any dependency (the binary, plus any extra files
-# passed after it) is newer than the cache file.
+# Caches regenerate when the binary or this file (the init commands) is newer
+# than the cache file.
 _cache_init() {
   local name="$1" cmd="$2" dep stale=0; shift 2
   local cache_file="${ZSH_CACHE_DIR}/${name}.zsh"
-  for dep; do [[ "$dep" -nt "$cache_file" ]] && stale=1; done
+  for dep in "$@" "${ZDOTDIR}/config/integrations.zsh"; do
+    [[ "$dep" -nt "$cache_file" ]] && stale=1
+  done
   if [[ ! -s "$cache_file" ]] || (( stale )); then
     eval "$cmd" > "$cache_file"
     # fzf's --zsh integration snapshots every zsh option and restores them with
@@ -15,6 +17,14 @@ _cache_init() {
       sed 's|^\(  eval \$__fzf_[a-z_]*_options\)$|\1 2>/dev/null|' "$cache_file" \
         > "${cache_file}.tmp" && mv "${cache_file}.tmp" "$cache_file"
     fi
+    # mise's output starts with a PATH snapshot of whichever shell generated
+    # it (an IDE, an agent, `env -i`), which would then replace PATH in every
+    # later shell. Drop it: the script re-reads the live PATH, and its
+    # `_mise_hook --force` still adds the tool dirs.
+    if [[ "$name" == mise ]]; then
+      sed "/^export __MISE_ORIG_PATH='/d; /^export PATH='/d" "$cache_file" \
+        > "${cache_file}.tmp" && mv "${cache_file}.tmp" "$cache_file"
+    fi
   fi
   source "$cache_file"
 }
@@ -23,9 +33,7 @@ _cache_init() {
 (( $+commands[fzf] ))      && _cache_init fzf      "fzf --zsh"            "${commands[fzf]}"
 (( $+commands[zoxide] ))   && _cache_init zoxide   "zoxide init zsh"      "${commands[zoxide]}"
 (( $+commands[starship] )) && _cache_init starship "starship init zsh"    "${commands[starship]}"
-# mise's output embeds a PATH snapshot, so PATH edits must regenerate it too.
-(( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}" \
-  "${ZDOTDIR}/config/paths.zsh" "${ZDOTDIR}/config/exports.zsh"
+(( $+commands[mise] ))     && _cache_init mise     "mise activate zsh"    "${commands[mise]}"
 # mise's precmd hook forks `mise hook-env` on every prompt (~12ms). Keep only
 # the chpwd hook: env refreshes on cd, not per prompt.
 (( $+functions[_mise_hook_precmd] )) && add-zsh-hook -d precmd _mise_hook_precmd

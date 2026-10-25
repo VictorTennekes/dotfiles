@@ -85,6 +85,7 @@ git-delta
 github-cli
 stow
 gum
+shellcheck
 tealdeer
 vivid
 btop

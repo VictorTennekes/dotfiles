@@ -89,7 +89,7 @@ lint:
 	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
 	@python3 -m json.tool config-linux/swaync/config.json > /dev/null && echo "  ✓ swaync JSON OK" || exit 1
 	@if command -v luac >/dev/null; then luac -p config-linux/hypr/*.lua && echo "  ✓ Hyprland Lua OK" || exit 1; fi
-	@bash -n $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup config-linux/hypr/scripts/* config-linux/waybar/scripts/* && echo "  ✓ Scripts OK" || exit 1
+	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/macos-defaults config-linux/hypr/scripts/* config-linux/waybar/scripts/* config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================

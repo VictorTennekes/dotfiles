@@ -29,7 +29,6 @@ brew "tealdeer"          # Fast tldr client for quick command examples.
 brew "vivid"             # A generator for LS_COLORS with themes.
 brew "hyperfine"         # A command-line benchmarking tool.
 brew "watch"             # Executes a program periodically, showing output fullscreen.
-brew "python@3.13"
 
 
 # ==============================================================================
@@ -58,8 +57,7 @@ brew "btop"
 brew "neovim"
 
 # --- Editor Dependencies ---
-brew "tree-sitter"
-brew "tree-sitter-cli"
+brew "tree-sitter-cli"    # nvim-treesitter builds parsers with it (the library comes with neovim).
 
 # --- Fonts ---
 cask "font-jetbrains-mono-nerd-font"
@@ -122,14 +120,14 @@ mas "Startup Manager", id: 1296723195
 mas "Telegram Messenger", id: 747648890
 mas "WhatsApp Messenger", id: 310633997
 
-# --- macOS default apps (kept installed, not actively used) ---
-mas "GarageBand", id: 682658836
-mas "iMovie", id: 408981434
-mas "Keynote", id: 409183694
-mas "Numbers", id: 409203825
-mas "Pages", id: 409201541
-mas "TestFlight", id: 899247664
-mas "Xcode", id: 497799835
+# --- macOS default apps: not used, so a fresh install skips them (~15 GB) ---
+# mas "GarageBand", id: 682658836
+# mas "iMovie", id: 408981434
+# mas "Keynote", id: 409183694
+# mas "Numbers", id: 409203825
+# mas "Pages", id: 409201541
+# mas "TestFlight", id: 899247664
+# mas "Xcode", id: 497799835
 
 
 # ==============================================================================

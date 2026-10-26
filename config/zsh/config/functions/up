@@ -40,6 +40,12 @@ case $OSTYPE in
     ;;
 esac
 
+# Global node/python/go; paths.zsh follows their lts/latest links
+if (( $+commands[mise] )); then
+  echo -e "${YELLOW}Updating mise tools...${RESET}"
+  mise upgrade
+fi
+
 # Update the zsh plugins and refresh the bundle (same file plugins.zsh sources)
 for _antidote_zsh in "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" \
                      "${XDG_DATA_HOME:-$HOME/.local/share}/antidote/antidote.zsh"; do

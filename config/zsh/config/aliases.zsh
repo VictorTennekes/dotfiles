@@ -17,7 +17,6 @@ alias v='nvim'
 alias f="fzf --preview 'bat --color=always {}' --preview-window '~3' --multi --bind 'enter:become(nvim {+})'"
 
 # System info
-alias ff="fastfetch"
 
 # LLM helpers
 alias tc='eza --tree --git-ignore -I .git | clip'

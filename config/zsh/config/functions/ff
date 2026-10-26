@@ -1,0 +1,31 @@
+# fastfetch with the Max Theorum logo as a real image in local Ghostty
+# (kitty-direct passes a file path, so not over SSH); ASCII logo elsewhere.
+# The image is logo.svg rendered in the terminal's current foreground
+# color (asked via OSC 10), cached per color, so it follows the theme.
+local svg=${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/logo.svg reply c png tty
+if [[ $TERM == xterm-ghostty && -z $SSH_CONNECTION ]] && (( $+commands[sips] )); then
+  # echo off first, or the reply lands on screen before read -s kicks in
+  tty=$(stty -g </dev/tty); stty -echo -icanon </dev/tty
+  print -n '\e]10;?\e\\' >/dev/tty
+  # reply ends in ESC \ or BEL; read byte-wise so a missing reply times out
+  while read -rs -t 0.2 -k 1 c </dev/tty; do
+    reply+=$c
+    [[ $c == $'\a' || $c == '\' ]] && break
+  done
+  stty $tty </dev/tty
+  if [[ $reply =~ 'rgb:(..)[^/]*/(..)[^/]*/(..)' ]]; then
+    png=${XDG_CACHE_HOME:-$HOME/.cache}/fastfetch/logo-${match[1]}${match[2]}${match[3]}.png
+    if [[ ! -f $png ]]; then
+      mkdir -p ${png:h}
+      sed "s|<path |<path fill=\"#${png:t:r:s/logo-/}\" |" $svg >| ${png:r}.svg
+      sips -s format png -Z 512 ${png:r}.svg --out $png >/dev/null
+      rm -f ${png:r}.svg
+    fi
+  fi
+fi
+if [[ -f $png ]]; then
+  fastfetch --logo $png --logo-type kitty-direct --logo-width 24 \
+    --logo-height 12 --logo-padding-top 2 "$@"
+else
+  fastfetch "$@"
+fi

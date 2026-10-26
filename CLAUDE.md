@@ -42,10 +42,11 @@ pacman + paru (`packages/arch.txt`, `packages/aur.txt`) on Arch.
 - Entry: `.zshrc` sources modular configs from
   `config/zsh/config/`
 - Plugins via antidote, all deferred for performance
-- Tool inits (fzf, zoxide, starship, mise) cached in
+- Tool inits (fzf, zoxide, starship) cached in
   `~/.cache/zsh/` to avoid subprocess spawns
 - Custom functions use zsh autoload (parsed on first call)
-- mise for polyglot version management (python, node, etc.)
+- mise installs global node/python/go; no shell hook, its install
+  dirs are on PATH (`paths.zsh`)
 - Exports, paths, aliases, functions, completions,
   history are separate files
 

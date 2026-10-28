@@ -1,0 +1,17 @@
+# Idle schedule. niri runs `swayidle -w`.
+# lock-session (Super+Ctrl+Q, power menu) and sleep both lock with swaylock;
+# -f returns once the screen is locked, so suspend waits for it.
+lock 'pidof swaylock || swaylock -f'
+before-sleep 'pidof swaylock || swaylock -f'
+
+# 2.5 min: dim the screen
+timeout 150 'brightnessctl -s set 10%' resume 'brightnessctl -r'
+
+# 5 min: lock
+timeout 300 'loginctl lock-session'
+
+# 5.5 min: screen off (niri turns it back on with any input)
+timeout 330 'niri msg action power-off-monitors' resume 'brightnessctl -r'
+
+# 15 min: suspend
+timeout 900 'systemctl suspend'

@@ -101,7 +101,7 @@ window#waybar.empty #window { padding: 0; }
 #custom-notification             { padding-right: 9px; }
 
 /* Hover: no solid GTK theme highlight; a soft translucent one instead, so
-   the bar keeps its glass look (the blur behind still shows through) */
+   the bar keeps its glass look */
 button,
 button:hover,
 button:active,
@@ -128,8 +128,31 @@ button:focus {
   border-radius: 8px;
 }
 
-/* Glassy tooltips and tray menus (blurred via the popup layer rule) */
-tooltip,
+/* Tray menus: near-opaque like the tooltips (niri has no blur). Menu text
+   gets explicit colors; otherwise it follows the GTK theme and can end up
+   dark on this dark background. */
 menu {
-  background: alpha(@base, 0.75);
+  background: alpha(@base, 0.95);
+  border: 1px solid @surface0;
+  border-radius: 8px;
+  padding: 4px 0;
+}
+
+menuitem {
+  color: @text;
+  padding: 4px 10px;
+}
+
+menuitem:hover {
+  background: alpha(@mauve, 0.2);
+}
+
+menuitem:disabled {
+  color: @overlay0;
+}
+
+menu separator {
+  background: @surface0;
+  min-height: 1px;
+  margin: 4px 0;
 }

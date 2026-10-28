@@ -5,7 +5,7 @@ choice=$(printf '%s\n' "󰌾  Lock" "󰤄  Suspend" "󰍃  Logout" "󰜉  Reboot
 case "$choice" in
   *Lock)      loginctl lock-session ;;
   *Suspend)   systemctl suspend ;;
-  *Logout)    hyprctl dispatch 'hl.dsp.exit()' ;;
+  *Logout)    niri msg action quit --skip-confirmation ;;
   *Reboot)    systemctl reboot ;;
   *"Shut down") systemctl poweroff ;;
 esac

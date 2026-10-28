@@ -6,10 +6,13 @@ set -euo pipefail
 dir="$HOME/Screenshots"; mkdir -p "$dir"
 file="$dir/Screenshot $(date '+%Y-%m-%d at %H.%M.%S').png"
 
+# Esc while selecting a region cancels quietly
+region() { slurp -d -b 1e1e2e66 -c cba6f7 || exit 0; }
+
 case "${1:-region}" in
-  screen) grim -o "$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')" "$file" ;;
-  region) grim -g "$(slurp -d -b 1e1e2e66 -c cba6f7)" "$file" ;;
-  edit)   grim -g "$(slurp -d -b 1e1e2e66 -c cba6f7)" - |
+  screen) grim -o "$(niri msg --json focused-output | jq -r .name)" "$file" ;;
+  region) geom=$(region); grim -g "$geom" "$file" ;;
+  edit)   geom=$(region); grim -g "$geom" - |
             satty --filename - --output-filename "$file" --copy-command wl-copy --early-exit
           exit 0 ;;
 esac

@@ -1,0 +1,40 @@
+theme = catppuccin-mocha.conf
+background-opacity = 0.95
+cursor-style = block
+
+# Force the block cursor: without this, zsh shell integration switches it to a
+# beam in insert mode, which also breaks the cursor shaders below.
+shell-integration-features = no-cursor
+
+# Cursor trail shader, off on Linux to save battery (it redraws every frame
+# while the cursor moves). Uncomment to try; options live in shaders/:
+#   cursor_blaze · cursor_tail · cursor_sweep · cursor_warp · ripple_cursor · sonic_boom_cursor
+# custom-shader = shaders/cursor_tail.glsl
+# custom-shader-animation = true
+
+window-padding-x = 5
+window-padding-y = 5
+window-padding-balance = true
+
+font-family = JetBrainsMono Nerd Font
+font-size = 11
+
+copy-on-select = clipboard
+shell-integration = zsh
+
+# Kill desktop notifications entirely — copy-on-select would otherwise
+# fire one per selection, and shells/programs sending OSC 9 / OSC 777
+# turn into a constant nag.
+desktop-notifications = false
+app-notifications = no-clipboard-copy,no-config-reload
+notify-on-command-finish-action = no-bell,no-notify
+
+# Linux / niri
+# niri draws the borders; no GTK title bar.
+window-decoration = none
+# One process for all windows: new windows open instantly and share memory.
+gtk-single-instance = true
+# Keep the instance alive briefly after the last window closes, then exit.
+quit-after-last-window-closed = true
+quit-after-last-window-closed-delay = 5m
+confirm-close-surface = false

@@ -8,29 +8,28 @@
   "spacing": 6,
   "reload_style_on_change": true,
 
-  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-left": ["niri/workspaces", "niri/window"],
   "modules-center": ["clock"],
   "modules-right": [
     "tray",
     "group/hardware",
-    "power-profiles-daemon",
     "custom/tailscale",
     "bluetooth",
     "network",
     "pulseaudio",
-    "battery",
+    "group/power",
     "custom/notification"
   ],
 
-  "hyprland/workspaces": {
+  // niri workspaces are dynamic: there's always one empty one at the end
+  "niri/workspaces": {
     "format": "{icon}",
-    "format-icons": { "default": "●", "active": "●", "empty": "○" },
-    "persistent-workspaces": { "*": 5 },
-    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
-    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'"
+    "format-icons": { "default": "○", "active": "●" },
+    "on-scroll-up": "niri msg action focus-workspace-up",
+    "on-scroll-down": "niri msg action focus-workspace-down"
   },
 
-  "hyprland/window": {
+  "niri/window": {
     "max-length": 50,
     "separate-outputs": true
   },
@@ -64,6 +63,14 @@
   "memory": { "interval": 30, "format": "󰍛 {percentage}%", "tooltip-format": "{used:0.1f}G / {total:0.1f}G" },
   "temperature": { "interval": 10, "format": "󰔏 {temperatureC}°", "critical-threshold": 90 },
 
+  // Battery with the power profile tucked behind it: click the battery to
+  // slide the profile icon out, then click that to cycle profiles
+  "group/power": {
+    "orientation": "horizontal",
+    "drawer": { "transition-duration": 250, "click-to-reveal": true, "transition-left-to-right": false },
+    "modules": ["battery", "power-profiles-daemon"]
+  },
+
   "power-profiles-daemon": {
     "format": "{icon}",
     "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
@@ -92,8 +99,8 @@
     "tooltip-format-connected": "{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias} {device_battery_percentage}%",
     "tooltip-format-off": "Bluetooth off (right-click to turn on)",
-    // Radio is off at boot; right-click toggles it, left-click opens bluetui
-    "on-click": "footclient --app-id=org.tui.floating bluetui",
+    // Radio is off at boot; right-click toggles it, left-click opens bluetoothctl
+    "on-click": "footclient --app-id=org.tui.floating bluetoothctl",
     "on-click-right": "bluetoothctl show | grep -q 'Powered: yes' && bluetoothctl power off || bluetoothctl power on"
   },
 
@@ -105,7 +112,7 @@
     "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
     "tooltip-format-disconnected": "Disconnected",
     "interval": 10,
-    "on-click": "footclient --app-id=org.tui.floating impala"
+    "on-click": "footclient --app-id=org.tui.floating nmtui"
   },
 
   "pulseaudio": {

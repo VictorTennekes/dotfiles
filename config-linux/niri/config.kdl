@@ -1,0 +1,251 @@
+// niri config. Catppuccin Mocha, tuned for a Framework 13 (AMD) on battery.
+// niri reloads this on save; `niri validate` checks it (make lint).
+// Reference: https://github.com/YaLTeR/niri/wiki/Configuration:-Introduction
+
+// --- Input ---
+input {
+    keyboard {
+        xkb {
+            layout "us"
+            // Caps Lock -> Escape
+            options "caps:escape"
+        }
+        // macOS KeyRepeat=2 (30ms -> ~33/s) and InitialKeyRepeat=15 (225ms)
+        repeat-delay 225
+        repeat-rate 33
+    }
+
+    touchpad {
+        tap
+        dwt
+        // macOS "natural" scrolling; two-finger click = right click
+        natural-scroll
+        click-method "clickfinger"
+        scroll-factor 0.5
+    }
+
+    mouse {
+        natural-scroll
+    }
+
+    // Focus follows the mouse, but never scrolls the view to do it
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+// Built-in 2880x1920 panel. 1.6 gives an 1800x1200 workspace (2 is huge on
+// 13.5"). Anything plugged in gets its preferred mode, to the right.
+output "eDP-1" {
+    scale 1.6
+}
+
+cursor {
+    xcursor-size 24
+    hide-when-typing
+    hide-after-inactive-ms 5000
+}
+
+// --- Look ---
+layout {
+    gaps 8
+    center-focused-column "never"
+    // Workspaces see through to the wallpaper, which lives in the backdrop
+    // (see the layer-rule below) so it also shows behind the overview
+    background-color "transparent"
+    // A window alone on a workspace sits in the middle, not at the left edge
+    always-center-single-column
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+    default-column-width { proportion 0.66667; }
+
+    focus-ring {
+        off
+    }
+
+    // Mauve -> peach gradient on the focused window
+    border {
+        width 2
+        active-gradient from="#cba6f7" to="#fab387" angle=45
+        inactive-color "#313244aa"
+    }
+
+    // Small shadow: cheap to render
+    shadow {
+        on
+        softness 8
+        color "#11111b99"
+    }
+}
+
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+// Small utility windows float, centered
+window-rule {
+    match app-id=r#"^(xdg-desktop-portal-gtk|com\.gabm\.satty|org\.tui\.floating)$"#
+    open-floating true
+    default-column-width { fixed 900; }
+    default-window-height { fixed 600; }
+}
+
+window-rule {
+    match title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// Overview (Super+O): the wallpaper stays put behind the zoomed-out
+// workspaces instead of niri's grey backdrop (Crust if swaybg isn't running).
+layer-rule {
+    match namespace="^wallpaper$"
+    place-within-backdrop true
+}
+
+overview {
+    backdrop-color "#11111b"
+}
+
+prefer-no-csd
+hotkey-overlay {
+    skip-at-startup
+}
+
+// --- Environment ---
+// Native Wayland wherever an app supports it. X11-only apps (Bitwarden forces
+// X11) run through xwayland-satellite, which Fedora's niri package requires
+// and niri starts on demand.
+environment {
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+    QT_QPA_PLATFORM "wayland;xcb"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+    SDL_VIDEODRIVER "wayland,x11"
+    MOZ_ENABLE_WAYLAND "1"
+    // No accessibility bus (at-spi) for GTK apps; re-enable for a screen reader
+    GTK_A11Y "none"
+    NO_AT_BRIDGE "1"
+}
+
+// --- Autostart ---
+// Every session starts on battery-friendly power-saver (Waybar switches it)
+spawn-at-startup "powerprofilesctl" "set" "power-saver"
+spawn-at-startup "foot" "--server"
+spawn-at-startup "waybar"
+spawn-at-startup "swaync"
+spawn-at-startup "swayosd-server"
+spawn-at-startup "swayidle" "-w"
+spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
+spawn-sh-at-startup "swaybg -m fill -i ~/Pictures/Wallpapers/current"
+spawn-sh-at-startup "wl-paste --type text --watch cliphist store"
+spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
+
+// --- Keys ---
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    // Apps
+    Mod+Return       hotkey-overlay-title="Terminal" { spawn "footclient"; }
+    Mod+Shift+Return hotkey-overlay-title="Browser" { spawn "zen-browser"; }
+    Mod+Space        hotkey-overlay-title="Launcher" { spawn-sh "pkill fuzzel || fuzzel"; }
+    Mod+E            hotkey-overlay-title="Files" { spawn "footclient" "yazi"; }
+    Mod+Shift+V      hotkey-overlay-title="Clipboard history" { spawn-sh "cliphist list | fuzzel --dmenu --prompt '󰅌  ' | cliphist decode | wl-copy"; }
+    Mod+N            hotkey-overlay-title="Notifications" { spawn "swaync-client" "-t" "-sw"; }
+    Mod+Shift+B      hotkey-overlay-title="Toggle bar" { spawn "pkill" "-SIGUSR1" "waybar"; }
+
+    // Session
+    Mod+Ctrl+Q  hotkey-overlay-title="Lock" { spawn "loginctl" "lock-session"; }   // macOS ctrl+cmd+Q
+    Mod+Escape  hotkey-overlay-title="Power menu" { spawn-sh "~/.config/niri/scripts/powermenu"; }
+    Mod+Shift+E { quit; }
+
+    // Screenshots, macOS numbers on Alt+Shift (Super+Shift+number moves windows):
+    // 3 = full screen, 4 = region, 5 = region + annotate
+    Alt+Shift+3 { spawn-sh "~/.config/niri/scripts/screenshot screen"; }
+    Alt+Shift+4 { spawn-sh "~/.config/niri/scripts/screenshot region"; }
+    Alt+Shift+5 { spawn-sh "~/.config/niri/scripts/screenshot edit"; }
+    Print       { spawn-sh "~/.config/niri/scripts/screenshot region"; }
+
+    // Windows
+    // Both close, like Cmd+W / Cmd+Q on macOS
+    Mod+W { close-window; }
+    Mod+Q { close-window; }
+    Mod+T { toggle-window-floating; }
+    Mod+Shift+T { switch-focus-between-floating-and-tiling; }
+    Mod+F { fullscreen-window; }
+    Mod+M { maximize-column; }
+    Mod+C { center-column; }
+    Mod+O repeat=false { toggle-overview; }
+
+    // Column widths: cycle 1/3, 1/2, 2/3, or nudge
+    Mod+R { switch-preset-column-width; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+
+    // Stack a window into the neighbouring column, or pop it out
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+
+    // Focus / move: arrows or HJKL. Up/down crosses into the next workspace.
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up    { focus-window-or-workspace-up; }
+    Mod+Down  { focus-window-or-workspace-down; }
+    Mod+H     { focus-column-left; }
+    Mod+L     { focus-column-right; }
+    Mod+K     { focus-window-or-workspace-up; }
+    Mod+J     { focus-window-or-workspace-down; }
+
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Up    { move-window-up-or-to-workspace-up; }
+    Mod+Shift+Down  { move-window-down-or-to-workspace-down; }
+    Mod+Shift+H     { move-column-left; }
+    Mod+Shift+L     { move-column-right; }
+    Mod+Shift+K     { move-window-up-or-to-workspace-up; }
+    Mod+Shift+J     { move-window-down-or-to-workspace-down; }
+
+    // Workspaces
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+0 { focus-workspace 10; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+    Mod+Shift+0 { move-column-to-workspace 10; }
+    Mod+Tab { focus-workspace-previous; }
+
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+    Mod+WheelScrollRight { focus-column-right; }
+    Mod+WheelScrollLeft  { focus-column-left; }
+
+    // Media keys through swayosd (shows the on-screen indicator)
+    XF86AudioRaiseVolume  allow-when-locked=true { spawn "swayosd-client" "--output-volume" "raise"; }
+    XF86AudioLowerVolume  allow-when-locked=true { spawn "swayosd-client" "--output-volume" "lower"; }
+    XF86AudioMute         allow-when-locked=true { spawn "swayosd-client" "--output-volume" "mute-toggle"; }
+    XF86AudioMicMute      allow-when-locked=true { spawn "swayosd-client" "--input-volume" "mute-toggle"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "swayosd-client" "--brightness" "raise"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "swayosd-client" "--brightness" "lower"; }
+    XF86AudioNext         allow-when-locked=true { spawn "swayosd-client" "--playerctl" "next"; }
+    XF86AudioPrev         allow-when-locked=true { spawn "swayosd-client" "--playerctl" "previous"; }
+    XF86AudioPlay         allow-when-locked=true { spawn "swayosd-client" "--playerctl" "play-pause"; }
+    XF86AudioPause        allow-when-locked=true { spawn "swayosd-client" "--playerctl" "play-pause"; }
+    // Framework F12 (gear) key
+    XF86AudioMedia { spawn "swaync-client" "-t" "-sw"; }
+}
+

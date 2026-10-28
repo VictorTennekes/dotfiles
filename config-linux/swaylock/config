@@ -1,0 +1,40 @@
+# Catppuccin Mocha lock screen (swaylock reads ~ in image paths)
+image=~/Pictures/Wallpapers/current
+scaling=fill
+color=1e1e2e
+
+font=JetBrainsMono Nerd Font
+indicator-radius=100
+indicator-thickness=7
+indicator-caps-lock
+# Show the ring right away, not only once you start typing
+indicator-idle-visible
+show-failed-attempts
+ignore-empty-password
+
+# Ring: mauve idle, peach on keypress, red on backspace/fail, yellow verifying
+inside-color=1e1e2ecc
+ring-color=cba6f7
+key-hl-color=fab387
+bs-hl-color=f38ba8
+caps-lock-key-hl-color=fab387
+caps-lock-bs-hl-color=f38ba8
+text-color=cdd6f4
+text-caps-lock-color=fab387
+inside-clear-color=1e1e2ecc
+ring-clear-color=a6e3a1
+text-clear-color=a6e3a1
+inside-ver-color=1e1e2ecc
+ring-ver-color=f9e2af
+text-ver-color=f9e2af
+inside-wrong-color=1e1e2ecc
+ring-wrong-color=f38ba8
+text-wrong-color=f38ba8
+inside-caps-lock-color=1e1e2ecc
+ring-caps-lock-color=fab387
+line-color=00000000
+line-clear-color=00000000
+line-ver-color=00000000
+line-wrong-color=00000000
+line-caps-lock-color=00000000
+separator-color=00000000

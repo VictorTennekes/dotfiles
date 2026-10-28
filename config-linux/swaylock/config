@@ -4,23 +4,24 @@ scaling=fill
 color=1e1e2e
 
 font=JetBrainsMono Nerd Font
-indicator-radius=100
-indicator-thickness=7
+indicator-radius=140
+indicator-thickness=10
 indicator-caps-lock
 # Show the ring right away, not only once you start typing
 indicator-idle-visible
 show-failed-attempts
 ignore-empty-password
 
-# Ring: mauve idle, peach on keypress, red on backspace/fail, yellow verifying
-inside-color=1e1e2ecc
-ring-color=cba6f7
-key-hl-color=fab387
+# Ring: peach idle, mauve on keypress (the two colors of the niri border; swaylock
+# has no gradients), red on backspace/fail, yellow verifying
+inside-color=1e1e2e99
+ring-color=fab387
+key-hl-color=cba6f7
 bs-hl-color=f38ba8
-caps-lock-key-hl-color=fab387
+caps-lock-key-hl-color=cba6f7
 caps-lock-bs-hl-color=f38ba8
 text-color=cdd6f4
-text-caps-lock-color=fab387
+text-caps-lock-color=f9e2af
 inside-clear-color=1e1e2ecc
 ring-clear-color=a6e3a1
 text-clear-color=a6e3a1
@@ -31,7 +32,7 @@ inside-wrong-color=1e1e2ecc
 ring-wrong-color=f38ba8
 text-wrong-color=f38ba8
 inside-caps-lock-color=1e1e2ecc
-ring-caps-lock-color=fab387
+ring-caps-lock-color=f9e2af
 line-color=00000000
 line-clear-color=00000000
 line-ver-color=00000000

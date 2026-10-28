@@ -31,7 +31,7 @@ clean:
 # ==============================================================================
 brew: packages/Brewfile
 	@echo "📦 Running brew bundle..."
-	@brew trust dbt-labs/dbt-cli hashicorp/tap 2>/dev/null || true
+	@brew trust dbt-labs/dbt-cli hashicorp/tap || true
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 
 # Sync installed packages to exactly match Brewfile (installs + removes).

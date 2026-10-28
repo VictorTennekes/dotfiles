@@ -16,6 +16,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
 export K9S_CONFIG_DIR="$HOME/.config/k9s"
 export STARSHIP_CONFIG="$HOME/.config/zsh/starship.toml"
+export T3CODE_TELEMETRY_ENABLED=false
 
 # ls_colors is `vivid generate catppuccin-mocha` output, committed so neither
 # machine needs vivid; regenerate it with `mise x vivid -- vivid generate ...`.

@@ -36,6 +36,7 @@ xdg-user-dirs
 adw-gtk3-theme
 dconf                   # stores gsettings (dark mode, read by apps via the portal)
 gnome-keyring
+gnome-keyring-pam       # unlocks the login keyring at login (SDDM skips it silently if absent)
 fuse-libs               # AppImages (Bitwarden): libfuse2 + fusermount
 fuse
 

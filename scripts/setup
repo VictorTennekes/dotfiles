@@ -261,9 +261,10 @@ fix_sddm_theme() {
 }
 
 # gnome-keyring through its systemd user socket: that socket is the control
-# channel the login screen (pam_gnome_keyring) uses to hand over the password
-# and unlock the "login" keyring. Without it the daemon gets started by D-Bus
-# instead, with no control socket, and every app asks to unlock the keyring.
+# channel the login screen's PAM module (gnome-keyring-pam, in fedora.txt)
+# uses to hand over the password and unlock the "login" keyring. Without it
+# the daemon gets started by D-Bus instead, with no control socket, and every
+# app asks to unlock the keyring.
 check_keyring_socket() { systemctl --user is-enabled -q gnome-keyring-daemon.socket 2>/dev/null; }
 fix_keyring_socket()   { systemctl --user enable gnome-keyring-daemon.socket; }
 

@@ -39,7 +39,6 @@ output "eDP-1" {
 }
 
 cursor {
-    xcursor-size 24
     hide-when-typing
     hide-after-inactive-ms 5000
 }
@@ -47,18 +46,12 @@ cursor {
 // --- Look ---
 layout {
     gaps 8
-    center-focused-column "never"
     // Workspaces see through to the wallpaper, which lives in the backdrop
     // (see the layer-rule below) so it also shows behind the overview
     background-color "transparent"
     // A window alone on a workspace sits in the middle, not at the left edge
     always-center-single-column
 
-    preset-column-widths {
-        proportion 0.33333
-        proportion 0.5
-        proportion 0.66667
-    }
     default-column-width { proportion 0.66667; }
 
     focus-ring {
@@ -122,8 +115,6 @@ environment {
     ELECTRON_OZONE_PLATFORM_HINT "auto"
     QT_QPA_PLATFORM "wayland;xcb"
     QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
-    SDL_VIDEODRIVER "wayland,x11"
-    MOZ_ENABLE_WAYLAND "1"
     // No accessibility bus (at-spi) for GTK apps; re-enable for a screen reader
     GTK_A11Y "none"
     NO_AT_BRIDGE "1"

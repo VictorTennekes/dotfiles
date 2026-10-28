@@ -1,7 +1,5 @@
 /* Catppuccin Mocha */
 @define-color base     #1e1e2e;
-@define-color mantle   #181825;
-@define-color crust    #11111b;
 @define-color surface0 #313244;
 @define-color surface1 #45475a;
 @define-color overlay0 #6c7086;
@@ -47,12 +45,11 @@ tooltip label { color: @text; }
 #workspaces button {
   color: @overlay0;
   padding: 0 5px;
-  background: transparent;
   transition: color 150ms ease;
 }
 #workspaces button.active   { color: @mauve; }
 #workspaces button.urgent   { color: @red; }
-#workspaces button:hover    { color: @text; background: transparent; box-shadow: none; }
+#workspaces button:hover    { color: @text; }
 
 #window { color: @subtext0; padding: 0 6px; }
 window#waybar.empty #window { padding: 0; }

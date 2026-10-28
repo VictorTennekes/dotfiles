@@ -41,15 +41,9 @@ export K9S_CONFIG_DIR="$HOME/.config/k9s"
 export MISE_CONFIG_DIR="$HOME/.config/mise"
 export STARSHIP_CONFIG="$HOME/.config/zsh/starship.toml"
 
-# --- Terminal Colors (cached to avoid vivid fork on every login) ---
+# --- Terminal Colors ---
+# ls_colors is `vivid generate catppuccin-mocha` output, committed so neither
+# machine needs vivid; regenerate it with `mise x vivid -- vivid generate ...`.
+# Overrides the distro default (Fedora's /etc/profile.d/colorls.sh sets one).
 export CLICOLOR=1
-if [[ -z "$LS_COLORS" ]]; then
-  _vivid_cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/ls_colors.zsh"
-  if (( $+commands[vivid] )); then
-    if [[ ! -s "$_vivid_cache" || "${commands[vivid]}" -nt "$_vivid_cache" ]]; then
-      vivid generate catppuccin-mocha 2>/dev/null > "$_vivid_cache"
-    fi
-    export LS_COLORS="$(<$_vivid_cache)"
-  fi
-  unset _vivid_cache
-fi
+[[ -r "$ZDOTDIR/ls_colors" ]] && export LS_COLORS="$(<$ZDOTDIR/ls_colors)"

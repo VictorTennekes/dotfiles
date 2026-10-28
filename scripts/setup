@@ -1,5 +1,5 @@
 #!/bin/bash
-# Guided, re-runnable setup for this machine (macOS or Arch Linux). Every step
+# Guided, re-runnable setup for this machine (macOS or Fedora Linux). Every step
 # checks first, fixes only what is missing, then re-checks. Steps that need a
 # human (GUI apps, GitHub settings) pause with exact instructions.
 #
@@ -18,8 +18,8 @@ SSHD_DROPIN=/etc/ssh/sshd_config.d/010-keys-only.conf
 
 case "$(uname -s)" in
   Darwin) OS=macos ;;
-  Linux)  [[ -f /etc/arch-release ]] || { echo "✗ Only Arch Linux is supported"; exit 1; }
-          OS=arch ;;
+  Linux)  [[ -f /etc/fedora-release ]] || { echo "✗ Only Fedora Linux is supported"; exit 1; }
+          OS=fedora ;;
   *)      echo "✗ Unsupported OS: $(uname -s)"; exit 1 ;;
 esac
 
@@ -44,7 +44,7 @@ if [[ $OS == macos ]]; then
 else
   if ! command -v gum >/dev/null 2>&1; then
     (( CHECK_ONLY )) && { echo "✗ gum missing (run make install)"; exit 1; }
-    sudo pacman -S --needed --noconfirm gum || exit 1
+    sudo dnf install -y gum || exit 1
   fi
 fi
 
@@ -79,62 +79,134 @@ step() {
 
 pubkey() { awk '{print $1" "$2}' "$KEY.pub" 2>/dev/null; }
 # Names this machine shows to GitHub/GitLab (key titles) and in key comments.
-machine_name() { [[ $OS == macos ]] && scutil --get ComputerName || hostnamectl hostname; }
-host_name()    { [[ $OS == macos ]] && scutil --get LocalHostName || hostnamectl hostname; }
+machine_name() { if [[ $OS == macos ]]; then scutil --get ComputerName; else hostnamectl hostname; fi; }
+host_name()    { if [[ $OS == macos ]]; then scutil --get LocalHostName; else hostnamectl hostname; fi; }
 gh_ok() { gh auth status >/dev/null 2>&1; }
 
 # --- Checks and fixes ------------------------------------------------------------
 check_packages() { brew bundle check --no-upgrade --file "$ROOT/packages/Brewfile" >/dev/null 2>&1; }
 fix_packages()   { make -C "$ROOT" brew; }
 
-# Arch: package lists without comments, and the ones not installed yet.
-pkglist() { grep -vE '^[[:space:]]*(#|$)' "$ROOT/packages/$1"; }
-missing_pkgs() { comm -23 <(pkglist "$1" | sort) <(pacman -Qq | sort); }
-check_arch_packages() { [[ -z "$(missing_pkgs arch.txt)" ]]; }
-fix_arch_packages()   { pkglist arch.txt | sudo pacman -S --needed --noconfirm -; }
-check_aur_packages()  { command -v paru >/dev/null && [[ -z "$(missing_pkgs aur.txt)" ]]; }
-fix_aur_packages() {
-  if ! command -v paru >/dev/null; then   # bootstrap the AUR helper itself
-    local tmp; tmp=$(mktemp -d)
-    git clone --depth 1 https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" &&
-      (cd "$tmp/paru-bin" && makepkg -si --noconfirm)
-    rm -rf "$tmp"
-  fi
-  pkglist aur.txt | paru -S --needed --noconfirm -
+# Fedora: Terra (Fyra Labs) for what the official repos lack. Its release
+# package installs the repo file and signing key; the bootstrap is the
+# documented one (https://terra.fyralabs.com). That first install is
+# trust-on-first-use over HTTPS (--nogpgcheck): everything after it is
+# verified against the key it installs.
+check_terra() { rpm -q terra-release >/dev/null 2>&1; }
+fix_terra() {
+  sudo dnf install -y --nogpgcheck \
+    --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release
 }
 
-check_shell() { [[ "$(getent passwd "$USER" | cut -d: -f7)" == /usr/bin/zsh ]]; }
-fix_shell()   { sudo chsh -s /usr/bin/zsh "$USER"; }
+# Package list without comments (whole-line or trailing), and the ones not
+# installed yet. Weak deps off: niri alone would otherwise pull in alacritty
+# and the rest of a sway-style desktop.
+pkglist() { sed 's/#.*//' "$ROOT/packages/$1" | awk 'NF { print $1 }'; }
+missing_pkgs() { comm -23 <(pkglist "$1" | sort) <(rpm -qa --qf '%{NAME}\n' | sort -u); }
+# Listed packages that dnf considers removable (installed as a dependency or
+# by the installer's group, not by the user).
+not_user_installed() {
+  pkglist fedora.txt | xargs dnf repoquery --installed --qf '%{name} %{reason}\n' 2>/dev/null |
+    awk '$2 != "User" { print $1 }'
+}
+check_fedora_packages() { [[ -z "$(missing_pkgs fedora.txt)" && -z "$(not_user_installed)" ]]; }
+# Also mark them user-installed: some came in as dependencies of the base
+# install, and dnf's cleanup (e.g. the trim below) would remove those.
+fix_fedora_packages() {
+  pkglist fedora.txt | xargs sudo dnf install -y --setopt=install_weak_deps=False &&
+    pkglist fedora.txt | xargs sudo dnf mark user >/dev/null
+}
 
-# On macOS antidote comes from Homebrew; on Arch it's a git clone.
+# Fedora defaults this laptop doesn't need: crash reporting (abrt), a syslog
+# next to the journal, modem support, at and cron (everything uses systemd
+# timers), Kerberos/NFS/SMB and directory joining (sssd, realmd), smart cards,
+# disk-health and process-accounting daemons, the daily `locate` index, mDNS,
+# an SSH server listening on every network, AWS libraries the installer
+# leaves behind, and
+# firmware for hardware a Framework 13 AMD doesn't have (kept: amd-gpu,
+# amd-ucode, mt7xxx for the Wi-Fi, realtek for USB-C Ethernet adapters).
+# dnf also removes what only these pulled in.
+TRIM=('abrt*' rsyslog ModemManager NetworkManager-wwan at gssproxy nfs-utils
+      nfs-common-utils avahi openssh-server
+      cronie cronie-anacron crontabs smartmontools mcelog psacct plocate sos
+      sssd-kcm sssd-proxy realmd cifs-utils opensc quota dnsmasq
+      python3-botocore python3-s3transfer python3-jmespath
+      nvidia-gpu-firmware intel-gpu-firmware intel-audio-firmware
+      intel-npu-firmware atheros-firmware brcmfmac-firmware tiwilink-firmware
+      nxpwireless-firmware cirrus-audio-firmware qcom-wwan-firmware)
+trimmed() { local p; for p in "${TRIM[@]}"; do rpm -qa "$p" | grep . >/dev/null && echo "$p"; done; }
+check_trim() { [[ -z "$(trimmed)" ]]; }
+fix_trim()   { trimmed | xargs sudo dnf remove -y; }
+
+# Units this laptop doesn't use: portable home directories, and the weekly
+# RAID check (mdadm itself stays: udisks2, which mounts USB drives, needs it).
+DISABLED_UNITS=(systemd-homed.service raid-check.timer)
+check_units_off() {
+  local u; for u in "${DISABLED_UNITS[@]}"; do ! systemctl is-enabled -q "$u" 2>/dev/null || return 1; done
+}
+fix_units_off() { sudo systemctl disable --now "${DISABLED_UNITS[@]}"; }
+
+# Bitwarden desktop isn't packaged anywhere trustworthy: the official AppImage
+# (it updates itself), with a launcher and its icon. Extracting needs no FUSE.
+BW_APP="$HOME/.local/opt/bitwarden.AppImage"
+BW_URL="https://bitwarden.com/download/?app=desktop&platform=linux&variant=appimage"
+BW_DESKTOP="$HOME/.local/share/applications/bitwarden.desktop"
+BW_ICON="$HOME/.local/share/icons/bitwarden.png"
+bw_desktop() {
+  printf '%s\n' "[Desktop Entry]" "Type=Application" "Name=Bitwarden" \
+    "Exec=$BW_APP %U" "Icon=$BW_ICON" "Categories=Utility;"
+}
+check_bitwarden() { [[ -x "$BW_APP" ]] && cmp -s <(bw_desktop) "$BW_DESKTOP"; }
+# Downloads into a temp dir: a failed download leaves the installed AppImage
+# and launcher alone; they're only replaced once everything worked.
+fix_bitwarden() {
+  local tmp; tmp=$(mktemp -d)
+  mkdir -p "${BW_APP%/*}" "${BW_ICON%/*}" "${BW_DESKTOP%/*}"
+  if curl -fsSL -o "$tmp/bw.AppImage" "$BW_URL" && chmod +x "$tmp/bw.AppImage" &&
+     (cd "$tmp" && ./bw.AppImage --appimage-extract bitwarden.png >/dev/null &&
+       ./bw.AppImage --appimage-extract "$(readlink squashfs-root/bitwarden.png)" >/dev/null) &&
+     cp -L "$tmp/squashfs-root/bitwarden.png" "$BW_ICON" &&
+     mv -f "$tmp/bw.AppImage" "$BW_APP"; then
+    bw_desktop >"$BW_DESKTOP"
+  fi
+  rm -rf "$tmp"
+}
+
+# usermod, not chsh: Fedora ships chsh separately (util-linux-user).
+check_shell() { [[ "$(getent passwd "$USER" | cut -d: -f7)" == /usr/bin/zsh ]]; }
+fix_shell()   { sudo usermod -s /usr/bin/zsh "$USER"; }
+
+# On macOS antidote comes from Homebrew; on Fedora it's a git clone.
 ANTIDOTE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/antidote"
 check_antidote() { [[ -r "$ANTIDOTE_DIR/antidote.zsh" ]]; }
 fix_antidote()   { git clone --depth 1 https://github.com/mattmc3/antidote "$ANTIDOTE_DIR"; }
 
-# /etc files tracked in system-linux/ (zram, journald, iwd, SDDM). Takes full
+# /etc files tracked in system-linux/etc (zram, sysctl, journald, dnf without
+# weak deps, SDDM, Wi-Fi backend); the tailscaled polkit rule has its own
+# step below. Takes full
 # effect after a reboot; nothing is restarted here (it could drop the network).
 system_files() { (cd "$ROOT/system-linux" && find etc -type f); }
 check_system_files() {
-  local f; for f in $(system_files); do cmp -s "$ROOT/system-linux/$f" "/$f" || return 1; done
+  local f; while read -r f; do cmp -s "$ROOT/system-linux/$f" "/$f" || return 1; done < <(system_files)
 }
 fix_system_files() {
-  local f; for f in $(system_files); do sudo install -Dm644 "$ROOT/system-linux/$f" "/$f"; done
+  local f; while read -r f; do sudo install -Dm644 "$ROOT/system-linux/$f" "/$f"; done < <(system_files)
   sudo systemctl daemon-reload && sudo sysctl -q --system
 }
 
-SERVICES=(iwd systemd-resolved bluetooth power-profiles-daemon systemd-timesyncd
-          fstrim.timer paccache.timer sddm)
+SERVICES=(NetworkManager iwd systemd-resolved bluetooth power-profiles-daemon
+          fstrim.timer sddm)
 check_services() {
   local s; for s in "${SERVICES[@]}"; do systemctl is-enabled -q "$s" 2>/dev/null || return 1; done
-  ! systemctl is-enabled -q NetworkManager 2>/dev/null   # iwd manages Wi-Fi
+  [[ "$(systemctl get-default)" == graphical.target ]]   # minimal installs boot to a TTY
 }
 fix_services() {
-  systemctl is-enabled -q NetworkManager 2>/dev/null && sudo systemctl disable NetworkManager
   sudo systemctl enable "${SERVICES[@]}"
+  sudo systemctl set-default graphical.target
 }
 
 # Bluetooth daemon runs, but the radio stays off at boot; switch it on when
-# needed (Waybar: right-click the icon, or bluetui).
+# needed (Waybar: right-click the icon, or bluetoothctl).
 check_bt_off_at_boot() { grep -q '^AutoEnable=false' /etc/bluetooth/main.conf; }
 fix_bt_off_at_boot() {
   sudo sed -i 's/^#\?AutoEnable=.*/AutoEnable=false/' /etc/bluetooth/main.conf
@@ -147,7 +219,11 @@ fix_bt_off_at_boot() {
 # polkit check first, and fails rather than prompting.
 TS_RULE=/etc/polkit-1/rules.d/50-tailscaled.rules
 check_ts_on_demand() {
-  local noop=stop; systemctl is-active -q tailscaled && noop=start
+  # "activating" counts as running: stopping it would kill a toggle in progress
+  local noop=stop
+  case $(systemctl show -p ActiveState --value tailscaled) in
+    active|activating|reloading) noop=start ;;
+  esac
   ! systemctl is-enabled -q tailscaled 2>/dev/null &&
     systemctl --no-ask-password "$noop" tailscaled 2>/dev/null
 }
@@ -157,18 +233,24 @@ fix_ts_on_demand() {
 }
 
 RESOLV_STUB=/run/systemd/resolve/stub-resolv.conf
-check_resolv() { [[ "$(readlink /etc/resolv.conf)" == "$RESOLV_STUB" ]]; }
+check_resolv() { [[ "$(readlink -f /etc/resolv.conf)" == "$RESOLV_STUB" ]]; }
 fix_resolv()   { sudo ln -sf "$RESOLV_STUB" /etc/resolv.conf; }
 
-check_pacman_color() { grep -q '^Color' /etc/pacman.conf; }
-fix_pacman_color()   { sudo sed -i 's/^#Color$/Color/' /etc/pacman.conf; }
-
-# Login screen: sddm-astronaut-theme with the jake_the_dog variant, as its own
-# theme dir of symlinks so package updates don't reset the chosen variant.
+# Login screen: sddm-astronaut-theme (not packaged for Fedora: a git clone, plus
+# its fonts) with the jake_the_dog variant, as its own theme dir of symlinks so
+# theme updates (git pull) don't reset the chosen variant.
 ASTRONAUT=/usr/share/sddm/themes/sddm-astronaut-theme
+ASTRONAUT_FONTS=/usr/share/fonts/sddm-astronaut
 JAKE=/usr/share/sddm/themes/astronaut-jake
-check_sddm_theme() { grep -q '^ConfigFile=Themes/jake_the_dog.conf' "$JAKE/metadata.desktop" 2>/dev/null; }
+check_sddm_theme() {
+  [[ -d "$ASTRONAUT_FONTS" ]] &&
+    grep -q '^ConfigFile=Themes/jake_the_dog.conf' "$JAKE/metadata.desktop" 2>/dev/null
+}
 fix_sddm_theme() {
+  [[ -d "$ASTRONAUT/.git" ]] ||
+    sudo git clone --depth 1 https://github.com/Keyitdev/sddm-astronaut-theme "$ASTRONAUT"
+  sudo mkdir -p "$ASTRONAUT_FONTS" && sudo cp -r "$ASTRONAUT/Fonts/." "$ASTRONAUT_FONTS/"
+  sudo fc-cache -f "$ASTRONAUT_FONTS" >/dev/null
   sudo mkdir -p "$JAKE"
   local f; for f in "$ASTRONAUT"/*; do sudo ln -sfn "$f" "$JAKE/"; done
   sudo rm -f "$JAKE/metadata.desktop"
@@ -176,7 +258,16 @@ fix_sddm_theme() {
     "$ASTRONAUT/metadata.desktop" | sudo tee "$JAKE/metadata.desktop" >/dev/null
 }
 
-# Wallpaper for swaybg and hyprlock (images aren't in the repo).
+# Dark mode: GTK4/libadwaita and Electron apps (Bitwarden, Zen) follow
+# color-scheme, read through the desktop portal; GTK3 apps need the dark theme.
+gs() { gsettings get org.gnome.desktop.interface "$1" 2>/dev/null; }
+check_dark_mode() { [[ "$(gs color-scheme)" == "'prefer-dark'" && "$(gs gtk-theme)" == "'adw-gtk3-dark'" ]]; }
+fix_dark_mode() {
+  gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+  gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
+}
+
+# Wallpaper for swaybg and swaylock (images aren't in the repo).
 WALLPAPER="$HOME/Pictures/Wallpapers/current"
 check_wallpaper() { [[ -e "$WALLPAPER" ]]; }
 fix_wallpaper() {
@@ -270,6 +361,7 @@ check_gh_helper() {
   done
 }
 fix_gh_helper() {
+  command -v gh >/dev/null || { bad "gh isn't installed"; return 1; }
   local h; for h in "${GH_HOSTS[@]}"; do
     # The empty helper clears any inherited ones.
     git config --file "$HOME/.gitconfig.local" --replace-all "credential.$h.helper" ""
@@ -343,8 +435,11 @@ if [[ $OS == macos ]]; then
     bash "$ROOT/scripts/macos-defaults"
   fi
 else
-  step "Packages (pacman)"        check_arch_packages   fix_arch_packages
-  step "Packages (AUR, paru)"     check_aur_packages    fix_aur_packages
+  step "Terra repo"               check_terra           fix_terra
+  step "Packages (dnf)"           check_fedora_packages fix_fedora_packages
+  step "Bitwarden (AppImage)"     check_bitwarden       fix_bitwarden
+  step "Fedora defaults trimmed"  check_trim            fix_trim
+  step "Unused units off"         check_units_off       fix_units_off
   step "Config symlinks (stow)"   check_links           fix_links
   step "Login shell zsh"          check_shell           fix_shell
   step "antidote (zsh plugins)"   check_antidote        fix_antidote
@@ -355,8 +450,8 @@ else
   step "Bluetooth off at boot"    check_bt_off_at_boot  fix_bt_off_at_boot
   step "Tailscale on demand"      check_ts_on_demand    fix_ts_on_demand
   step "DNS via systemd-resolved" check_resolv          fix_resolv
-  step "pacman colors"            check_pacman_color    fix_pacman_color
   step "Login screen theme"       check_sddm_theme      fix_sddm_theme
+  step "Dark mode (GTK, portal)"  check_dark_mode       fix_dark_mode
   step "Wallpaper"                check_wallpaper       fix_wallpaper
 fi
 
@@ -383,7 +478,7 @@ if [[ $OS == macos ]]; then
   step "sshd keys-only"           check_sshd_keys_only  fix_sshd_keys_only
   step "authorized_keys present"  check_authorized_keys fix_authorized_keys
 fi
-if [[ $OS == arch ]] && ! systemctl is-active -q tailscaled; then
+if [[ $OS == fedora ]] && ! systemctl is-active -q tailscaled; then
   # Off by design until toggled from Waybar; its state can't be read meanwhile.
   gum style --foreground 3 "  - Tailscale (off; start it from the Waybar icon)"
 else

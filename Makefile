@@ -6,7 +6,7 @@ CLEAN_SCRIPT         ?= scripts/clean
 
 REPO   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 OS     := $(shell uname -s)
-# bash, not sh: the Arch dump target uses process substitution
+# bash, not sh: the Fedora dump target uses process substitution
 SHELL  := /bin/bash
 
 # ==============================================================================
@@ -23,13 +23,11 @@ doctor:
 	@bash scripts/setup --check
 
 clean:
-	@echo "🧹 Cleaning up dotfiles..."
 	@bash $(CLEAN_SCRIPT)
-	@echo "🧼 Clean complete."
 
 # ==============================================================================
-# PACKAGES — Homebrew (macOS, bootstrapped by setup); Arch uses
-# packages/arch.txt + aur.txt via setup
+# PACKAGES — Homebrew (macOS, bootstrapped by setup); Fedora uses
+# packages/fedora.txt (dnf + Terra) via setup
 # ==============================================================================
 brew: packages/Brewfile
 	@echo "📦 Running brew bundle..."
@@ -61,10 +59,12 @@ update-packages:
 	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
 else
 update-packages:
-	@echo "📦 Updating packages (pacman + AUR)..."
-	@paru -Syu
-	@grep -hvE '^[[:space:]]*(#|$$)' packages/arch.txt | sudo pacman -S --needed --noconfirm -
-	@grep -hvE '^[[:space:]]*(#|$$)' packages/aur.txt | paru -S --needed --noconfirm -
+	@echo "📦 Updating packages (dnf + Terra)..."
+	@sudo dnf upgrade -y --refresh
+	@sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | \
+		xargs sudo dnf install -y --setopt=install_weak_deps=False
+	@sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | \
+		xargs sudo dnf mark user >/dev/null
 endif
 
 ifeq ($(OS),Darwin)
@@ -73,12 +73,14 @@ dump:
 	@brew bundle dump --force --file ./packages/Brewfile
 	@echo "📋 Brewfile updated with current packages."
 else
-# The Arch lists are curated (grouped, commented), so don't overwrite them:
-# show explicitly installed packages that aren't listed yet.
+# The Fedora list is curated (grouped, commented), so don't overwrite it:
+# show packages installed by hand (install reason "User", not a dependency or
+# the installer's package group) that aren't listed.
 dump:
-	@echo "📋 Installed but not in packages/arch.txt or aur.txt:"
-	@comm -23 <(pacman -Qqe | grep -vE -- '-debug$$|^paru$$' | sort) \
-		<(grep -hvE '^[[:space:]]*(#|$$)' packages/arch.txt packages/aur.txt | sort)
+	@echo "📋 Installed by hand but not in packages/fedora.txt:"
+	@comm -23 <(dnf repoquery --installed --qf '%{name} %{reason}\n' 2>/dev/null | \
+		awk '$$2 == "User" { print $$1 }' | sort -u) \
+		<(sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | sort)
 endif
 
 # ==============================================================================
@@ -86,10 +88,13 @@ endif
 # ==============================================================================
 lint:
 	@echo "🔍 Validating configs..."
-	@zsh -n $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh) && echo "  ✓ Zsh configs OK" || exit 1
+	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh); do \
+		zsh -n "$$f" || exit 1; done && echo "  ✓ Zsh configs OK"
 	@python3 -m json.tool config-linux/swaync/config.json > /dev/null && echo "  ✓ swaync JSON OK" || exit 1
-	@if command -v luac >/dev/null; then luac -p config-linux/hypr/*.lua && echo "  ✓ Hyprland Lua OK" || exit 1; fi
-	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/macos-defaults config-linux/hypr/scripts/* config-linux/waybar/scripts/* config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
+	@if command -v niri >/dev/null; then \
+		out=$$(niri validate -c config-linux/niri/config.kdl 2>&1) || { echo "$$out"; exit 1; }; \
+		echo "  ✓ niri config OK"; fi
+	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/tpm-enroll scripts/macos-defaults config-linux/niri/scripts/* config-linux/waybar/scripts/* config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================

@@ -1,0 +1,108 @@
+# Fedora packages: official repos plus Terra (repos.fyralabs.com, enabled by
+# scripts/setup) for what Fedora lacks. Installed with `dnf install`, weak
+# deps off; comments are stripped. Terra packages are marked (terra).
+# Not packaged anywhere: the Bitwarden AppImage (scripts/setup).
+
+# --- Base system (Framework 13, AMD) ---
+mesa-vulkan-drivers
+make
+unzip
+xz
+
+# --- Desktop: niri ---
+niri
+swayidle
+swaylock
+mate-polkit
+xdg-desktop-portal-gnome
+xdg-desktop-portal-gtk
+qt5-qtwayland
+qt6-qtwayland
+waybar
+SwayNotificationCenter
+SwayOSD                 # (terra)
+swaybg
+fuzzel
+foot
+ghostty                 # (terra)
+cliphist
+wl-clipboard
+grim
+slurp
+libnotify
+brightnessctl
+playerctl
+xdg-user-dirs
+adw-gtk3-theme
+dconf                   # stores gsettings (dark mode, read by apps via the portal)
+gnome-keyring
+fuse-libs               # AppImages (Bitwarden): libfuse2 + fusermount
+fuse
+
+# --- Login screen (theme deps: qt6 svg, virtualkeyboard, multimedia) ---
+sddm
+sddm-wayland-generic
+weston
+qt6-qtsvg
+qt6-qtvirtualkeyboard
+qt6-qtmultimedia
+
+# --- Fonts ---
+jetbrainsmono-nerd-fonts  # (terra)
+google-noto-sans-fonts
+google-noto-color-emoji-fonts
+
+# --- Network, Bluetooth, audio (nmtui, bluetoothctl, wiremix) ---
+NetworkManager-wifi
+NetworkManager-tui
+iwd                     # NetworkManager's Wi-Fi backend (system-linux)
+bluez
+pipewire
+pipewire-pulseaudio
+wireplumber
+wiremix
+openssh-clients
+tailscale
+
+# --- Power & firmware ---
+power-profiles-daemon
+fwupd
+framework-system        # (terra) framework_tool
+
+# --- Shell & CLI (same tools as the Brewfile) ---
+zsh
+fzf
+zoxide
+eza
+bat
+fd-find
+ripgrep
+jq
+git
+git-delta
+gh
+stow
+starship                # (terra)
+mise                    # (terra)
+yazi                    # (terra)
+gum
+ShellCheck
+tealdeer
+btop
+fastfetch
+tmux
+neovim
+tree-sitter-cli
+7zip
+
+# --- Apps ---
+zen-browser             # (terra)
+t3code                  # (terra)
+satty                   # (terra) screenshot annotation
+
+# --- Viewers ---
+imv
+mpv
+zathura
+zathura-pdf-mupdf
+ffmpegthumbnailer

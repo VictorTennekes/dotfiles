@@ -10,7 +10,7 @@ if [[ "$1" == "help" || "$1" == "--help" ]]; then
   return 0
 fi
 
-# Homebrew on macOS, pacman + AUR (paru) on Arch
+# Homebrew on macOS, dnf (Fedora + Terra) on Linux
 case $OSTYPE in
   darwin*)
     case "$1" in
@@ -27,10 +27,10 @@ case $OSTYPE in
     ;;
   linux*)
     case "$1" in
-      check)   pacman -Dk; return ;;
-      dry-run) checkupdates; paru -Qua; return ;;
+      check)   dnf check; return ;;
+      dry-run) dnf check-upgrade --refresh; return 0 ;;  # exits 100 when there are updates
     esac
-    paru -Syu
+    sudo dnf upgrade --refresh
     # antidote is a git clone here, not a package
     git -C "${XDG_DATA_HOME:-$HOME/.local/share}/antidote" pull -q
     # Firmware (BIOS, touchpad, ...) via LVFS; only reports, never flashes

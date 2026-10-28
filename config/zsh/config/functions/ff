@@ -1,5 +1,6 @@
-# fastfetch with the Max Theorum logo as a real image in local Ghostty
-# (kitty-direct passes a file path, so not over SSH); ASCII logo elsewhere.
+# fastfetch with the Max Theorum logo as a real image in local Ghostty on
+# macOS (sips renders the SVG; kitty-direct passes a file path, so not over
+# SSH); ASCII logo elsewhere.
 # The image is logo.svg rendered in the terminal's current foreground
 # color (asked via OSC 10), cached per color, so it follows the theme.
 local svg=${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/logo.svg reply c png tty

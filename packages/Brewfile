@@ -27,7 +27,6 @@ brew "stow"              # Symlink farm manager for dotfiles.
 brew "gum"               # Styled prompts for scripts/setup.
 brew "shellcheck"        # Lints shell scripts (make lint).
 brew "tealdeer"          # Fast tldr client for quick command examples.
-brew "vivid"             # A generator for LS_COLORS with themes.
 brew "hyperfine"         # A command-line benchmarking tool.
 brew "watch"             # Executes a program periodically, showing output fullscreen.
 

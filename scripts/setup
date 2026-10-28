@@ -184,9 +184,9 @@ check_antidote() { [[ -r "$ANTIDOTE_DIR/antidote.zsh" ]]; }
 fix_antidote()   { git clone --depth 1 https://github.com/mattmc3/antidote "$ANTIDOTE_DIR"; }
 
 # /etc files tracked in system-linux/etc (zram, sysctl, journald, dnf without
-# weak deps, SDDM, Wi-Fi backend); the tailscaled polkit rule has its own
-# step below. Takes full
-# effect after a reboot; nothing is restarted here (it could drop the network).
+# weak deps, Tailscale repo, SDDM, Wi-Fi backend); the tailscaled polkit rule
+# has its own step below. Takes full effect after a reboot; nothing is
+# restarted here (it could drop the network).
 system_files() { (cd "$ROOT/system-linux" && find etc -type f); }
 check_system_files() {
   local f; while read -r f; do cmp -s "$ROOT/system-linux/$f" "/$f" || return 1; done < <(system_files)

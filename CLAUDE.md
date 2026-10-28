@@ -12,14 +12,15 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 - `config-linux/` — Linux-only (niri, waybar, swaync, swayosd, swaylock,
   swayidle, fuzzel, foot, yazi, ghostty)
 - `system-linux/` — `/etc` files that `scripts/setup` installs on Fedora
-  (zram, sysctl, journald, dnf without weak deps, SDDM, NetworkManager Wi-Fi
-  backend = iwd) and
+  (zram, sysctl, journald, dnf without weak deps, the Tailscale repo, SDDM,
+  NetworkManager Wi-Fi backend = iwd) and
   the polkit rule that lets the Waybar toggle start/stop tailscaled
 - `home/` — home-level dotfiles stowed to `~/` (.zshenv)
 - `packages/` — `Brewfile` (work packages gated behind `~/.work-laptop`),
   `fedora.txt` (curated, commented; `make dump` on Fedora only lists
   what's missing, never overwrites). Fedora has no AUR: prefer the official
-  repos, then Terra; the only things installed outside dnf are the Bitwarden
+  repos, then Terra (Tailscale comes from its vendor repo, which is much
+  newer); the only things installed outside dnf are the Bitwarden
   AppImage and two git clones (antidote, sddm-astronaut-theme) in setup
 - `scripts/` — `setup` (guided install + `--check` doctor, branches on
   OS), `install` (stow `config` + `config-<os>` + nvim), `clean`,

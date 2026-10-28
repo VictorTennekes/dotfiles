@@ -1,5 +1,6 @@
 # Fedora packages: official repos plus Terra (repos.fyralabs.com, enabled by
-# scripts/setup) for what Fedora lacks. Installed with `dnf install`, weak
+# scripts/setup) for what Fedora lacks, and Tailscale's own repo (newer than
+# Fedora's build; system-linux/etc/yum.repos.d). Installed with `dnf install`, weak
 # deps off; comments are stripped. Terra packages are marked (terra).
 # Not packaged anywhere: the Bitwarden AppImage (scripts/setup).
 
@@ -63,7 +64,7 @@ pipewire-pulseaudio
 wireplumber
 wiremix
 openssh-clients
-tailscale
+tailscale               # from Tailscale's own repo (system-linux)
 
 # --- Power & firmware ---
 power-profiles-daemon

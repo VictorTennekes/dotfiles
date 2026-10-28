@@ -1,0 +1,13 @@
+# Tailscale's own repo (https://pkgs.tailscale.com/stable/fedora/tailscale.repo):
+# Fedora's tailscale package trails upstream by several releases. Packages and
+# metadata are verified against Tailscale's key; dnf takes the newest version
+# across repos, so this replaces Fedora's build.
+
+[tailscale-stable]
+name=Tailscale stable
+baseurl=https://pkgs.tailscale.com/stable/fedora/$basearch
+enabled=1
+type=rpm
+repo_gpgcheck=1
+gpgcheck=1
+gpgkey=https://pkgs.tailscale.com/stable/fedora/repo.gpg

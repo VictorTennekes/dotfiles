@@ -12,7 +12,6 @@
   "modules-center": ["clock"],
   "modules-right": [
     "tray",
-    "group/hardware",
     "custom/tailscale",
     "bluetooth",
     "network",
@@ -51,17 +50,6 @@
   },
 
   "tray": { "icon-size": 15, "spacing": 8 },
-
-  // Collapsed by default: click the chip to show CPU / memory / temperature
-  "group/hardware": {
-    "orientation": "horizontal",
-    "drawer": { "transition-duration": 250, "click-to-reveal": true, "transition-left-to-right": false },
-    "modules": ["custom/hw", "cpu", "memory", "temperature"]
-  },
-  "custom/hw": { "format": "󰵆", "tooltip-format": "Hardware (click)" },
-  "cpu": { "interval": 10, "format": "󰻠 {usage}%", "on-click": "footclient btop" },
-  "memory": { "interval": 30, "format": "󰍛 {percentage}%", "tooltip-format": "{used:0.1f}G / {total:0.1f}G" },
-  "temperature": { "interval": 10, "format": "󰔏 {temperatureC}°", "critical-threshold": 90 },
 
   // Battery with the power profile tucked behind it: click the battery to
   // slide the profile icon out, then click that to cycle profiles

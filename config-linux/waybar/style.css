@@ -9,7 +9,6 @@
 @define-color blue     #89b4fa;
 @define-color green    #a6e3a1;
 @define-color yellow   #f9e2af;
-@define-color peach    #fab387;
 @define-color red      #f38ba8;
 
 * {
@@ -57,10 +56,6 @@ window#waybar.empty #window { padding: 0; }
 #clock { color: @text; font-weight: bold; padding: 0 8px; }
 
 #tray,
-#custom-hw,
-#cpu,
-#memory,
-#temperature,
 #power-profiles-daemon,
 #custom-tailscale,
 #bluetooth,
@@ -71,12 +66,6 @@ window#waybar.empty #window { padding: 0; }
   padding: 0 7px;
   color: @text;
 }
-
-#custom-hw                       { color: @overlay0; }
-#cpu                             { color: @blue; }
-#memory                          { color: @mauve; }
-#temperature                     { color: @peach; }
-#temperature.critical            { color: @red; }
 
 #power-profiles-daemon.performance { color: @red; }
 #power-profiles-daemon.balanced    { color: @blue; }
@@ -112,8 +101,6 @@ button:focus {
 
 #workspaces button:hover,
 #tray > widget:hover,
-#custom-hw:hover,
-#cpu:hover,
 #power-profiles-daemon:hover,
 #custom-tailscale:hover,
 #bluetooth:hover,

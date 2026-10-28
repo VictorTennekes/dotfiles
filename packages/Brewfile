@@ -38,7 +38,6 @@ brew "watch"             # Executes a program periodically, showing output fulls
 
 cask "ghostty"           # A modern GPU-accelerated terminal emulator.
 
-brew "antidote"          # A Zsh plugin manager.
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
 # node, go, and python are managed by mise
 brew "mise"              # Polyglot version manager (replaces pyenv, nvm, etc.).

@@ -178,10 +178,18 @@ fix_bitwarden() {
 check_shell() { [[ "$(getent passwd "$USER" | cut -d: -f7)" == /usr/bin/zsh ]]; }
 fix_shell()   { sudo usermod -s /usr/bin/zsh "$USER"; }
 
-# On macOS antidote comes from Homebrew; on Fedora it's a git clone.
-ANTIDOTE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/antidote"
-check_antidote() { [[ -r "$ANTIDOTE_DIR/antidote.zsh" ]]; }
-fix_antidote()   { git clone --depth 1 https://github.com/mattmc3/antidote "$ANTIDOTE_DIR"; }
+# Zsh plugins: git clones of the repos in zsh_plugins.txt (plugins.zsh loads them).
+ZSH_PLUGINS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh-plugins"
+zsh_plugin_repos() { grep -o '^[^#[:space:]]\+' "$ROOT/config/zsh/zsh_plugins.txt"; }
+check_zsh_plugins() {
+  local r; for r in $(zsh_plugin_repos); do [[ -d "$ZSH_PLUGINS_DIR/${r##*/}" ]] || return 1; done
+}
+fix_zsh_plugins() {
+  local r; for r in $(zsh_plugin_repos); do
+    [[ -d "$ZSH_PLUGINS_DIR/${r##*/}" ]] ||
+      git clone -q --depth 1 "https://github.com/$r" "$ZSH_PLUGINS_DIR/${r##*/}" || return 1
+  done
+}
 
 # /etc files tracked in system-linux/etc (zram, sysctl, journald, dnf without
 # weak deps, Tailscale repo, SDDM, Wi-Fi backend); the tailscaled polkit rule
@@ -441,6 +449,7 @@ if [[ $OS == macos ]]; then
   fi
   step "Homebrew packages"        check_packages        fix_packages
   step "Config symlinks (stow)"   check_links           fix_links
+  step "Zsh plugins (git clones)" check_zsh_plugins     fix_zsh_plugins
   if (( ! CHECK_ONLY )) && gum confirm --default=false "Apply macOS defaults (Dock, Finder, keyboard)?"; then
     bash "$ROOT/scripts/macos-defaults"
   fi
@@ -451,8 +460,8 @@ else
   step "Fedora defaults trimmed"  check_trim            fix_trim
   step "Unused units off"         check_units_off       fix_units_off
   step "Config symlinks (stow)"   check_links           fix_links
+  step "Zsh plugins (git clones)" check_zsh_plugins     fix_zsh_plugins
   step "Login shell zsh"          check_shell           fix_shell
-  step "antidote (zsh plugins)"   check_antidote        fix_antidote
 
   section "System"
   step "System files (/etc)"      check_system_files    fix_system_files

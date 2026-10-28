@@ -1,0 +1,56 @@
+#!/bin/bash
+# (Re-)enroll the TPM to unlock the LUKS volume behind / without a passphrase.
+# Run after the first install, and again after a BIOS update or a Secure Boot
+# change (both change PCR 7, so the old TPM slot stops unlocking). Replaces any
+# existing TPM slot; the passphrase stays as the fallback. Verifies the TPM
+# unlock before you reboot.
+#
+#   sudo scripts/tpm-enroll                 bind to PCR 7 (Secure Boot state)
+#   sudo scripts/tpm-enroll --pcrs 0+7      other PCRs
+#   sudo scripts/tpm-enroll --force         even with Secure Boot off
+#
+# One-time per install (distro-specific, see the README): crypttab needs
+# tpm2-device=auto for the volume, and the initramfs needs TPM support.
+
+set -euo pipefail
+
+PCRS=7
+FORCE=0
+usage() { echo "Usage: sudo $0 [--pcrs N[+N...]] [--force]" >&2; exit 2; }
+while (( $# )); do
+  case $1 in
+    --pcrs)  (( $# >= 2 )) || usage; PCRS=$2; shift 2 ;;
+    --force) FORCE=1; shift ;;
+    *)       usage ;;
+  esac
+done
+
+[[ $EUID -eq 0 ]] || { echo "Run with sudo" >&2; exit 1; }
+
+# The LUKS device behind /: walk from root's source (btrfs adds a [/subvol]
+# suffix) up through any LVM layers to the opened LUKS mapping; cryptsetup
+# knows the device under it.
+src=$(findmnt -no SOURCE / | sed 's/\[.*//')
+mapping=$(lsblk -nso PATH,TYPE "$src" 2>/dev/null | awk '$2 == "crypt" { print $1; exit }')
+[[ -n $mapping ]] || { echo "/ isn't on a LUKS volume ($src)" >&2; exit 1; }
+dev=$(cryptsetup status "${mapping#/dev/mapper/}" | awk '$1 == "device:" { print $2 }')
+echo "LUKS device: $dev (opened as ${mapping#/dev/mapper/})"
+
+# Without Secure Boot, PCR 7 doesn't stop someone booting their own OS and
+# unsealing the key. Read the state from the firmware (last byte: 1 = on).
+sb=$(od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c 2>/dev/null |
+  awk '{ print $NF }' || true)
+if [[ $sb != 1 ]] && (( ! FORCE )); then
+  if [[ -z $sb ]]; then echo "No Secure Boot state found (not booted via UEFI?); pass --force to enroll anyway" >&2
+  else echo "Secure Boot is off: enable it first, or pass --force" >&2; fi
+  exit 1
+fi
+
+systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs="$PCRS" "$dev"
+
+if cryptsetup open --test-passphrase --token-only "$dev"; then
+  echo "VERIFIED: the TPM unlocks $dev. Safe to reboot."
+else
+  echo "TPM unlock FAILED; the passphrase still works. Check crypttab and the initramfs." >&2
+  exit 1
+fi

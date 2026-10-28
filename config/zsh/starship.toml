@@ -1,8 +1,5 @@
-"$schema" = 'https://starship.rs/config-schema.json'
-
 add_newline = false
 command_timeout = 5000
-scan_timeout = 200
 
 format = """
 $directory\
@@ -11,40 +8,8 @@ $git_status\
 $character\
 """
 
-right_format = """
-$cmd_duration\
-$status\
-$python\
-$nodejs\
-$golang\
-"""
-
 [git_branch]
 format = "$branch "
 
 [git_status]
 ignore_submodules = true
-
-[cmd_duration]
-min_time = 2000
-format = "[$duration]($style) "
-
-[gcloud]
-disabled = true
-format = 'on [$symbol$account]($style) '
-
-[package]
-disabled = true
-
-[nodejs]
-format = '[$symbol($version )]($style)'
-symbol = " "
-
-[golang]
-format = '[$symbol($version )]($style)'
-symbol = " "
-
-[python]
-format = '[${symbol}(${version} )(\($virtualenv\) )]($style)'
-symbol = "🐍"
-version_format = "${raw}"

@@ -1,31 +1,33 @@
-# Autosuggestions: sync (the history strategy is a cheap lookup; async forks a
-# subshell per keystroke) and bind widgets once instead of on every precmd
-# (~10ms per prompt otherwise).
+# The async prompt needs `zle -F` alive (see CLAUDE.md): compinit now, plugins
+# deferred with -psz, sync autosuggestions, which bind their widgets once.
 export ZSH_AUTOSUGGEST_MANUAL_REBIND=1
-export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 
-# antidote: regenerate the static bundle if zsh_plugins.txt is newer.
-_antidote_bundle="${ZSH_CACHE_DIR}/zsh_plugins.zsh"
-if [[ ! -s "$_antidote_bundle" || "${ZDOTDIR}/zsh_plugins.txt" -nt "$_antidote_bundle" ]]; then
-  # Homebrew on macOS, a git clone in ~/.local/share elsewhere
-  for _antidote_zsh in "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" \
-                       "${XDG_DATA_HOME:-$HOME/.local/share}/antidote/antidote.zsh"; do
-    [[ -r "$_antidote_zsh" ]] && break
-  done
-  if [[ -r "$_antidote_zsh" ]]; then
-    source "$_antidote_zsh"
-    antidote bundle <"${ZDOTDIR}/zsh_plugins.txt" >|"$_antidote_bundle"
-  fi
-  unset _antidote_zsh
-fi
-[[ -s "$_antidote_bundle" ]] && source "$_antidote_bundle"
-unset _antidote_bundle
+# compinit from a cached dump; the full compinit (security audit skipped) only
+# reruns when fpath or one of its dirs changed (a new completion file changes
+# the dir's mtime; the dump only lists names, so edits in place don't matter).
+_zcd=$ZSH_CACHE_DIR/zcompdump
+autoload -Uz compinit
+[[ -r $_zcd.fpath && "$(<$_zcd.fpath)" == "$fpath" ]] || rm -f $_zcd
+for _d in $fpath; do [[ $_d -nt $_zcd ]] && rm -f $_zcd; done
+if [[ -f $_zcd ]]; then compinit -C -d $_zcd
+else compinit -u -d $_zcd; zcompile $_zcd; print -r -- "$fpath" >| $_zcd.fpath; fi
+unset _zcd _d
 
-# zsh-autosuggestions enables async at load time; async delivery needs `zle -F`,
-# which never fires on this zsh once fsh/zsh-defer are loaded (see prompt.zsh),
-# so suggestions silently stop. Sync is a cheap in-process history lookup.
-zsh-defer -c 'unset ZSH_AUTOSUGGEST_USE_ASYNC'
+# Git clones of zsh_plugins.txt (scripts/setup), zsh_unplugged-style; a missing
+# clone is skipped. Everything after zsh-defer is deferred.
+_zp_root="${XDG_DATA_HOME:-$HOME/.local/share}/zsh-plugins"
+while read -r _zp_repo _zp_sub; do
+  [[ -z $_zp_repo || $_zp_repo == \#* ]] && continue
+  _zp_dir="$_zp_root/${_zp_repo:t}${_zp_sub:+/$_zp_sub}"
+  _zp_file=("$_zp_dir"/*.plugin.zsh(N))
+  (( $#_zp_file )) || continue
+  fpath+=("$_zp_dir")
+  if (( $+functions[zsh-defer] )); then zsh-defer -psz source "$_zp_file[1]"; else source "$_zp_file[1]"; fi
+done <"${ZDOTDIR}/zsh_plugins.txt"
+unset _zp_root _zp_repo _zp_sub _zp_dir _zp_file
+# No zsh-defer clone: the deferred line below runs right away.
+(( $+functions[zsh-defer] )) || zsh-defer() { shift; if [[ $1 == -c ]]; then eval "$2"; else "$@"; fi }
 
-# Keybindings — deferred so widgets exist when bindings register
-zsh-defer bindkey '^[[A' history-substring-search-up
-zsh-defer bindkey '^[[B' history-substring-search-down
+# After the plugins load: sync suggestions, and keys for their widgets.
+zsh-defer -psz -c "unset ZSH_AUTOSUGGEST_USE_ASYNC
+  bindkey '^[[A' history-substring-search-up '^[[B' history-substring-search-down"

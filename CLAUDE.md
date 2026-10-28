@@ -21,7 +21,7 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
   what's missing, never overwrites). Fedora has no AUR: prefer the official
   repos, then Terra (Tailscale comes from its vendor repo, which is much
   newer); the only things installed outside dnf are the Bitwarden
-  AppImage and two git clones (antidote, sddm-astronaut-theme) in setup
+  AppImage and git clones (zsh plugins, sddm-astronaut-theme) in setup
 - `scripts/` — `setup` (guided install + `--check` doctor, branches on
   OS), `install` (stow `config` + `config-<os>` + nvim), `clean`,
   `macos-defaults`, `tpm-enroll` (TPM unlock for the LUKS root; run by hand,
@@ -33,8 +33,8 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 ## Cross-platform rules
 
 - One version per shared config. Prefer "use it if it exists" checks
-  (`(( $+commands[pbcopy] ))`, Homebrew vs `~/.local/share/antidote`)
-  over OS branches; `up` is the only OS `case` in zsh.
+  (`(( $+commands[pbcopy] ))`) over OS branches; `up` is the only OS
+  `case` in zsh.
 - Per-machine values (signing key, gh credential helper with gh's
   absolute path) go in `~/.gitconfig.local`, written by `scripts/setup`.
 - A tool used on only one OS goes in that OS's `config-<os>/`.
@@ -50,14 +50,22 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 
 - Entry: `.zshrc` sources modular configs from
   `config/zsh/config/`
-- Plugins via antidote, all deferred for performance
-- Tool inits (fzf, zoxide, starship) cached in
-  `~/.cache/zsh/` to avoid subprocess spawns
+- Plugins: git clones of `zsh_plugins.txt` in `~/.local/share/zsh-plugins`
+  (setup clones, `up` pulls), loaded by `plugins.zsh`; all deferred via
+  zsh-defer (the list's first entry). No framework: compinit runs in
+  `plugins.zsh` from a cached dump, rebuilt when fpath or one of its dirs changes
+- Tool inits (fzf, zoxide) cached in `~/.cache/zsh/` to avoid subprocess
+  spawns; starship is called directly by the async prompt (`prompt.zsh`), no
+  `starship init`
+- zsh 5.9 stops servicing `zle -F` handlers once a widget or compinit runs
+  inside one, which kills the async prompt: compinit runs before the first
+  prompt, zsh-defer tasks use `-psz`, autosuggestions stays sync
+  (`plugins.zsh`)
 - Custom functions use zsh autoload (parsed on first call)
 - mise installs global node/python/go; no shell hook, its install
-  dirs are on PATH (`paths.zsh`)
-- Exports, paths, aliases, functions, completions,
-  history are separate files
+  dirs are on PATH (`exports.zsh`)
+- Exports (incl. PATH), history, aliases, completions, integrations,
+  prompt and plugins are separate files
 
 ## Neovim
 

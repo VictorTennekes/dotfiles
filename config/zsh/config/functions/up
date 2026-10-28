@@ -1,62 +1,33 @@
-GREEN="\033[0;32m"
-YELLOW="\033[1;33m"
-RESET="\033[0m"
-
-if [[ "$1" == "help" || "$1" == "--help" ]]; then
-  echo -e "${GREEN}Usage:${RESET} up [option]"
-  echo -e "  ${YELLOW}check${RESET}     Sanity-check the package manager"
-  echo -e "  ${YELLOW}dry-run${RESET}   Show what an upgrade would change"
-  echo -e "  ${YELLOW}help${RESET}      Show this help"
-  return 0
+# Upgrade everything: Homebrew (macOS) or dnf + a firmware check (Fedora), then
+# mise's global tools and the zsh plugin clones (scripts/setup) on both.
+if [[ $1 == (help|--help) ]]; then
+  print -P "%F{green}Usage:%f up [option]
+  %F{yellow}check%f     Sanity-check the package manager
+  %F{yellow}dry-run%f   Show what an upgrade would change
+  %F{yellow}help%f      Show this help"
+  return
 fi
-
-# Homebrew on macOS, dnf (Fedora + Terra) on Linux
+local -x NONINTERACTIVE=1
 case $OSTYPE in
   darwin*)
-    case "$1" in
+    case $1 in
       check)   brew doctor; return ;;
-      dry-run) NONINTERACTIVE=1 brew update; brew upgrade --greedy --dry-run; return ;;
+      dry-run) brew update && brew upgrade --greedy --dry-run; return ;;
     esac
-    NONINTERACTIVE=1 brew update
-    if [[ -z "$(brew outdated)" ]]; then
-      echo -e "${GREEN}Nothing to upgrade.${RESET}"
-    else
-      NONINTERACTIVE=1 brew upgrade -y
-      NONINTERACTIVE=1 brew cleanup
-    fi
-    ;;
+    print -P '%F{yellow}Upgrading Homebrew packages...%f'
+    # --greedy: also casks that update themselves (gcloud-cli, Ghostty), as dry-run shows
+    brew update && brew upgrade --greedy -y && brew cleanup ;;
   linux*)
-    case "$1" in
+    case $1 in
       check)   dnf check; return ;;
       dry-run) dnf check-upgrade --refresh; return 0 ;;  # exits 100 when there are updates
     esac
     sudo dnf upgrade --refresh
-    # antidote is a git clone here, not a package
-    git -C "${XDG_DATA_HOME:-$HOME/.local/share}/antidote" pull -q
     # Firmware (BIOS, touchpad, ...) via LVFS; only reports, never flashes
-    fwupdmgr refresh >/dev/null 2>&1
-    fwupdmgr get-updates >/dev/null 2>&1 &&
-      echo -e "${YELLOW}Firmware updates available: run 'fwupdmgr update'${RESET}"
-    ;;
+    fwupdmgr refresh &>/dev/null; fwupdmgr get-updates &>/dev/null &&
+      print -P "%F{yellow}Firmware updates available: run 'fwupdmgr update'%f" ;;
 esac
-
-# Global node/python/go; paths.zsh follows their lts/latest links
-if (( $+commands[mise] )); then
-  echo -e "${YELLOW}Updating mise tools...${RESET}"
-  mise upgrade
-fi
-
-# Update the zsh plugins and refresh the bundle (same file plugins.zsh sources)
-for _antidote_zsh in "$HOMEBREW_PREFIX/opt/antidote/share/antidote/antidote.zsh" \
-                     "${XDG_DATA_HOME:-$HOME/.local/share}/antidote/antidote.zsh"; do
-  [[ -r "$_antidote_zsh" ]] && break
-done
-if [[ -r "$_antidote_zsh" ]]; then
-  echo -e "${YELLOW}Updating zsh plugins...${RESET}"
-  source "$_antidote_zsh"
-  antidote update
-  antidote bundle < "${ZDOTDIR}/zsh_plugins.txt" >| "${ZSH_CACHE_DIR}/zsh_plugins.zsh"
-fi
-unset _antidote_zsh
-
-echo -e "${GREEN}Done!${RESET}"
+(( $+commands[mise] )) && print -P '%F{yellow}Updating mise tools...%f' && mise upgrade
+print -P '%F{yellow}Updating zsh plugins...%f'
+local d; for d in ${XDG_DATA_HOME:-$HOME/.local/share}/zsh-plugins/*(N/); do git -C $d pull -q; done
+print -P '%F{green}Done!%f'

@@ -7,8 +7,8 @@ and GNU Stow. XDG Base Directory compliant throughout.
 
 ## What's Inside
 
-- **Shell:** Zsh with [Antidote](https://github.com/mattmc3/antidote) for
-  plugin management and [Starship](https://starship.rs/) prompt.
+- **Shell:** Zsh with plugins as plain git clones (no plugin manager) and
+  [Starship](https://starship.rs/) prompt.
 - **Package Manager:** [Homebrew](https://brew.sh/) on macOS
   (`packages/Brewfile`); dnf plus [Terra](https://terra.fyralabs.com) on
   Fedora (`packages/fedora.txt`).
@@ -92,8 +92,8 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 ```
 
 Shared configs are one version for both systems: where they differ, they
-check what's installed (`pbcopy` vs `wl-copy`, Homebrew vs a git clone of
-antidote) instead of keeping per-OS copies. `up` is the one function that
+check what's installed (`pbcopy` vs `wl-copy`) instead of keeping per-OS
+copies. `up` is the one function that
 branches on the OS (brew vs dnf).
 
 ---

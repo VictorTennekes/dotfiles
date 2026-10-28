@@ -1,31 +1,8 @@
-# Guard against double-sourcing within a shell. Must NOT be exported: an
-# exported flag leaks into every child shell, so a stale ancestor (started
-# before this file last changed) would make new shells skip these exports
-# entirely — silently serving outdated config until full logout.
+# Guard is not exported, or a child shell started before an edit would skip this file.
 [[ -n "$_EXPORTS_SOURCED" ]] && return
 typeset -g _EXPORTS_SOURCED=1
 
-# --- Homebrew (avoid eval fork by hardcoding prefix) ---
-if [[ -z "$HOMEBREW_PREFIX" ]]; then
-  if [[ -x /opt/homebrew/bin/brew ]]; then
-    export HOMEBREW_PREFIX="/opt/homebrew"
-  elif [[ -x /usr/local/bin/brew ]]; then
-    export HOMEBREW_PREFIX="/usr/local"
-  fi
-  if [[ -n "$HOMEBREW_PREFIX" ]]; then
-    export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar"
-    export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX"
-    export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin${PATH+:$PATH}"
-    export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH+:$MANPATH}:"
-    export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
-  fi
-fi
-
-# --- Editor ---
 export EDITOR=nvim
-export VISUAL=nvim
-
-# --- App Configurations ---
 export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
 export FZF_DEFAULT_OPTS=" \
@@ -38,12 +15,17 @@ export FZF_DEFAULT_OPTS=" \
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
 export K9S_CONFIG_DIR="$HOME/.config/k9s"
-export MISE_CONFIG_DIR="$HOME/.config/mise"
 export STARSHIP_CONFIG="$HOME/.config/zsh/starship.toml"
 
-# --- Terminal Colors ---
 # ls_colors is `vivid generate catppuccin-mocha` output, committed so neither
 # machine needs vivid; regenerate it with `mise x vivid -- vivid generate ...`.
 # Overrides the distro default (Fedora's /etc/profile.d/colorls.sh sets one).
-export CLICOLOR=1
 [[ -r "$ZDOTDIR/ls_colors" ]] && export LS_COLORS="$(<$ZDOTDIR/ls_colors)"
+
+# (N/): only directories that exist. mise's global node/python/go via their
+# lts/latest links, no shell hook (~19ms per shell and per cd); `mise x -- <cmd>`
+# for a project's pinned versions. Homebrew without `brew shellenv` (a fork); man
+# finds its pages via PATH. /usr/local/bin (Docker, VS Code CLIs): macOS
+# path_helper no longer runs.
+typeset -gU path
+path=(${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/{node/lts,python/latest,go/latest}/bin(N/) $HOME/.cargo/bin(N/) $HOME/go/bin(N/) $HOME/.krew/bin(N/) $HOME/bin(N/) $HOME/.local/bin(N/) /opt/homebrew/{bin,sbin}(N/) /usr/local/bin(N/) $path)

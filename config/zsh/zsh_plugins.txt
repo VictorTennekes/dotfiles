@@ -1,5 +1,7 @@
-mattmc3/zephyr path:plugins/completion kind:defer
-Aloxaf/fzf-tab kind:defer
-zsh-users/zsh-autosuggestions kind:defer
-zsh-users/zsh-history-substring-search kind:defer
-zdharma-continuum/fast-syntax-highlighting kind:defer
+# owner/repo [subdir], loaded in this order. scripts/setup clones them into
+# ~/.local/share/zsh-plugins; zsh-defer (first) defers the ones after it.
+romkatv/zsh-defer
+Aloxaf/fzf-tab
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-history-substring-search
+zsh-users/zsh-syntax-highlighting

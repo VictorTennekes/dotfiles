@@ -1,25 +1,20 @@
-# Clipboard copy: OSC 52 over SSH (reaches the local terminal), else pbcopy
-# (macOS) or wl-copy (Wayland).
-# With a file argument: copy that file's contents.
-# Otherwise: read from stdin.
-local _copy
-if [[ -n "$SSH_TTY" || -n "$SSH_CLIENT" ]]; then
-  _osc52_copy() {
-    local b64=$(base64)
-    printf "\e]52;c;%s\a" "${b64//[$'\n\r']}"
-  }
-  _copy=(_osc52_copy)
-else
-  (( $+commands[pbcopy] )) && _copy=(pbcopy) || _copy=(wl-copy)
+# Copy stdin, a file's contents, or (-h, alias ctx) files with filename headers
+# for LLM context. OSC 52 over SSH (to the local terminal via /dev/tty, so
+# stdout stays free), else pbcopy (macOS) or wl-copy (Wayland).
+local f what; local -a files
+if [[ $1 == -h ]]; then
+  shift
+  for f; [[ -f $f ]] && files+=($f) || print -u2 "Skipping '$f' (not a file)"
+  (( $#files )) || { print -u2 'Usage: ctx <file>...'; return 1 }
+  what="$#files file(s)"
+elif (( $# )); then
+  [[ -f $1 ]] || { print -u2 "Error: '$1' is not a valid file."; return 1 }
+  what="contents of '$1'"
 fi
-
-if [[ $# -gt 0 ]]; then
-  if [[ -f "$1" ]]; then
-    "${_copy[@]}" < "$1" && echo "Copied contents of '$1' to clipboard."
-  else
-    echo "Error: '$1' is not a valid file." >&2
-    return 1
-  fi
-else
-  "${_copy[@]}" && echo "Copied from stdin to clipboard."
-fi
+{ if (( $#files )); then for f in $files; print -r -- "# $f"$'\n```'$'\n'"$(<$f)"$'\n```\n'
+  else cat -- ${1:--}; fi
+} | if [[ -n $SSH_TTY || -n $SSH_CLIENT ]]; then
+  printf '\e]52;c;%s\a' "$(base64 | tr -d '\n\r')" >/dev/tty
+elif (( $+commands[pbcopy] )); then pbcopy
+else wl-copy
+fi && print "Copied ${what:-from stdin} to clipboard."

@@ -110,11 +110,13 @@ not_user_installed() {
     awk '$2 != "User" { print $1 }'
 }
 check_fedora_packages() { [[ -z "$(missing_pkgs fedora.txt)" && -z "$(not_user_installed)" ]]; }
-# Also mark them user-installed: some came in as dependencies of the base
-# install, and dnf's cleanup (e.g. the trim below) would remove those.
+# Install what's missing, and mark listed packages user-installed: some came
+# in as dependencies of the base install, and dnf's cleanup (e.g. the trim
+# below) would remove those. Only what needs changing goes to dnf, so re-runs
+# stay quiet.
 fix_fedora_packages() {
-  pkglist fedora.txt | xargs sudo dnf install -y --setopt=install_weak_deps=False &&
-    pkglist fedora.txt | xargs sudo dnf mark user >/dev/null
+  missing_pkgs fedora.txt | xargs -r sudo dnf install -y --setopt=install_weak_deps=False &&
+    not_user_installed | xargs -r sudo dnf mark user -y -q
 }
 
 # Fedora defaults this laptop doesn't need: crash reporting (abrt), a syslog

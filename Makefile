@@ -64,7 +64,7 @@ update-packages:
 	@sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | \
 		xargs sudo dnf install -y --setopt=install_weak_deps=False
 	@sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | \
-		xargs sudo dnf mark user >/dev/null
+		xargs sudo dnf mark user -y >/dev/null
 endif
 
 ifeq ($(OS),Darwin)

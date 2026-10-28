@@ -260,6 +260,13 @@ fix_sddm_theme() {
     "$ASTRONAUT/metadata.desktop" | sudo tee "$JAKE/metadata.desktop" >/dev/null
 }
 
+# gnome-keyring through its systemd user socket: that socket is the control
+# channel the login screen (pam_gnome_keyring) uses to hand over the password
+# and unlock the "login" keyring. Without it the daemon gets started by D-Bus
+# instead, with no control socket, and every app asks to unlock the keyring.
+check_keyring_socket() { systemctl --user is-enabled -q gnome-keyring-daemon.socket 2>/dev/null; }
+fix_keyring_socket()   { systemctl --user enable gnome-keyring-daemon.socket; }
+
 # Dark mode: GTK4/libadwaita and Electron apps (Bitwarden, Zen) follow
 # color-scheme, read through the desktop portal; GTK3 apps need the dark theme.
 gs() { gsettings get org.gnome.desktop.interface "$1" 2>/dev/null; }
@@ -454,6 +461,7 @@ else
   step "DNS via systemd-resolved" check_resolv          fix_resolv
   step "Login screen theme"       check_sddm_theme      fix_sddm_theme
   step "Dark mode (GTK, portal)"  check_dark_mode       fix_dark_mode
+  step "Keyring unlocked at login" check_keyring_socket fix_keyring_socket
   step "Wallpaper"                check_wallpaper       fix_wallpaper
 fi
 

@@ -69,12 +69,14 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 
 ## Neovim
 
-- Based on kickstart.nvim, customized in
-  `config/nvim/lua/custom/`
-- Lazy.nvim for plugin management, Mason for LSP/tools
-- Snacks.nvim handles picker, explorer, UI
+- `init.lua` (options, keymaps, autocmds, lazy bootstrap) plus one spec
+  per plugin in `config/nvim/lua/plugins/`; no kickstart tutorial code
+- Lazy.nvim for plugin management, Mason + mason-tool-installer for
+  LSP/tools; servers enabled with native `vim.lsp.enable` (no
+  mason-lspconfig)
+- Snacks.nvim handles picker, explorer, indent guides, notifier, UI
 - Noice.nvim handles cmdline/message UI
-- LSPs: basedpyright, ruff (Python), lua_ls
+- LSPs: basedpyright, ruff (Python), lua_ls, terraformls, sqls
 - Formatters via conform: stylua, ruff, sqlfluff
 
 ## Linux desktop (niri)

@@ -21,7 +21,7 @@ and GNU Stow. XDG Base Directory compliant throughout.
 - **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
   signing with a per-machine SSH key.
 - **Core Utils:** `bat`, `eza`, `fd`, `fzf`, `ripgrep`, `zoxide`, `jq`.
-- **TUIs:** `btop`, `fastfetch`; `yazi` on Linux; `k9s` on the work Mac.
+- **TUIs:** `btop`, `fastfetch`; `yazi` on Linux.
 
 ---
 
@@ -43,7 +43,7 @@ cd ~/.dotfiles
 make install
 ```
 
-Work-only packages (dbt, terraform, k9s, Slack, …) are gated by a marker
+Work-only packages (dbt, terraform, Slack, …) are gated by a marker
 file, `~/.work-laptop` (macOS). Create it once on the work machine:
 `touch ~/.work-laptop`.
 
@@ -72,7 +72,7 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 │   ├── Brewfile      # macOS: brew, casks, mas
 │   └── fedora.txt    # Fedora: dnf (official repos + Terra)
 ├── config/           # Shared app configs → ~/.config/ (both OSes)
-│   ├── bat/  btop/  fastfetch/  git/  k9s/  mise/
+│   ├── bat/  btop/  fastfetch/  git/  mise/
 │   ├── nvim/  tmux/  zsh/
 ├── config-macos/     # macOS-only → ~/.config/
 │   ├── ghostty/  swiftbar/

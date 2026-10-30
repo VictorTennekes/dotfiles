@@ -83,6 +83,7 @@ jq
 git
 git-delta
 gh
+glab
 stow
 starship                # (terra)
 mise                    # (terra)

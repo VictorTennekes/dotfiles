@@ -7,7 +7,7 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 ## Structure
 
 - `config/` — shared app configs stowed to `~/.config/` on both OSes
-  (zsh, git, nvim, btop, k9s, bat, mise, fastfetch, tmux)
+  (zsh, git, nvim, btop, bat, mise, fastfetch, tmux)
 - `config-macos/` — macOS-only (ghostty, swiftbar)
 - `config-linux/` — Linux-only (niri, waybar, swaync, swayosd, swaylock,
   swayidle, fuzzel, foot, yazi, ghostty)

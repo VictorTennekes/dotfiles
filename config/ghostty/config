@@ -1,3 +1,5 @@
+# Shared by macOS and Linux. The OS-specific part is `platform`, next to this
+# file (from config-macos/ or config-linux/), loaded last so it can override.
 theme = catppuccin-mocha.conf
 background-opacity = 0.95
 cursor-style = block
@@ -11,7 +13,6 @@ window-padding-y = 5
 window-padding-balance = true
 
 font-family = JetBrainsMono Nerd Font
-font-size = 11
 
 copy-on-select = clipboard
 
@@ -22,12 +23,4 @@ desktop-notifications = false
 app-notifications = no-clipboard-copy,no-config-reload
 notify-on-command-finish-action = no-bell,no-notify
 
-# Linux / niri
-# niri draws the borders; no GTK title bar.
-window-decoration = none
-# One process for all windows: new windows open instantly and share memory.
-gtk-single-instance = true
-# Keep the instance alive briefly after the last window closes, then exit.
-quit-after-last-window-closed = true
-quit-after-last-window-closed-delay = 5m
-confirm-close-surface = false
+config-file = platform

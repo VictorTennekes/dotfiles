@@ -1,0 +1,11 @@
+# Linux / niri part of the Ghostty config (the shared part: config/ghostty/config).
+font-size = 11
+
+# niri draws the borders; no GTK title bar.
+window-decoration = none
+# One process for all windows: new windows open instantly and share memory.
+gtk-single-instance = true
+# Keep the instance alive briefly after the last window closes, then exit.
+quit-after-last-window-closed = true
+quit-after-last-window-closed-delay = 5m
+confirm-close-surface = false

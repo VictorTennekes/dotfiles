@@ -86,17 +86,22 @@ gh
 glab
 stow
 starship                # (terra)
-mise                    # (terra)
 yazi                    # (terra)
 gum
 ShellCheck
-tealdeer
 btop
 fastfetch
 tmux
 neovim
 tree-sitter-cli
 7zip
+
+# --- Language runtimes (the same set as the Brewfile) ---
+nodejs
+nodejs-npm
+python3
+uv
+golang                  # mason builds sqls with it
 
 # --- Apps ---
 zen-browser             # (terra)

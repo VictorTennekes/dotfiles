@@ -18,14 +18,13 @@ export STARSHIP_CONFIG="$HOME/.config/zsh/starship.toml"
 export T3CODE_TELEMETRY_ENABLED=false
 
 # ls_colors is `vivid generate catppuccin-mocha` output, committed so neither
-# machine needs vivid; regenerate it with `mise x vivid -- vivid generate ...`.
+# machine needs vivid; regenerate it with a throwaway vivid (`cargo install vivid`).
 # Overrides the distro default (Fedora's /etc/profile.d/colorls.sh sets one).
 [[ -r "$ZDOTDIR/ls_colors" ]] && export LS_COLORS="$(<$ZDOTDIR/ls_colors)"
 
-# (N/): only directories that exist. mise's global node/python/go via their
-# lts/latest links, no shell hook (~19ms per shell and per cd); `mise x -- <cmd>`
-# for a project's pinned versions. Homebrew without `brew shellenv` (a fork); man
-# finds its pages via PATH. /usr/local/bin (Docker, VS Code CLIs): macOS
+# (N/): only directories that exist. node, python and go come from Homebrew or
+# dnf; projects pin Python with uv. Homebrew without `brew shellenv` (a fork);
+# man finds its pages via PATH. /usr/local/bin (Docker, VS Code CLIs): macOS
 # path_helper no longer runs.
 typeset -gU path
-path=(${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/{node/lts,python/latest,go/latest}/bin(N/) $HOME/.cargo/bin(N/) $HOME/go/bin(N/) $HOME/.krew/bin(N/) $HOME/bin(N/) $HOME/.local/bin(N/) /opt/homebrew/{bin,sbin}(N/) /usr/local/bin(N/) $path)
+path=($HOME/.cargo/bin(N/) $HOME/go/bin(N/) $HOME/.krew/bin(N/) $HOME/bin(N/) $HOME/.local/bin(N/) /opt/homebrew/{bin,sbin}(N/) /usr/local/bin(N/) $path)

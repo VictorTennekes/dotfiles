@@ -14,5 +14,5 @@ config/zsh/local.zsh
 *.zwc
 .zcompdump*
 
-# graft's local graph cache — regenerable, not committed (run `graft build`).
-/graft/
+# Claude Code user config is tracked here; the global git ignore excludes .claude
+!home/.claude/

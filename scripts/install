@@ -12,23 +12,11 @@ case "$(uname -s)" in
     *)      echo "❌ Unsupported OS: $(uname -s)"; exit 1 ;;
 esac
 
-# --- 0. Clone nvim config if not present ---
-NVIM_CONFIG_DIR="$PROJECT_ROOT/config/nvim"
-
-if [ ! -d "$NVIM_CONFIG_DIR" ] || [ -z "$(ls -A "$NVIM_CONFIG_DIR" 2>/dev/null)" ]; then
-    echo "📦 'nvim' config not found — cloning from GitHub..."
-    rmdir "$NVIM_CONFIG_DIR" 2>/dev/null || true
-    git clone https://github.com/victortennekes/nvim "$NVIM_CONFIG_DIR" || {
-        echo "❌ Failed to clone nvim config."
-    }
-else
-    echo "✅ 'nvim' config already exists. Skipping clone."
-fi
-
-# --- 1. Drop links left dangling by configs that moved inside the repo ---
+# --- 1. Drop links left dangling by configs that moved or left the repo ---
 # (e.g. ~/.config/ghostty -> config/ghostty after it moved to config-macos/).
 # One level into ~/.config too: stow links files inside a dir it doesn't own.
-{ find "$HOME" -maxdepth 1 -type l; find "$HOME/.config" -mindepth 1 -maxdepth 2 -type l; } 2>/dev/null |
+{ find "$HOME" -maxdepth 1 -type l; find "$HOME/.config" -mindepth 1 -maxdepth 2 -type l
+  find "$HOME/.claude" -mindepth 1 -maxdepth 2 -type l; } 2>/dev/null |
     while read -r link; do [ -e "$link" ] || echo "$link"; done |
     while read -r link; do
         case "$(readlink "$link")" in
@@ -37,12 +25,28 @@ fi
     done
 
 # --- 2. Link config/ and config-<os>/ → ~/.config/ via stow ---
-echo "🔗 Linking config directories to ~/.config ($OS_CONFIG)..."
+# (config/nvim is its own repo; scripts/setup clones it.)
 mkdir -p "$HOME/.config"
 stow -d "$PROJECT_ROOT" -t "$HOME/.config" config "$OS_CONFIG"
 
 # --- 3. Link home/ → ~/ via stow ---
-echo "🔗 Linking home files to ~..."
+# ~/.claude and ~/.claude/skills must exist as real dirs first: Claude Code
+# writes state next to the linked files (skills/synced, history, sessions),
+# so stow has to link files into them, not fold the dirs into the repo.
+mkdir -p "$HOME/.claude/skills"
 stow -d "$PROJECT_ROOT" -t "$HOME" home
 
-echo "✅ Done."
+# --- 4. Agent skills: home/.agents/skills is the shared source (Agent Skills
+# layout, ~/.agents/skills); Claude Code only reads ~/.claude/skills, so link
+# each skill there. Absolute links into the repo so step 1 cleans them up.
+for skill in "$PROJECT_ROOT"/home/.agents/skills/*/; do
+    skill=${skill%/}
+    dest="$HOME/.claude/skills/$(basename "$skill")"
+    if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+        echo "⚠️  $dest is a real directory; move it away to use the repo's copy"
+        continue
+    fi
+    ln -sfn "$skill" "$dest"
+done
+
+echo "🔗 Configs linked ($OS_CONFIG)."

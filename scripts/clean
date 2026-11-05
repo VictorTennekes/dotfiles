@@ -18,4 +18,11 @@ stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D config "$OS_CONFIG"
 echo "🧹 Removing home symlinks..."
 stow -d "$PROJECT_ROOT" -t "$HOME" -D home
 
+echo "🧹 Removing agent skill links..."
+for link in "$HOME"/.claude/skills/*; do
+    if [ -L "$link" ]; then
+        case "$(readlink "$link")" in "$PROJECT_ROOT"/*) rm "$link" ;; esac
+    fi
+done
+
 echo "✅ Clean complete."

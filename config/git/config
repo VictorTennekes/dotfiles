@@ -12,18 +12,10 @@
 	}; f"
 	acm = !git add -u && git cm
 	acb = !git add -u && git cb
-	pob = !git push -u origin $(git branch --show-current)
 	plob = !git pull origin $(git branch --show-current)
-	rocket = "!f() { \
-	   echo \"About to add, commit, and push with message: $1\"; \
-	   printf 'Continue? [y/N] '; read ans; \
-	   [ \"$ans\" = \"y\" ] || [ \"$ans\" = \"Y\" ] || { echo 'Aborted.'; return 1; }; \
-	   git add . && git commit -m \"$1\" && git pob; \
-	   }; f"
 	last = log -1 HEAD
 	unstage = reset HEAD --
 	ll = log --oneline
-	gl = config --global -l
 
 [init]
     defaultBranch = main
@@ -34,6 +26,7 @@
 [push]
     default = simple
     autoSetupRemote = true
+    followTags = true
 
 [pull]
     rebase = true
@@ -44,6 +37,8 @@
 [rebase]
     autoStash = true
     missingCommitsCheck = error
+    # Stacked branches: rebasing the top one moves the ones below it too
+    updateRefs = true
 
 [rerere]
     enabled = true
@@ -59,7 +54,8 @@
 	excludesfile = ~/.config/git/ignore
 	pager = delta
 	fsmonitor = false
-	untrackedCache = false
+	# Caches untracked-file scans: faster `git status` (and the prompt), no daemon
+	untrackedCache = true
 
 [interactive]
 	diffFilter = delta --color-only
@@ -78,12 +74,14 @@
 
 [diff]
 	colorMoved = default
+	algorithm = histogram
 
 [color]
 	ui = auto
 
 [commit]
 	gpgsign = true
+	verbose = true
 
 [gpg]
 	format = ssh

@@ -2,6 +2,7 @@
 .idea
 .env
 .env.*
+!.env.example
 .claude
 node_modules
 
@@ -16,3 +17,5 @@ __pycache__/
 .mcp.json
 .trail
 .graft
+# graft's local graph cache: regenerable (`graft build`), never committed
+graft/

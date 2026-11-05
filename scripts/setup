@@ -159,12 +159,23 @@ bw_desktop() {
     "Exec=$BW_APP %U" "Icon=$BW_ICON" "Categories=Utility;"
 }
 check_bitwarden() { [[ -x "$BW_APP" ]] && cmp -s <(bw_desktop) "$BW_DESKTOP"; }
+# bitwarden.com redirects to the GitHub release; its latest-linux.yml has the
+# AppImage's sha512 (base64), the same one the AppImage's updater checks.
+bw_verify() { # <file> <release dir URL>
+  local want got
+  want=$(curl -fsSL "$2/latest-linux.yml" | awk '/^sha512:/ { print $2 }' |
+    base64 -d | od -An -v -tx1 | tr -d ' \n')
+  got=$(sha512sum "$1" | cut -d' ' -f1)
+  [[ -n $want && $want == "$got" ]] || { bad "Bitwarden download doesn't match the release's sha512"; return 1; }
+}
 # Downloads into a temp dir: a failed download leaves the installed AppImage
 # and launcher alone; they're only replaced once everything worked.
 fix_bitwarden() {
-  local tmp; tmp=$(mktemp -d)
+  local tmp url; tmp=$(mktemp -d)
+  url=$(curl -fsSI "$BW_URL" | awk 'tolower($1) == "location:" { print $2 }' | tr -d '\r')
   mkdir -p "${BW_APP%/*}" "${BW_ICON%/*}" "${BW_DESKTOP%/*}"
-  if curl -fsSL -o "$tmp/bw.AppImage" "$BW_URL" && chmod +x "$tmp/bw.AppImage" &&
+  if [[ -n $url ]] && curl -fsSL -o "$tmp/bw.AppImage" "$url" &&
+     bw_verify "$tmp/bw.AppImage" "${url%/*}" && chmod +x "$tmp/bw.AppImage" &&
      (cd "$tmp" && ./bw.AppImage --appimage-extract bitwarden.png >/dev/null &&
        ./bw.AppImage --appimage-extract "$(readlink squashfs-root/bitwarden.png)" >/dev/null) &&
      cp -L "$tmp/squashfs-root/bitwarden.png" "$BW_ICON" &&
@@ -194,14 +205,24 @@ fix_zsh_plugins() {
 # /etc files tracked in system-linux/etc (zram, sysctl, journald, dnf without
 # weak deps, Tailscale repo, SDDM, Wi-Fi backend); the tailscaled polkit rule
 # has its own step below. Takes full effect after a reboot; nothing is
-# restarted here (it could drop the network).
-system_files() { (cd "$ROOT/system-linux" && find etc -type f); }
+# restarted here (it could drop the network). Runs before the packages: the Tailscale repo and dnf's settings
+# must be in place when they install.
+# A manifest of what was installed lets a file deleted from system-linux be
+# removed from /etc too, so files here must never be package-owned.
+SYSTEM_MANIFEST="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/system-files"
+system_files() { (cd "$ROOT/system-linux" && find etc -type f | sort); }
 check_system_files() {
   local f; while read -r f; do cmp -s "$ROOT/system-linux/$f" "/$f" || return 1; done < <(system_files)
+  cmp -s <(system_files) "$SYSTEM_MANIFEST"
 }
 fix_system_files() {
-  local f; while read -r f; do sudo install -Dm644 "$ROOT/system-linux/$f" "/$f"; done < <(system_files)
-  sudo systemctl daemon-reload && sudo sysctl -q --system
+  local f
+  if [[ -f $SYSTEM_MANIFEST ]]; then
+    while read -r f; do sudo rm -f "/$f"; done < <(comm -23 "$SYSTEM_MANIFEST" <(system_files))
+  fi
+  while read -r f; do sudo install -Dm644 "$ROOT/system-linux/$f" "/$f"; done < <(system_files)
+  mkdir -p "${SYSTEM_MANIFEST%/*}" && system_files >"$SYSTEM_MANIFEST"
+  sudo systemctl daemon-reload && sudo sysctl -q --system && sudo systemd-tmpfiles --create
 }
 
 SERVICES=(NetworkManager iwd systemd-resolved bluetooth power-profiles-daemon
@@ -248,17 +269,23 @@ fix_resolv()   { sudo ln -sf "$RESOLV_STUB" /etc/resolv.conf; }
 
 # Login screen: sddm-astronaut-theme (not packaged for Fedora: a git clone, plus
 # its fonts) with the jake_the_dog variant, as its own theme dir of symlinks so
-# theme updates (git pull) don't reset the chosen variant.
+# theme updates don't reset the chosen variant. Pinned to a reviewed commit:
+# its QML runs in the login screen. To update, review upstream and bump.
 ASTRONAUT=/usr/share/sddm/themes/sddm-astronaut-theme
+ASTRONAUT_REV=abb3163c724935af888ba5ea9ac0c4f22afd8048
 ASTRONAUT_FONTS=/usr/share/fonts/sddm-astronaut
 JAKE=/usr/share/sddm/themes/astronaut-jake
 check_sddm_theme() {
-  [[ -d "$ASTRONAUT_FONTS" ]] &&
+  # Detached checkout: HEAD is the commit itself (git as this user would
+  # refuse the root-owned repo)
+  [[ "$(cat "$ASTRONAUT/.git/HEAD" 2>/dev/null)" == "$ASTRONAUT_REV" && -d "$ASTRONAUT_FONTS" ]] &&
     grep -q '^ConfigFile=Themes/jake_the_dog.conf' "$JAKE/metadata.desktop" 2>/dev/null
 }
 fix_sddm_theme() {
   [[ -d "$ASTRONAUT/.git" ]] ||
-    sudo git clone --depth 1 https://github.com/Keyitdev/sddm-astronaut-theme "$ASTRONAUT"
+    sudo git clone -q --depth 1 https://github.com/Keyitdev/sddm-astronaut-theme "$ASTRONAUT" || return 1
+  sudo git -C "$ASTRONAUT" fetch -q --depth 1 origin "$ASTRONAUT_REV" &&
+    sudo git -C "$ASTRONAUT" checkout -q --detach "$ASTRONAUT_REV" || return 1
   sudo mkdir -p "$ASTRONAUT_FONTS" && sudo cp -r "$ASTRONAUT/Fonts/." "$ASTRONAUT_FONTS/"
   sudo fc-cache -f "$ASTRONAUT_FONTS" >/dev/null
   sudo mkdir -p "$JAKE"
@@ -293,14 +320,24 @@ fix_wallpaper() {
     "ln -sfn <file> ~/Pictures/Wallpapers/current"
 }
 
+# Neovim config: its own repo, cloned into config/nvim (gitignored here) so
+# stow links it with the rest of config/. .git may be a file (gitdir pointer).
+NVIM_DIR="$ROOT/config/nvim"
+check_nvim() { [[ -e "$NVIM_DIR/.git" ]]; }
+fix_nvim()   { git clone -q https://github.com/victortennekes/nvim "$NVIM_DIR"; }
+
 # A stow dry run prints a LINK (or conflict) line for anything not linked yet.
 check_links() {
   command -v stow >/dev/null || return 1
-  local os_config=config-linux out
+  local os_config=config-linux out s
   [[ $OS == macos ]] && os_config=config-macos
   out=$({ stow -n -v -d "$ROOT" -t "$HOME/.config" config "$os_config"
           stow -n -v -d "$ROOT" -t "$HOME" home; } 2>&1)
-  ! grep -E '^LINK|conflict' <<<"$out" >/dev/null
+  grep -E '^LINK|conflict' <<<"$out" >/dev/null && return 1
+  # Agent skills are linked by scripts/install, not stow (see there).
+  for s in "$ROOT"/home/.agents/skills/*/; do
+    [[ "$(readlink "$HOME/.claude/skills/$(basename "$s")" 2>/dev/null)" == "${s%/}" ]] || return 1
+  done
 }
 fix_links() { bash "$ROOT/scripts/install"; }
 
@@ -448,23 +485,25 @@ if [[ $OS == macos ]]; then
     touch "$HOME/.work-laptop"
   fi
   step "Homebrew packages"        check_packages        fix_packages
+  step "Neovim config (git clone)" check_nvim           fix_nvim
   step "Config symlinks (stow)"   check_links           fix_links
   step "Zsh plugins (git clones)" check_zsh_plugins     fix_zsh_plugins
   if (( ! CHECK_ONLY )) && gum confirm --default=false "Apply macOS defaults (Dock, Finder, keyboard)?"; then
     bash "$ROOT/scripts/macos-defaults"
   fi
 else
+  step "System files (/etc)"      check_system_files    fix_system_files
   step "Terra repo"               check_terra           fix_terra
   step "Packages (dnf)"           check_fedora_packages fix_fedora_packages
   step "Bitwarden (AppImage)"     check_bitwarden       fix_bitwarden
   step "Fedora defaults trimmed"  check_trim            fix_trim
   step "Unused units off"         check_units_off       fix_units_off
+  step "Neovim config (git clone)" check_nvim           fix_nvim
   step "Config symlinks (stow)"   check_links           fix_links
   step "Zsh plugins (git clones)" check_zsh_plugins     fix_zsh_plugins
   step "Login shell zsh"          check_shell           fix_shell
 
   section "System"
-  step "System files (/etc)"      check_system_files    fix_system_files
   step "Services enabled"         check_services        fix_services
   step "Bluetooth off at boot"    check_bt_off_at_boot  fix_bt_off_at_boot
   step "Tailscale on demand"      check_ts_on_demand    fix_ts_on_demand

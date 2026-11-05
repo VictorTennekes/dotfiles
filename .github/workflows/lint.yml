@@ -1,0 +1,11 @@
+# `make lint` on every push: zsh syntax, JSON/JSONC, shellcheck (niri's check
+# is skipped: no niri on the runner).
+name: lint
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update -q && sudo apt-get install -y -q zsh shellcheck
+      - run: make lint

@@ -12,10 +12,15 @@ and GNU Stow. XDG Base Directory compliant throughout.
 - **Package Manager:** [Homebrew](https://brew.sh/) on macOS
   (`packages/Brewfile`); dnf plus [Terra](https://terra.fyralabs.com) on
   Fedora (`packages/fedora.txt`).
-- **Terminal:** [Ghostty](https://ghostty.org/) (per-OS config), plus
+- **Terminal:** [Ghostty](https://ghostty.org/) (shared config + per-OS `platform` file), plus
   [foot](https://codeberg.org/dnkl/foot) on Linux. Catppuccin Mocha.
 - **Desktop (Linux):** [niri](https://github.com/YaLTeR/niri), Waybar,
   swaync, swayosd, fuzzel, swaylock/swayidle, swaybg, SDDM.
+- **Languages:** node, python3, uv and go from Homebrew / dnf (no version
+  manager); projects pin Python with uv.
+- **Coding agent:** Claude Code (`home/.claude`, skills in `home/.agents`).
+  Tool-agnostic instructions and skills in `home/.agents/` (`AGENTS.md`,
+  `skills/`); Claude Code settings in `home/.claude/`.
 - **Editor:** Neovim, managed separately at
   [victortennekes/nvim](https://github.com/victortennekes/nvim).
 - **Git:** [Delta](https://github.com/dandavison/delta) for diffs, commit
@@ -55,9 +60,9 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 |----------------|----------------------------------------------------|
 | `make install` | Guided setup: packages, links, keys, remote access |
 | `make doctor`  | Same checks as install, report only                |
-| `make update`  | Pull dotfiles, update packages, re-link configs    |
-| `make dump`    | Brewfile export (macOS); unlisted packages (Fedora)|
-| `make lint`    | Validate zsh, JSON, niri config and scripts        |
+| `make update`  | Pull dotfiles, update packages, zsh/nvim plugins and Mason tools, re-link (`up` runs it) |
+| `make dump`    | List installed packages missing from the Brewfile / fedora.txt |
+| `make lint`    | Validate zsh, JSON/JSONC, niri config and scripts (also CI) |
 | `make clean`   | Remove all stow symlinks                           |
 | `make brew`    | Install the Brewfile (macOS)                       |
 | `make brew-sync` | Brewfile, then **remove** anything not in it (macOS) |
@@ -72,16 +77,18 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 │   ├── Brewfile      # macOS: brew, casks, mas
 │   └── fedora.txt    # Fedora: dnf (official repos + Terra)
 ├── config/           # Shared app configs → ~/.config/ (both OSes)
-│   ├── bat/  btop/  fastfetch/  git/  mise/
-│   ├── nvim/  tmux/  zsh/
+│   ├── btop/  fastfetch/  ghostty/  git/  nvim/
+│   ├── tmux/  zsh/
 ├── config-macos/     # macOS-only → ~/.config/
-│   ├── ghostty/  swiftbar/
+│   ├── ghostty/ (platform)  swiftbar/
 ├── config-linux/     # Linux-only → ~/.config/
 │   ├── niri/  waybar/  swaync/  swayosd/  swaylock/  swayidle/
-│   ├── fuzzel/  foot/  yazi/  ghostty/
+│   ├── fuzzel/  foot/  yazi/  ghostty/ (platform)
 ├── system-linux/     # /etc files + tailscaled polkit rule, installed by setup
 ├── home/             # Home-level dotfiles → ~/
-│   └── .zshenv
+│   ├── .zshenv
+│   ├── .agents/      # AGENTS.md + skills/ (any coding agent)
+│   └── .claude/      # Claude Code: settings.json, CLAUDE.md → AGENTS.md
 ├── scripts/
 │   ├── setup           # Guided install / --check doctor (macOS + Fedora)
 │   ├── install         # Symlink config/ + config-<os>/ via stow
@@ -93,15 +100,17 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 
 Shared configs are one version for both systems: where they differ, they
 check what's installed (`pbcopy` vs `wl-copy`) instead of keeping per-OS
-copies. `up` is the one function that
-branches on the OS (brew vs dnf).
+copies. Ghostty is the exception: one shared config that loads a per-OS
+`platform` file.
 
 ---
 
 ## Notes
 
 - **Clipboard.** The `clip` zsh function uses `pbcopy` (macOS) or `wl-copy`
-  (Wayland), or OSC 52 over SSH so copies land on the local terminal.
+  (Wayland), or OSC 52 over SSH so copies land on the local terminal. On
+  Linux, clipboard history (cliphist, Super+Shift+V) keeps 100 entries and is
+  wiped at every login, since password managers copy secrets into it.
 - **Git key.** One `~/.ssh/id_ed25519` per machine for auth and signing,
   without a passphrase so remote sessions (T3 Code, SSH from a phone) can
   use it; disk encryption and the user login are what protect it. Per-machine
@@ -114,7 +123,8 @@ branches on the OS (brew vs dnf).
 - **Wallpapers (Linux)** aren't in the repo. swaybg and swaylock both use
   `~/Pictures/Wallpapers/current`, a symlink to the chosen image.
 - **Not packaged (Fedora).** Bitwarden desktop is the official AppImage in
-  `~/.local/opt` (updates itself), installed by setup. `ls` colors are
+  `~/.local/opt` (updates itself), installed by setup after checking its
+  release's sha512. `ls` colors are
   vivid's Catppuccin output, committed as `config/zsh/ls_colors`.
 
 ---

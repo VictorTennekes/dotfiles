@@ -1,6 +1,9 @@
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-HISTFILE="$ZSH_CACHE_DIR/.zsh_history"
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
 [[ -d "$ZSH_CACHE_DIR" ]] || mkdir -p "$ZSH_CACHE_DIR"
+[[ -d "${HISTFILE:h}" ]] || mkdir -p "${HISTFILE:h}"
+# One-time move from the old cache location.
+[[ -f "$HISTFILE" || ! -f "$ZSH_CACHE_DIR/.zsh_history" ]] || mv "$ZSH_CACHE_DIR/.zsh_history" "$HISTFILE"
 HISTSIZE=50000
 SAVEHIST=50000
 setopt extended_history inc_append_history_time hist_fcntl_lock hist_verify \

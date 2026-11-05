@@ -3,6 +3,7 @@
 setopt combining_chars
 bindkey -e
 bindkey '^[[3~' delete-char '^[[H' beginning-of-line '^[OH' beginning-of-line '^[[F' end-of-line '^[OF' end-of-line
+bindkey '^[[1;5D' backward-word '^[[1;5C' forward-word '^[[1;3D' backward-word '^[[1;3C' forward-word
 disable log
 
 # Custom functions, parsed on first call.

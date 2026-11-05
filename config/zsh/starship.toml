@@ -1,5 +1,6 @@
 add_newline = false
-command_timeout = 5000
+# The prompt renders synchronously after cd: cap how long git status may block it.
+command_timeout = 500
 
 format = """
 $directory\

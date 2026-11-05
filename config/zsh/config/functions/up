@@ -1,5 +1,6 @@
-# Upgrade everything: Homebrew (macOS) or dnf + a firmware check (Fedora), then
-# mise's global tools and the zsh plugin clones (scripts/setup) on both.
+# Upgrade everything: `make update` in the dotfiles repo (pull, Homebrew or dnf
+# + firmware check, zsh plugins, nvim plugins and Mason tools, re-link). check
+# and dry-run only look at the package manager.
 if [[ $1 == (help|--help) ]]; then
   print -P "%F{green}Usage:%f up [option]
   %F{yellow}check%f     Sanity-check the package manager
@@ -8,26 +9,12 @@ if [[ $1 == (help|--help) ]]; then
   return
 fi
 local -x NONINTERACTIVE=1
-case $OSTYPE in
-  darwin*)
-    case $1 in
-      check)   brew doctor; return ;;
-      dry-run) brew update && brew upgrade --greedy --dry-run; return ;;
-    esac
-    print -P '%F{yellow}Upgrading Homebrew packages...%f'
-    # --greedy: also casks that update themselves (gcloud-cli, Ghostty), as dry-run shows
-    brew update && brew upgrade --greedy -y && brew cleanup ;;
-  linux*)
-    case $1 in
-      check)   dnf check; return ;;
-      dry-run) dnf check-upgrade --refresh; return 0 ;;  # exits 100 when there are updates
-    esac
-    sudo dnf upgrade --refresh
-    # Firmware (BIOS, touchpad, ...) via LVFS; only reports, never flashes
-    fwupdmgr refresh &>/dev/null; fwupdmgr get-updates &>/dev/null &&
-      print -P "%F{yellow}Firmware updates available: run 'fwupdmgr update'%f" ;;
+case $OSTYPE:$1 in
+  darwin*:check)   brew doctor ;;
+  darwin*:dry-run) brew update && brew upgrade --greedy --dry-run ;;
+  linux*:check)    dnf check ;;
+  linux*:dry-run)  dnf check-upgrade --refresh; return 0 ;;  # exits 100 when there are updates
+  # The repo: .zshrc's real path is <repo>/config/zsh/.zshrc
+  *:)              make -C ${${:-$ZDOTDIR/.zshrc}:A:h:h:h} update ;;
+  *)               up help; return 1 ;;
 esac
-(( $+commands[mise] )) && print -P '%F{yellow}Updating mise tools...%f' && mise upgrade
-print -P '%F{yellow}Updating zsh plugins...%f'
-local d; for d in ${XDG_DATA_HOME:-$HOME/.local/share}/zsh-plugins/*(N/); do git -C $d pull -q; done
-print -P '%F{green}Done!%f'

@@ -9,6 +9,12 @@ OS     := $(shell uname -s)
 # bash, not sh: the Fedora dump target uses process substitution
 SHELL  := /bin/bash
 
+# packages/fedora.txt without comments, one name per line (a shell pipeline;
+# scripts/setup's pkglist is the same)
+FEDORA_PKGS = sed 's/\#.*//' packages/fedora.txt | awk 'NF { print $$1 }'
+# Work tap (Brewfile, ~/.work-laptop): brew refuses untrusted taps' formulae
+BREW_TRUST  = brew trust -q hashicorp/tap >/dev/null || true
+
 # ==============================================================================
 # MAIN TARGETS
 # ==============================================================================
@@ -30,9 +36,8 @@ clean:
 # packages/fedora.txt (dnf + Terra) via setup
 # ==============================================================================
 brew: packages/Brewfile
-	@echo "📦 Running brew bundle..."
-	@brew trust dbt-labs/dbt-cli hashicorp/tap || true
-	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
+	@$(BREW_TRUST)
+	@NONINTERACTIVE=1 brew bundle install -q --no-upgrade --file ./packages/Brewfile
 
 # Sync installed packages to exactly match Brewfile (installs + removes).
 brew-sync: brew
@@ -42,58 +47,82 @@ brew-sync: brew
 # ==============================================================================
 # MAINTENANCE
 # ==============================================================================
+# Pull, upgrade every package manager and nvim's plugins and tools, re-link.
+# `up` (zsh) runs this. Quiet by design: each step prints what changed, not
+# what it checked.
 update:
 	@echo "⬇️  Pulling latest dotfiles..."
-	@git -C $(REPO) pull --rebase --autostash
+	@old=$$(git -C $(REPO) rev-parse HEAD) && git -C $(REPO) pull -q --rebase --autostash && \
+		git -C $(REPO) log --oneline "$$old..HEAD" | sed 's/^/  /'
 	@$(MAKE) update-packages
-	@echo "🔗 Re-linking configs..."
+	@echo "📦 Updating zsh plugins..."
+	@for d in "$${XDG_DATA_HOME:-$$HOME/.local/share}"/zsh-plugins/*/; do \
+		[ -d "$$d" ] && git -C "$$d" pull -q; done; true
+	@echo "📦 Updating Neovim plugins and Mason tools..."
+	@nvim --headless "+luafile $(REPO)/scripts/nvim-update.lua" +qa
 	@bash $(INSTALL_SCRIPT)
 	@echo "✅ Update complete!"
 
 ifeq ($(OS),Darwin)
+# --greedy: also casks that update themselves (Ghostty, gcloud-cli,
+# claude-code@latest); plain upgrade skips them.
+# `brew update -q` still announces itself on stderr; drop that one line.
 update-packages:
 	@echo "📦 Updating brew packages..."
-	@NONINTERACTIVE=1 brew update && NONINTERACTIVE=1 brew upgrade -y
-	@echo "📦 Upgrading version:latest casks (skipped by plain upgrade)..."
-	@NONINTERACTIVE=1 brew upgrade -y --cask --greedy claude-code@latest
-	@NONINTERACTIVE=1 brew bundle install --no-upgrade --file ./packages/Brewfile
+	@set -o pipefail; NONINTERACTIVE=1 brew update -q 2>&1 | { grep -v '^==> Updating Homebrew' || true; } && \
+		NONINTERACTIVE=1 brew upgrade -q --greedy -y
+	@$(MAKE) brew
+	@brew cleanup -q --prune=all >/dev/null
 else
+# Install what's missing from the list and mark it all user-installed (see
+# scripts/setup). Firmware (BIOS, touchpad, ...) via LVFS: report, never flash.
 update-packages:
 	@echo "📦 Updating packages (dnf + Terra)..."
-	@sudo dnf upgrade -y --refresh
-	@sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | \
-		xargs sudo dnf install -y --setopt=install_weak_deps=False
-	@sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | \
-		xargs sudo dnf mark user -y >/dev/null
+	@sudo dnf upgrade -y -q --refresh
+	@comm -23 <($(FEDORA_PKGS) | sort) <(rpm -qa --qf '%{NAME}\n' | sort -u) | \
+		xargs -r sudo dnf install -y --setopt=install_weak_deps=False
+	@$(FEDORA_PKGS) | xargs sudo dnf mark user -y -q >/dev/null
+	@fwupdmgr refresh >/dev/null 2>&1; fwupdmgr get-updates >/dev/null 2>&1 && \
+		echo "⚠️  Firmware updates available: run 'fwupdmgr update'" || true
 endif
 
+# Both lists are curated (grouped, commented, Brewfile's work block), so dump
+# never overwrites them: it lists what's installed by hand but not listed.
 ifeq ($(OS),Darwin)
-# Dump currently installed packages to the Brewfile.
+# `brew bundle cleanup` without --force only lists (brew-sync removes them).
 dump:
-	@brew bundle dump --force --file ./packages/Brewfile
-	@echo "📋 Brewfile updated with current packages."
+	@$(BREW_TRUST)
+	@echo "📋 Installed but not in packages/Brewfile:"
+	@brew bundle cleanup --file ./packages/Brewfile || true
 else
-# The Fedora list is curated (grouped, commented), so don't overwrite it:
-# show packages installed by hand (install reason "User", not a dependency or
-# the installer's package group) that aren't listed.
+# "By hand": install reason "User", not a dependency or the installer's group.
 dump:
 	@echo "📋 Installed by hand but not in packages/fedora.txt:"
 	@comm -23 <(dnf repoquery --installed --qf '%{name} %{reason}\n' 2>/dev/null | \
-		awk '$$2 == "User" { print $$1 }' | sort -u) \
-		<(sed 's/#.*//' packages/fedora.txt | awk 'NF { print $$1 }' | sort)
+		awk '$$2 == "User" { print $$1 }' | sort -u) <($(FEDORA_PKGS) | sort)
 endif
 
 # ==============================================================================
 # VALIDATION
 # ==============================================================================
+# JSON with comments and trailing commas (waybar, fastfetch): strip both,
+# string-aware, then parse.
+JSONC_CHECK = import json, re, sys; s = open(sys.argv[1]).read(); \
+	s = re.sub(r'("(?:\\.|[^"\\])*")|//[^\n]*|/\*.*?\*/', lambda m: m.group(1) or '', s, flags=re.S); \
+	json.loads(re.sub(r',(\s*[]}])', r'\1', s))
+export JSONC_CHECK
+
 lint:
 	@echo "🔍 Validating configs..."
-	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh); do \
+	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh config/zsh/config/functions/*); do \
 		zsh -n "$$f" || exit 1; done && echo "  ✓ Zsh configs OK"
-	@python3 -m json.tool config-linux/swaync/config.json > /dev/null && echo "  ✓ swaync JSON OK" || exit 1
+	@for f in config-linux/swaync/config.json config-linux/waybar/config.jsonc config/fastfetch/config.jsonc home/.claude/settings.json; do \
+		python3 -c "$$JSONC_CHECK" "$$f" || { echo "  ✗ $$f"; exit 1; }; done && echo "  ✓ JSON/JSONC OK"
 	@if command -v niri >/dev/null; then \
 		out=$$(niri validate -c config-linux/niri/config.kdl 2>&1) || { echo "$$out"; exit 1; }; \
 		echo "  ✓ niri config OK"; fi
+	@g=$$(command -v ghostty || ls /Applications/Ghostty.app/Contents/MacOS/ghostty 2>/dev/null); \
+	if [ -n "$$g" ]; then "$$g" +validate-config >/dev/null && echo "  ✓ Ghostty config OK (stowed)" || exit 1; fi
 	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/tpm-enroll scripts/macos-defaults config-linux/niri/scripts/* config-linux/waybar/scripts/* config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
 	@echo "✅ All configs valid."
 

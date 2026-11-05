@@ -130,8 +130,9 @@ spawn-at-startup "swayosd-server"
 spawn-at-startup "swayidle" "-w"
 spawn-at-startup "/usr/libexec/polkit-mate-authentication-agent-1"
 spawn-sh-at-startup "swaybg -m fill -i ~/Pictures/Wallpapers/current"
-spawn-sh-at-startup "wl-paste --type text --watch cliphist store"
-spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
+// Clipboard history (Super+Shift+V): last 100 entries, wiped at every login.
+// Password managers copy secrets here too, and cliphist keeps them on disk.
+spawn-sh-at-startup "cliphist wipe; wl-paste --type text --watch cliphist -max-items 100 store & wl-paste --type image --watch cliphist -max-items 100 store"
 
 // --- Keys ---
 binds {

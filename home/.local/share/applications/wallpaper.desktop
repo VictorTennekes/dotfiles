@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Wallpaper
+Comment=Pick a wallpaper (Noctalia)
+Exec=noctalia msg panel-toggle wallpaper
+Icon=preferences-desktop-wallpaper
+Categories=Utility;

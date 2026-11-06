@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal configuration for macOS and Fedora Linux (niri), managed with Make
+Personal configuration for macOS and Fedora Linux (Umbriel + Noctalia), managed with Make
 and GNU Stow. XDG Base Directory compliant throughout.
 
 ---
@@ -10,12 +10,14 @@ and GNU Stow. XDG Base Directory compliant throughout.
 - **Shell:** Zsh with plugins as plain git clones (no plugin manager) and
   [Starship](https://starship.rs/) prompt.
 - **Package Manager:** [Homebrew](https://brew.sh/) on macOS
-  (`packages/Brewfile`); dnf plus [Terra](https://terra.fyralabs.com) on
+  (`packages/Brewfile`); dnf plus [Terra](https://terra.fyralabs.com), the
+  Tailscale repo and a COPR (fetch) on
   Fedora (`packages/fedora.txt`).
 - **Terminal:** [Ghostty](https://ghostty.org/) (shared config + per-OS `platform` file), plus
   [foot](https://codeberg.org/dnkl/foot) on Linux. Catppuccin Mocha.
-- **Desktop (Linux):** [niri](https://github.com/YaLTeR/niri), Waybar,
-  swaync, swayosd, fuzzel, swaylock/swayidle, swaybg, SDDM.
+- **Desktop (Linux):** [Umbriel](https://github.com/noctalia-dev/umbriel) with
+  [Noctalia](https://noctalia.dev) (bar, launcher, notifications, OSD, lock,
+  idle, wallpaper, in one process), colours from the wallpaper; SDDM.
 - **Languages:** node, python3, uv and go from Homebrew / dnf (no version
   manager); projects pin Python with uv.
 - **Coding agent:** Claude Code (`home/.claude`, skills in `home/.agents`).
@@ -62,7 +64,7 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 | `make doctor`  | Same checks as install, report only                |
 | `make update`  | Pull dotfiles, update packages, zsh/nvim plugins and Mason tools, re-link (`up` runs it) |
 | `make dump`    | List installed packages missing from the Brewfile / fedora.txt |
-| `make lint`    | Validate zsh, JSON/JSONC, niri config and scripts (also CI) |
+| `make lint`    | Validate zsh, JSON/JSONC, Umbriel/Noctalia/Ghostty configs and scripts (also CI) |
 | `make clean`   | Remove all stow symlinks                           |
 | `make brew`    | Install the Brewfile (macOS)                       |
 | `make brew-sync` | Brewfile, then **remove** anything not in it (macOS) |
@@ -75,15 +77,14 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 .dotfiles/
 ├── packages/
 │   ├── Brewfile      # macOS: brew, casks, mas
-│   └── fedora.txt    # Fedora: dnf (official repos + Terra)
+│   └── fedora.txt    # Fedora: dnf (official repos, Terra, Tailscale repo, one COPR)
 ├── config/           # Shared app configs → ~/.config/ (both OSes)
-│   ├── btop/  fastfetch/  ghostty/  git/  nvim/
+│   ├── btop/  fastfetch/  fetch/  ghostty/  git/  nvim/
 │   ├── tmux/  zsh/
 ├── config-macos/     # macOS-only → ~/.config/
 │   ├── ghostty/ (platform)  swiftbar/
 ├── config-linux/     # Linux-only → ~/.config/
-│   ├── niri/  waybar/  swaync/  swayosd/  swaylock/  swayidle/
-│   ├── fuzzel/  foot/  yazi/  ghostty/ (platform)
+│   ├── umbriel/  noctalia/  foot/  yazi/  ghostty/ (platform)
 ├── system-linux/     # /etc files + tailscaled polkit rule, installed by setup
 ├── home/             # Home-level dotfiles → ~/
 │   ├── .zshenv
@@ -118,12 +119,18 @@ copies. Ghostty is the exception: one shared config that loads a per-OS
   use it; disk encryption and the user login are what protect it. Per-machine
   git settings (signing key, gh credential helper) live in
   `~/.gitconfig.local`, written by setup.
-- **Keyboard remapping.** Caps Lock → Escape via xkb `options` in niri
+- **Keyboard remapping.** Caps Lock → Escape via xkb `options` in Umbriel
   on Linux; none on macOS.
 - **macOS defaults.** Run `scripts/macos-defaults` after first install to
   apply sensible system preferences.
-- **Wallpapers (Linux)** aren't in the repo. swaybg and swaylock both use
-  `~/Pictures/Wallpapers/current`, a symlink to the chosen image.
+- **Desktop (Linux).** Umbriel (`config-linux/umbriel/config.toml`, one
+  file: look, keys, and the Noctalia autostart) with Noctalia
+  (`config-linux/noctalia/noctalia.toml`). Noctalia derives a palette from
+  the wallpaper and re-themes its own panels, Umbriel's borders, foot and
+  Ghostty on every change; those generated files are ignored by git.
+- **Wallpapers (Linux)** aren't in the repo. Noctalia's picker
+  (Super+Shift+W) lists `~/Pictures/Wallpapers`; `current` there is the
+  default until one is picked.
 - **Not packaged (Fedora).** Bitwarden desktop is the official AppImage in
   `~/.local/opt` (updates itself), installed by setup after checking its
   release's sha512. `ls` colors are

@@ -1,38 +1,33 @@
 # Fedora packages: official repos plus Terra (repos.fyralabs.com, enabled by
-# scripts/setup) for what Fedora lacks, and Tailscale's own repo (newer than
-# Fedora's build; system-linux/etc/yum.repos.d). Installed with `dnf install`, weak
-# deps off; comments are stripped. Terra packages are marked (terra).
-# Not packaged anywhere: the Bitwarden AppImage (scripts/setup).
+# scripts/setup) for what Fedora lacks, Tailscale's own repo (newer than
+# Fedora's build) and a COPR for fetch; those two repo files live in
+# system-linux/etc/yum.repos.d and setup installs them first. Installed with
+# `dnf install`, weak deps off; comments are stripped. Terra packages are
+# marked (terra), COPR ones (copr owner/project).
+# Not packaged anywhere: the Bitwarden AppImage (scripts/setup) and the
+# Tiny5 Mono font (home/.local/share/fonts, stowed).
 
 # --- Base system (Framework 13, AMD) ---
 mesa-vulkan-drivers
 make
+gcc                     # tree-sitter-cli compiles nvim's parsers with cc
 unzip
 xz
 
-# --- Desktop: niri ---
-niri
-swayidle
-swaylock
+# --- Desktop: Umbriel + Noctalia (config-linux/umbriel, config-linux/noctalia) ---
+umbriel-nightly         # (terra) the compositor (Noctalia's own), session "Umbriel" in SDDM; nightly only
+xdg-desktop-portal-umbriel-nightly # (terra) its screen-sharing/screenshot portal
+noctalia-nightly        # (terra) the shell: bar, launcher, notifications, OSD, clipboard, lock, idle, wallpaper, screenshots; nightly for the plugin API the Umbriel companion needs
+upower                  # Noctalia reads the battery over UPower (D-Bus activated)
+xorg-x11-server-Xwayland # Umbriel's on-demand Xwayland (Bitwarden is X11-only)
 mate-polkit
-xdg-desktop-portal-gnome
-xdg-desktop-portal-gtk
+xdg-desktop-portal-gtk  # file pickers, settings (dark mode)
 qt5-qtwayland
 qt6-qtwayland
-waybar
-SwayNotificationCenter
-SwayOSD                 # (terra)
-swaybg
-fuzzel
 foot
 ghostty                 # (terra)
-cliphist
 wl-clipboard
-grim
-slurp
 libnotify
-brightnessctl
-playerctl
 xdg-user-dirs
 adw-gtk3-theme
 dconf                   # stores gsettings (dark mode, read by apps via the portal)
@@ -91,6 +86,7 @@ gum
 ShellCheck
 btop
 fastfetch
+fetch                   # (copr realorangekun/fetch) 3D spinning logo + live sysinfo, uses fastfetch logos
 tmux
 neovim
 tree-sitter-cli
@@ -106,7 +102,6 @@ golang                  # mason builds sqls with it
 # --- Apps ---
 zen-browser             # (terra)
 t3code                  # (terra)
-satty                   # (terra) screenshot annotation
 
 # --- Viewers ---
 imv

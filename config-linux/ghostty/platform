@@ -1,7 +1,9 @@
-# Linux / niri part of the Ghostty config (the shared part: config/ghostty/config).
+# Linux / Umbriel part of the Ghostty config (the shared part: config/ghostty/config).
+# Colours from Noctalia's Ghostty template (themes/noctalia, gitignored).
+theme = noctalia
 font-size = 11
 
-# niri draws the borders; no GTK title bar.
+# Umbriel draws the borders; no GTK title bar.
 window-decoration = none
 # One process for all windows: new windows open instantly and share memory.
 gtk-single-instance = true

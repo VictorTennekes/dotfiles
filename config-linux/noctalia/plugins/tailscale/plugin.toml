@@ -1,0 +1,17 @@
+# Tailscale bar widget for Noctalia. Loaded from the "dotfiles" plugin source
+# (noctalia.toml); the click runs ./toggle.
+id          = "victor/tailscale"
+name        = "Tailscale"
+version     = "1.0.0"
+plugin_api  = 14
+author      = "victor"
+license     = "MIT"
+icon        = "shield-check"
+description = "Tailscale status in the bar; click to connect or disconnect"
+tags        = ["bar", "network"]
+dependencies = ["tailscale", "jq"]
+
+[[widget]]
+id      = "status"
+entry   = "widget.luau"
+actions = {}

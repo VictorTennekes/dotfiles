@@ -99,10 +99,13 @@ fix_terra() {
 }
 
 # Package list without comments (whole-line or trailing), and the ones not
-# installed yet. Weak deps off: niri alone would otherwise pull in alacritty
-# and the rest of a sway-style desktop.
+# installed yet. Weak deps off: a compositor alone would otherwise pull in a
+# whole sway-style desktop.
 pkglist() { sed 's/#.*//' "$ROOT/packages/$1" | awk 'NF { print $1 }'; }
-missing_pkgs() { comm -23 <(pkglist "$1" | sort) <(rpm -qa --qf '%{NAME}\n' | sort -u); }
+# By what provides the name, not the package name: Fedora's `nodejs` is the
+# package nodejs22, so a name comparison would report it missing forever.
+# shellcheck disable=SC2046
+missing_pkgs() { rpm -q --whatprovides $(pkglist "$1") 2>&1 | sed -n 's/^no package provides //p'; }
 # Listed packages that dnf considers removable (installed as a dependency or
 # by the installer's group, not by the user).
 not_user_installed() {
@@ -203,10 +206,10 @@ fix_zsh_plugins() {
 }
 
 # /etc files tracked in system-linux/etc (zram, sysctl, journald, dnf without
-# weak deps, Tailscale repo, SDDM, Wi-Fi backend); the tailscaled polkit rule
-# has its own step below. Takes full effect after a reboot; nothing is
-# restarted here (it could drop the network). Runs before the packages: the Tailscale repo and dnf's settings
-# must be in place when they install.
+# weak deps or countme, Tailscale and COPR repos, SDDM, Wi-Fi backend); the
+# tailscaled polkit rule has its own step below. Takes full effect after a
+# reboot; nothing is restarted here (it could drop the network). Runs before
+# the packages: the repos and dnf's settings must be in place when they install.
 # A manifest of what was installed lets a file deleted from system-linux be
 # removed from /etc too, so files here must never be package-owned.
 SYSTEM_MANIFEST="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/system-files"
@@ -237,14 +240,14 @@ fix_services() {
 }
 
 # Bluetooth daemon runs, but the radio stays off at boot; switch it on when
-# needed (Waybar: right-click the icon, or bluetoothctl).
+# needed (the bar's Bluetooth widget, or bluetoothctl).
 check_bt_off_at_boot() { grep -q '^AutoEnable=false' /etc/bluetooth/main.conf; }
 fix_bt_off_at_boot() {
   sudo sed -i 's/^#\?AutoEnable=.*/AutoEnable=false/' /etc/bluetooth/main.conf
 }
 
 # Tailscale only runs when wanted: tailscaled isn't started at boot, and the
-# Waybar toggle starts/stops it. A polkit rule lets wheel do that without a
+# bar widget starts/stops it. A polkit rule lets wheel do that without a
 # password. rules.d isn't readable by users, so the check asks systemd for a
 # no-op instead (start if running, stop if stopped): it still has to pass the
 # polkit check first, and fails rather than prompting.
@@ -312,7 +315,8 @@ fix_dark_mode() {
   gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
 }
 
-# Wallpaper for swaybg and swaylock (images aren't in the repo).
+# Wallpapers (images aren't in the repo): Noctalia's picker lists this folder,
+# and `current` is its default until one is picked.
 WALLPAPER="$HOME/Pictures/Wallpapers/current"
 check_wallpaper() { [[ -e "$WALLPAPER" ]]; }
 fix_wallpaper() {
@@ -433,6 +437,18 @@ fix_gh_helper() {
   done
 }
 
+# Same for glab and GitLab, where glab is installed. (`glab auth login` writes
+# one with `git config --global`, i.e. into the stowed config/git/config.)
+check_glab_helper() {
+  command -v glab >/dev/null || return 0
+  git config --file "$HOME/.gitconfig.local" --get-all "credential.https://gitlab.com.helper" 2>/dev/null |
+    grep -Fx "!$(command -v glab) auth git-credential" >/dev/null
+}
+fix_glab_helper() {
+  git config --file "$HOME/.gitconfig.local" --replace-all "credential.https://gitlab.com.helper" ""
+  git config --file "$HOME/.gitconfig.local" --add "credential.https://gitlab.com.helper" "!$(command -v glab) auth git-credential"
+}
+
 check_remote_login() { nc -z -G 1 localhost 22 >/dev/null 2>&1; }
 fix_remote_login() {
   open "x-apple.systempreferences:com.apple.Sharing-Settings.extension"
@@ -539,6 +555,7 @@ else
 fi &&
 step "Commit signing + allowed_signers" check_signing fix_signing
 step "gh as git credential helper"      check_gh_helper fix_gh_helper
+step "glab as git credential helper"    check_glab_helper fix_glab_helper
 
 section "Remote access"
 if [[ $OS == macos ]]; then
@@ -547,8 +564,8 @@ if [[ $OS == macos ]]; then
   step "authorized_keys present"  check_authorized_keys fix_authorized_keys
 fi
 if [[ $OS == fedora ]] && ! systemctl is-active -q tailscaled; then
-  # Off by design until toggled from Waybar; its state can't be read meanwhile.
-  gum style --foreground 3 "  - Tailscale (off; start it from the Waybar icon)"
+  # Off by design until toggled from the bar; its state can't be read meanwhile.
+  gum style --foreground 3 "  - Tailscale (off; start it from the bar icon)"
 else
   step "Tailscale logged in"      check_tailscale       fix_tailscale &&
   step "Tailscale operator"       check_ts_operator     fix_ts_operator

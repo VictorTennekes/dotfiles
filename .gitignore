@@ -16,3 +16,8 @@ config/zsh/local.zsh
 
 # Claude Code user config is tracked here; the global git ignore excludes .claude
 !home/.claude/
+
+# Noctalia template output (rewritten on every wallpaper change)
+config-linux/foot/themes/noctalia
+config/ghostty/themes/noctalia
+config-linux/umbriel/noctalia.toml

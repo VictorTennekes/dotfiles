@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Layout
+Comment=Switch the focused workspace's layout (Umbriel companion panel)
+Exec=noctalia msg panel-toggle noctalia/umbriel-companion:panel
+Icon=preferences-system-windows
+Categories=Utility;

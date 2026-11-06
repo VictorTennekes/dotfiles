@@ -34,6 +34,8 @@ brew "shellcheck"        # Lints shell scripts (make lint).
 cask "ghostty"           # A modern GPU-accelerated terminal emulator.
 
 brew "fastfetch"         # A neofetch-like tool for fetching system information.
+tap "areofyl/fetch"
+brew "fetch-git"         # 3D spinning logo + live sysinfo next to fastfetch (github.com/areofyl/fetch).
 brew "starship"          # The minimal, blazing-fast, and infinitely customizable prompt.
 brew "zoxide"            # A smarter cd command.
 

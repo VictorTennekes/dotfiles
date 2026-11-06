@@ -1,23 +1,25 @@
 # Dotfiles
 
-Cross-platform dotfiles (macOS + Fedora Linux/niri) managed with GNU
+Cross-platform dotfiles (macOS + Fedora Linux/Umbriel) managed with GNU
 Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 (`packages/fedora.txt`, official repos + Terra) on Fedora.
 
 ## Structure
 
 - `config/` — shared app configs stowed to `~/.config/` on both OSes
-  (zsh, git, nvim, ghostty, btop, fastfetch, tmux)
+  (zsh, git, nvim, ghostty, btop, fastfetch, fetch, tmux)
 - `config-macos/` — macOS-only (ghostty `platform`, swiftbar)
-- `config-linux/` — Linux-only (niri, waybar, swaync, swayosd, swaylock,
-  swayidle, fuzzel, foot, yazi, ghostty `platform`)
+- `config-linux/` — Linux-only (umbriel, noctalia, foot, yazi, ghostty
+  `platform`)
 - `system-linux/` — `/etc` files that `scripts/setup` installs on Fedora
-  (zram, sysctl, journald, dnf without weak deps, the Tailscale repo, SDDM,
+  (zram, sysctl, journald, dnf without weak deps or countme, the Tailscale repo, SDDM,
   NetworkManager Wi-Fi backend = iwd) and
-  the polkit rule that lets the Waybar toggle start/stop tailscaled. Setup
-  keeps a manifest and removes files deleted here from `/etc`, so never put
-  a package-owned file here
-- `home/` — home-level dotfiles stowed to `~/` (.zshenv). `home/.agents/`
+  the polkit rule that lets the bar's Tailscale toggle start/stop tailscaled.
+  Setup keeps a manifest and removes files deleted here from `/etc`, so never
+  put a package-owned file here
+- `home/` — home-level dotfiles stowed to `~/` (.zshenv, the desktop entries
+  in `.local/share/applications`, fonts no distro packages in
+  `.local/share/fonts/<family>/` with their licence: Tiny5 Mono, OFL). `home/.agents/`
   is the tool-agnostic agent config: `AGENTS.md` (global instructions) and
   `skills/` (Agent Skills layout, `~/.agents/skills`). `home/.claude/` is
   Claude Code only: `settings.json` (portable keys; work/auto-mode context
@@ -28,7 +30,8 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 - `packages/` — `Brewfile` (work packages gated behind `~/.work-laptop`),
   `fedora.txt` (curated, commented; `make dump` on Fedora only lists
   what's missing, never overwrites). Fedora has no AUR: prefer the official
-  repos, then Terra (Tailscale comes from its vendor repo, which is much
+  repos, then Terra, then a vendor repo or COPR tracked in
+  `system-linux/etc/yum.repos.d` (Tailscale comes from its vendor repo, which is much
   newer); the only things installed outside dnf are the Bitwarden
   AppImage (checked against its release's sha512) and
   git clones in setup (zsh plugins; sddm-astronaut-theme, pinned to a
@@ -102,24 +105,50 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 - LSPs: basedpyright, ruff (Python), lua_ls, terraformls, sqls
 - Formatters via conform: stylua, ruff, sqlfluff
 
-## Linux desktop (niri)
+## Linux desktop (Umbriel + Noctalia)
 
-- niri config in `config-linux/niri/config.kdl` (one file; `niri validate`
-  checks it, niri reloads on save); scripts (power menu, screenshots) in
-  `config-linux/niri/scripts/`
-- swayidle (`swayidle -w`, started by niri) dims, locks with swaylock,
-  turns screens off and suspends
-- Low-power choices: small shadow, swaybg, foot server over Ghostty; X11
-  only on demand
-  (xwayland-satellite, a hard dependency of Fedora's niri)
-- Super = window management; Alt+Shift+3/4/5 = screenshots (macOS
-  numbers)
-- Clipboard history (cliphist) keeps 100 entries and is wiped at every
-  login: password managers copy secrets into it
+- Umbriel (Noctalia's own compositor; Terra ships only a nightly) config in
+  `config-linux/umbriel/config.toml` (one file: input, look, keys, autostart;
+  `umbriel config validate` checks the stowed copy, Umbriel reloads on save
+  except autostart/xwayland/[environment]). Six static workspaces per
+  output; the "Layout" desktop entry in `home/.local/share/applications`
+  opens the companion plugin's panel. Screenshots are Noctalia's
+  (`noctalia msg screenshot-*`, settings in `noctalia.toml`). Replaced mango
+  on 2026-11-06 (which replaced niri two days earlier)
+- Noctalia (Terra's nightly, for the plugin API the Umbriel companion
+  needs) is the whole shell: bar, launcher, notifications, OSD, clipboard,
+  idle/lock (it also locks before suspend via logind), wallpaper,
+  screenshots. Config in
+  `config-linux/noctalia/noctalia.toml` (`noctalia config validate`). Its
+  Settings GUI writes to `~/.local/state/noctalia/settings.toml`, which
+  overrides the repo file: move GUI choices into `noctalia.toml` and prune
+  that file. Own plugins in `config-linux/noctalia/plugins/` (a `path`
+  source; Luau, `noctalia plugins lint`), e.g. the Tailscale bar widget
+- Colours come from the wallpaper (`theme.source = "wallpaper"`): bar and
+  widgets use palette role names (`surface_container`, `primary`, ...), never
+  hex. Noctalia templates write `umbriel/noctalia.toml`, `foot/themes/noctalia`
+  and `ghostty/themes/noctalia` on every change; they are gitignored (foot
+  and ghostty as user templates: the built-in ones' hooks edit the configs). foot
+  only reads its config at startup, so the foot template's hook
+  (`config-linux/foot/reload`) swaps in a fresh `foot --server` and recolours
+  open windows over OSC. Dropping a built-in template id runs its undo hook
+  (foot's strips the include line from `foot.ini`)
+- The look (bar style, panels, fonts) is being settled in the Settings GUI
+  (2026-11-06), so `noctalia.toml` holds only the widgets, theme and
+  behaviour; move settled choices back into it. No compositor blur behind
+  Noctalia's layers: Umbriel can (a layer rule on `noctalia-attached-panel`
+  with `blur_ignore_alpha = 0`), but it frosts the panel's whole bounding
+  box, a dark square frame around the rounded panel
+- Low-power choices: no blur behind windows (Umbriel blurs only Noctalia's
+  panel layers), small shadow, foot server over Ghostty; X11 through the
+  compositor's built-in XWayland only
+- Super = window management; Alt+Shift+3/4/5 = screenshots (macOS numbers);
+  Super+Shift+W = wallpaper picker
 
 ## Conventions
 
-- Catppuccin Mocha theme everywhere (Linux accent: mauve → peach)
+- Catppuccin Mocha for the shared CLI configs and macOS; the Linux desktop
+  takes its colours from the wallpaper (Noctalia)
 - XDG Base Directory compliance
 - Bitwarden for passwords. Git uses one key file per machine
   (`~/.ssh/id_ed25519`, auth + signing, no passphrase) so remote

@@ -1,0 +1,14 @@
+# COPR for fetch (github.com/areofyl/fetch, the 3D spinning logo next to
+# fastfetch): the upstream-documented repo, realorangekun/fetch. Packages are
+# verified against the COPR's key; the metadata is not signed (COPR default).
+
+[copr:copr.fedorainfracloud.org:realorangekun:fetch]
+name=Copr repo for fetch owned by realorangekun
+baseurl=https://download.copr.fedorainfracloud.org/results/realorangekun/fetch/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/realorangekun/fetch/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1

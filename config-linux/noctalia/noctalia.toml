@@ -1,0 +1,175 @@
+# Noctalia: the shell under Umbriel (umbriel/config.toml starts it). This
+# is the hand-written layer: theme, templates, widgets, idle, plugins. The
+# look (bar, panels, fonts) is being worked out in the Settings GUI for now,
+# which saves to ~/.local/state/noctalia/settings.toml; that file loads last
+# and wins, so move settled choices into this file. `noctalia config
+# validate` checks it (make lint). Reference: https://docs.noctalia.dev/noctalia/
+
+# Palette from the wallpaper, Material tonal-spot: pastel accents on a neutral
+# surface, the most minimal of the schemes ("vibrant"/"faithful" tint the
+# surfaces with the image instead); widgets use
+# palette role names (surface_container, primary, ...) so they follow it.
+# Catppuccin stays available as `source = "builtin"`.
+[theme]
+mode = "dark"
+source = "wallpaper"
+wallpaper_scheme = "m3-tonal-spot"
+shell_mode = "follow"
+sync_color_scheme = true
+
+# Apps re-themed on every palette change: foot/ghostty themes, Umbriel's
+# colour file (umbriel/noctalia.toml), Qt, Claude Code, Neovim. The outputs
+# are generated, not committed (.gitignore)
+[theme.templates]
+enable_builtin_templates = true
+builtin_ids = ["umbriel", "qt"]
+enable_community_templates = true
+community_ids = ["claude-code", "neovim"]
+
+# foot as a user template instead of the built-in one, so the hook can swap
+# in a fresh `foot --server` (foot/reload): the built-in only writes the file.
+# (Dropping a built-in id runs its undo hook: foot's strips the include line
+# from foot.ini, so check that file after toggling it.)
+# ghostty as a user template too: the built-in one's hook rewrites the shared
+# ghostty config to `theme = noctalia` on every change (the Linux platform
+# file already says so); this one only renders the theme and reloads ghostty.
+[theme.templates.user.ghostty]
+input_path = "/usr/share/noctalia/assets/templates/ghostty/ghostty"
+output_path = "$XDG_CONFIG_HOME/ghostty/themes/noctalia"
+post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
+
+[theme.templates.user.foot]
+input_path = "/usr/share/noctalia/assets/templates/foot/foot"
+output_path = "$XDG_CONFIG_HOME/foot/themes/noctalia"
+post_hook = "~/.config/foot/reload"
+
+# Screenshots (Alt+Shift+3/4/5 in the compositor configs): macOS names in
+# ~/Screenshots, copied to the clipboard too; the region picker and annotator
+# are Noctalia's own, so they follow the palette
+[shell.screenshot]
+directory = "~/Screenshots"
+filename_pattern = "Screenshot %Y-%m-%d at %H.%M.%S"
+freeze_screen = true
+save_to_file = true
+copy_to_clipboard = true
+
+# Launcher, Raycast-style: the search field on top and, until something is
+# typed, only the pinned entries (desktop-entry ids; "layout" and "wallpaper"
+# are this repo's, home/.local/share/applications). Compact rows, no
+# categories or app-origin badges; placement: the default centred float
+[shell.launcher]
+compact = true
+categories = false
+show_app_origin_indicator = false
+search_position = "top"
+default_view = "pinned"
+pinned = ["wallpaper", "app.zen_browser.zen", "footclient", "layout"]
+
+[shell.launcher.providers.calculator]
+global = true
+
+[shell.launcher.providers.emoji]
+global = false
+
+# --- Bar: the widgets only ---
+[bar.default]
+start = ["workspaces", "btn", "active_window"]
+center = ["clock"]
+end = ["tray", "tailscale", "network", "bluetooth", "volume", "battery", "power_profile", "notifications", "control-center"]
+
+# All six workspaces shown (Umbriel: six static per output)
+[widget.workspaces]
+type = "workspaces"
+hide_when_empty = false
+
+# Focused workspace's layout (official plugin noctalia/umbriel-companion,
+# installed by Noctalia into ~/.local/state/noctalia/plugins): click opens its
+# layout/window/workspace panel, a scroll flick cycles the layout. It hides
+# itself outside an Umbriel session
+[widget.btn]
+type = "noctalia/umbriel-companion:bar"
+show_layout_name = false
+
+# macOS menu bar style: "Fri 8:24 PM"; full date on hover
+[widget.clock]
+type = "clock"
+format = "{:%a %-I:%M %p}"
+vertical_format = "{:%H\n%M}"
+tooltip_format = "{:%A, %B %d}"
+
+# Tailscale on/off (plugins/tailscale); click toggles the connection
+[widget.tailscale]
+type = "victor/tailscale:status"
+
+# Icons only; details live in the tooltips and the control center
+[widget.network]
+type = "network"
+show_label = false
+
+[widget.volume]
+type = "volume"
+show_label = false
+
+# Percentage next to the icon
+[widget.battery]
+type = "battery"
+show_label = true
+label_content = "percent"
+
+[control_center]
+hidden_tabs = ["system", "weather", "calendar", "screen-time"]
+
+[system.monitor]
+enabled = false
+
+[desktop_widgets]
+enabled = false
+
+# The picker (Super+Shift+W, or "Wallpaper" in the launcher)
+# lists `directory`; the symlink is the fallback until one is picked
+[wallpaper]
+fill_mode = "crop"
+directory = "/home/victor/Pictures/Wallpapers"
+
+[wallpaper.default]
+path = "/home/victor/Pictures/Wallpapers/current"
+
+# Idle: fade, lock at 5 min, screen off at 5.5, suspend at 15
+[idle]
+pre_action_fade_seconds = 2.0
+
+[idle.behavior.lock]
+action = "lock"
+timeout = 300
+
+[idle.behavior.screen_off]
+action = "screen_off"
+timeout = 330
+locked_timeout = 30
+
+[idle.behavior.suspend]
+action = "suspend"
+timeout = 900
+lock_before_suspend = true
+
+# Plugins: the two upstream catalogues plus this repo's own (plugins/)
+[plugins]
+enabled = ["noctalia/umbriel-companion", "victor/tailscale"]
+
+[[plugins.source]]
+name = "official"
+kind = "git"
+location = "https://github.com/noctalia-dev/official-plugins"
+enabled = true
+
+[[plugins.source]]
+name = "community"
+kind = "git"
+location = "https://github.com/noctalia-dev/community-plugins"
+enabled = true
+
+[[plugins.source]]
+name = "dotfiles"
+kind = "path"
+location = "/home/victor/.config/noctalia/plugins"
+enabled = true

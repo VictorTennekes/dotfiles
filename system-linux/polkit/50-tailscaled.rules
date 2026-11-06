@@ -1,4 +1,4 @@
-// Let admins (wheel) start/stop tailscaled without a password, so the Waybar
+// Let admins (wheel) start/stop tailscaled without a password, so the bar
 // Tailscale toggle can run the daemon only while it's needed. Only this unit,
 // only start/stop. Installed to /etc/polkit-1/rules.d by scripts/setup.
 polkit.addRule(function (action, subject) {

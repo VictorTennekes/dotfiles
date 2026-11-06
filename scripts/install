@@ -16,7 +16,7 @@ esac
 # (e.g. ~/.config/ghostty -> config/ghostty after it moved to config-macos/).
 # One level into ~/.config too: stow links files inside a dir it doesn't own.
 { find "$HOME" -maxdepth 1 -type l; find "$HOME/.config" -mindepth 1 -maxdepth 2 -type l
-  find "$HOME/.claude" -mindepth 1 -maxdepth 2 -type l; } 2>/dev/null |
+  find "$HOME/.claude" "$HOME/.local/share/applications" "$HOME/.local/share/fonts" -mindepth 1 -maxdepth 2 -type l; } 2>/dev/null |
     while read -r link; do [ -e "$link" ] || echo "$link"; done |
     while read -r link; do
         case "$(readlink "$link")" in
@@ -33,7 +33,10 @@ stow -d "$PROJECT_ROOT" -t "$HOME/.config" config "$OS_CONFIG"
 # ~/.claude and ~/.claude/skills must exist as real dirs first: Claude Code
 # writes state next to the linked files (skills/synced, history, sessions),
 # so stow has to link files into them, not fold the dirs into the repo.
-mkdir -p "$HOME/.claude/skills"
+# Same for ~/.local/share/fonts: fonts installed by hand must not land in
+# the repo through a folded link (home/.local/share/fonts holds the
+# unpackaged ones, one dir per family).
+mkdir -p "$HOME/.claude/skills" "$HOME/.local/share/fonts"
 stow -d "$PROJECT_ROOT" -t "$HOME" home
 
 # --- 4. Agent skills: home/.agents/skills is the shared source (Agent Skills

@@ -81,7 +81,7 @@ else
 update-packages:
 	@echo "📦 Updating packages (dnf + Terra)..."
 	@sudo dnf upgrade -y -q --refresh
-	@comm -23 <($(FEDORA_PKGS) | sort) <(rpm -qa --qf '%{NAME}\n' | sort -u) | \
+	@rpm -q --whatprovides $$($(FEDORA_PKGS)) 2>&1 | sed -n 's/^no package provides //p' | \
 		xargs -r sudo dnf install -y --setopt=install_weak_deps=False
 	@$(FEDORA_PKGS) | xargs sudo dnf mark user -y -q >/dev/null
 	@fwupdmgr refresh >/dev/null 2>&1; fwupdmgr get-updates >/dev/null 2>&1 && \
@@ -118,14 +118,15 @@ lint:
 	@echo "🔍 Validating configs..."
 	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/config/*.zsh config/zsh/config/functions/*); do \
 		zsh -n "$$f" || exit 1; done && echo "  ✓ Zsh configs OK"
-	@for f in config-linux/swaync/config.json config-linux/waybar/config.jsonc config/fastfetch/config.jsonc home/.claude/settings.json; do \
+	@for f in config/fastfetch/config.jsonc home/.claude/settings.json; do \
 		python3 -c "$$JSONC_CHECK" "$$f" || { echo "  ✗ $$f"; exit 1; }; done && echo "  ✓ JSON/JSONC OK"
-	@if command -v niri >/dev/null; then \
-		out=$$(niri validate -c config-linux/niri/config.kdl 2>&1) || { echo "$$out"; exit 1; }; \
-		echo "  ✓ niri config OK"; fi
+	@if command -v noctalia >/dev/null; then \
+		noctalia config validate || exit 1; echo "  ✓ noctalia config OK"; fi
+	@if command -v umbriel >/dev/null; then \
+		umbriel config validate >/dev/null || exit 1; echo "  ✓ umbriel config OK (stowed)"; fi
 	@g=$$(command -v ghostty || ls /Applications/Ghostty.app/Contents/MacOS/ghostty 2>/dev/null); \
 	if [ -n "$$g" ]; then "$$g" +validate-config >/dev/null && echo "  ✓ Ghostty config OK (stowed)" || exit 1; fi
-	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/tpm-enroll scripts/macos-defaults config-linux/niri/scripts/* config-linux/waybar/scripts/* config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
+	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/tpm-enroll scripts/macos-defaults config-linux/foot/reload config-linux/noctalia/plugins/tailscale/toggle config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
 	@echo "✅ All configs valid."
 
 # ==============================================================================

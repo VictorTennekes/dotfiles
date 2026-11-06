@@ -338,6 +338,15 @@ check_links() {
   for s in "$ROOT"/home/.agents/skills/*/; do
     [[ "$(readlink "$HOME/.claude/skills/$(basename "$s")" 2>/dev/null)" == "${s%/}" ]] || return 1
   done
+  # Zen user.js, linked by scripts/install into each default profile.
+  local root p
+  for root in "$HOME/Library/Application Support/zen" "${XDG_CONFIG_HOME:-$HOME/.config}/zen" "$HOME/.zen"; do
+    [[ -f "$root/profiles.ini" ]] || continue
+    while read -r p; do
+      [[ -d "$root/$p" ]] || continue
+      [[ "$(readlink "$root/$p/user.js")" == "$ROOT/browser/zen/user.js" ]] || return 1
+    done < <(sed -n '/^Default=[01]$/!s/^Default=//p' "$root/profiles.ini")
+  done
 }
 fix_links() { bash "$ROOT/scripts/install"; }
 

@@ -49,4 +49,24 @@ for skill in "$PROJECT_ROOT"/home/.agents/skills/*/; do
     ln -sfn "$skill" "$dest"
 done
 
+# --- 5. Zen user.js: profile dirs have random names, so stow can't target
+# them. Link into each install's default profile (profiles.ini Default=<path>;
+# Default=1 marks the profile list's default, not a path).
+zen_profiles() {
+    local root
+    for root in "$HOME/Library/Application Support/zen" "${XDG_CONFIG_HOME:-$HOME/.config}/zen" "$HOME/.zen"; do
+        [ -f "$root/profiles.ini" ] || continue
+        sed -n '/^Default=[01]$/!s/^Default=//p' "$root/profiles.ini" | sort -u |
+            while read -r p; do [ -d "$root/$p" ] && echo "$root/$p"; done
+    done
+}
+zen_profiles | while read -r profile; do
+    dest="$profile/user.js"
+    if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+        echo "⚠️  $dest is a real file; move it away to use the repo's copy"
+        continue
+    fi
+    ln -sfn "$PROJECT_ROOT/browser/zen/user.js" "$dest"
+done
+
 echo "🔗 Configs linked ($OS_CONFIG)."

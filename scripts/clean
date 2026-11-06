@@ -25,4 +25,10 @@ for link in "$HOME"/.claude/skills/*; do
     fi
 done
 
+echo "🧹 Removing Zen user.js links..."
+for link in "$HOME/Library/Application Support/zen"/Profiles/*/user.js \
+            "${XDG_CONFIG_HOME:-$HOME/.config}"/zen/*/user.js "$HOME"/.zen/*/user.js; do
+    [ "$(readlink "$link")" = "$PROJECT_ROOT/browser/zen/user.js" ] && rm "$link"
+done
+
 echo "✅ Clean complete."

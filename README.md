@@ -89,9 +89,11 @@ file, `~/.work-laptop` (macOS). Create it once on the work machine:
 │   ├── .zshenv
 │   ├── .agents/      # AGENTS.md + skills/ (any coding agent)
 │   └── .claude/      # Claude Code: settings.json, CLAUDE.md → AGENTS.md
+├── browser/
+│   └── zen/user.js   # Zen prefs, linked into each default profile by install
 ├── scripts/
 │   ├── setup           # Guided install / --check doctor (macOS + Fedora)
-│   ├── install         # Symlink config/ + config-<os>/ via stow
+│   ├── install         # Symlink config/ + config-<os>/ via stow, Zen user.js
 │   ├── clean           # Remove stow symlinks
 │   ├── tpm-enroll      # (Re-)enroll the TPM for LUKS unlock (Linux, manual)
 │   └── macos-defaults  # Apply macOS system defaults

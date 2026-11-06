@@ -114,7 +114,7 @@ export JSONC_CHECK
 
 lint:
 	@echo "🔍 Validating configs..."
-	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/.zprofile config/zsh/config/*.zsh config/zsh/config/functions/*); do \
+	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/config/*.zsh config/zsh/config/functions/*); do \
 		zsh -n "$$f" || exit 1; done && echo "  ✓ Zsh configs OK"
 	@for f in config-linux/swaync/config.json config-linux/waybar/config.jsonc config/fastfetch/config.jsonc home/.claude/settings.json; do \
 		python3 -c "$$JSONC_CHECK" "$$f" || { echo "  ✗ $$f"; exit 1; }; done && echo "  ✓ JSON/JSONC OK"

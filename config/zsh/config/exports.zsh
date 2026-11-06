@@ -1,7 +1,3 @@
-# Guard is not exported, or a child shell started before an edit would skip this file.
-[[ -n "$_EXPORTS_SOURCED" ]] && return
-typeset -g _EXPORTS_SOURCED=1
-
 export EDITOR=nvim
 export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
@@ -14,7 +10,6 @@ export FZF_DEFAULT_OPTS=" \
   --height=60% --layout=reverse --border"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
-export STARSHIP_CONFIG="$HOME/.config/zsh/starship.toml"
 export T3CODE_TELEMETRY_ENABLED=false
 
 # ls_colors is `vivid generate catppuccin-mocha` output, committed so neither

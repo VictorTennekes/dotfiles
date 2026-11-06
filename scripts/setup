@@ -192,6 +192,34 @@ fix_bitwarden() {
 check_shell() { [[ "$(getent passwd "$USER" | cut -d: -f7)" == /usr/bin/zsh ]]; }
 fix_shell()   { sudo usermod -s /usr/bin/zsh "$USER"; }
 
+# oh-my-pi (omp, a terminal coding agent): not packaged for Fedora, so its
+# release binary goes to ~/.local/bin, checked against the release's
+# SHA256SUMS. The check also compares with the latest release, so `make
+# install` updates it; offline, whatever is installed passes.
+OMP_BIN="$HOME/.local/bin/omp"
+OMP_RELEASES="https://github.com/can1357/oh-my-pi/releases"
+omp_latest() { # prints the latest tag, e.g. v18.17.0
+  curl -fsSI "$OMP_RELEASES/latest" | awk 'tolower($1) == "location:" { sub(/.*\/tag\//, "", $2); print $2 }' | tr -d '\r'
+}
+check_omp() {
+  [[ -x "$OMP_BIN" ]] || return 1
+  local latest; latest=$(omp_latest 2>/dev/null) || return 0
+  [[ -z $latest || "$("$OMP_BIN" --version 2>/dev/null)" == *"${latest#v}"* ]]
+}
+fix_omp() {
+  local tmp tag base; tmp=$(mktemp -d)
+  tag=$(omp_latest) || { bad "can't reach GitHub for oh-my-pi's latest release"; rm -rf "$tmp"; return 1; }
+  base="$OMP_RELEASES/download/$tag"
+  if curl -fsSL -o "$tmp/omp" "$base/omp-linux-x64" &&
+     curl -fsSL -o "$tmp/SHA256SUMS.txt" "$base/SHA256SUMS.txt" &&
+     (cd "$tmp" && grep ' omp-linux-x64$' SHA256SUMS.txt | sed 's/omp-linux-x64$/omp/' | sha256sum -c --quiet -) &&
+     chmod +x "$tmp/omp" && mkdir -p "${OMP_BIN%/*}" && mv -f "$tmp/omp" "$OMP_BIN"; then
+    rm -rf "$tmp"
+  else
+    bad "oh-my-pi download failed or doesn't match the release's sha256"; rm -rf "$tmp"; return 1
+  fi
+}
+
 # Zsh plugins: git clones of the repos in zsh_plugins.txt (plugins.zsh loads them).
 ZSH_PLUGINS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh-plugins"
 zsh_plugin_repos() { grep -o '^[^#[:space:]]\+' "$ROOT/config/zsh/zsh_plugins.txt"; }
@@ -521,6 +549,7 @@ else
   step "Terra repo"               check_terra           fix_terra
   step "Packages (dnf)"           check_fedora_packages fix_fedora_packages
   step "Bitwarden (AppImage)"     check_bitwarden       fix_bitwarden
+  step "oh-my-pi (release binary)" check_omp            fix_omp
   step "Fedora defaults trimmed"  check_trim            fix_trim
   step "Unused units off"         check_units_off       fix_units_off
   step "Neovim config (git clone)" check_nvim           fix_nvim

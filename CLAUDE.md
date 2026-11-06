@@ -33,8 +33,9 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
   repos, then Terra, then a vendor repo or COPR tracked in
   `system-linux/etc/yum.repos.d` (Tailscale comes from its vendor repo, which is much
   newer); the only things installed outside dnf are the Bitwarden
-  AppImage (checked against its release's sha512) and
-  git clones in setup (zsh plugins; sddm-astronaut-theme, pinned to a
+  AppImage (checked against its release's sha512), oh-my-pi's release binary
+  (`~/.local/bin/omp`, sha256-checked, re-downloaded when a newer release is
+  out) and git clones in setup (zsh plugins; sddm-astronaut-theme, pinned to a
   commit in `ASTRONAUT_REV`)
 - Language runtimes come from the package manager on both OSes, one copy
   each: node, python3, uv (project Pythons, `uv tool install` for Python

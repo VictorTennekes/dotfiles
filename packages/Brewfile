@@ -69,6 +69,8 @@ cask "claude"
 cask "antigravity-cli"
 brew "gemini-cli"
 cask "t3-code"
+tap "can1357/tap"
+brew "can1357/tap/omp"   # oh-my-pi, a terminal coding agent (Fedora: release binary via scripts/setup).
 
 # --- Remote Setup ---
 brew "tailscale"

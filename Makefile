@@ -13,7 +13,7 @@ SHELL  := /bin/bash
 # scripts/setup's pkglist is the same)
 FEDORA_PKGS = sed 's/\#.*//' packages/fedora.txt | awk 'NF { print $$1 }'
 # Work tap (Brewfile, ~/.work-laptop): brew refuses untrusted taps' formulae
-BREW_TRUST  = brew trust -q hashicorp/tap >/dev/null || true
+BREW_TRUST  = brew trust -q hashicorp/tap can1357/tap areofyl/fetch >/dev/null || true
 
 # ==============================================================================
 # MAIN TARGETS

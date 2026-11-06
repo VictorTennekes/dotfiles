@@ -4,8 +4,8 @@
 # system-linux/etc/yum.repos.d and setup installs them first. Installed with
 # `dnf install`, weak deps off; comments are stripped. Terra packages are
 # marked (terra), COPR ones (copr owner/project).
-# Not packaged anywhere: the Bitwarden AppImage (scripts/setup) and the
-# Tiny5 Mono font (home/.local/share/fonts, stowed).
+# Not packaged anywhere: the Bitwarden AppImage and oh-my-pi's release binary
+# (both scripts/setup) and the Tiny5 Mono font (home/.local/share/fonts, stowed).
 
 # --- Base system (Framework 13, AMD) ---
 mesa-vulkan-drivers

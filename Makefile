@@ -51,9 +51,11 @@ brew-sync: brew
 # `up` (zsh) runs this. Quiet by design: each step prints what changed, not
 # what it checked.
 update:
-	@echo "⬇️  Pulling latest dotfiles..."
-	@old=$$(git -C $(REPO) rev-parse HEAD) && git -C $(REPO) pull -q --rebase --autostash && \
-		git -C $(REPO) log --oneline "$$old..HEAD" | sed 's/^/  /'
+	@echo "⬇️  Pulling latest dotfiles and nvim config..."
+	@# config/nvim is its own repo; nvim-update.lua expects its current layout.
+	@for r in $(REPO) $(REPO)/config/nvim; do [ -e "$$r/.git" ] || continue; \
+		old=$$(git -C "$$r" rev-parse HEAD) && git -C "$$r" pull -q --rebase --autostash && \
+		git -C "$$r" log --oneline "$$old..HEAD" | sed 's/^/  /' || exit 1; done
 	@$(MAKE) update-packages
 	@echo "📦 Updating zsh plugins..."
 	@for d in "$${XDG_DATA_HOME:-$$HOME/.local/share}"/zsh-plugins/*/; do \

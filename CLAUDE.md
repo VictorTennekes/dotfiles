@@ -38,8 +38,9 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
   CLIs), go (mason builds sqls with it). No version manager
 - `scripts/` — `setup` (guided install + `--check` doctor, branches on
   OS; also clones `config/nvim`, its own repo), `install` (stow `config` +
-  `config-<os>` + `home`), `clean`, `nvim-update.lua` (headless lazy +
-  Mason sync for `make update`, prints only changes and errors),
+  `config-<os>` + `home`), `clean`, `nvim-update.lua` (headless vim.pack,
+  treesitter parser and Mason sync for `make update`, prints only changes
+  and errors),
   `macos-defaults`, `tpm-enroll` (TPM unlock for the LUKS root; run by hand,
   never from setup, and kept generic: no device names)
 - `Makefile` — `install` (runs `scripts/setup`), `doctor`, `update` (pull,
@@ -88,13 +89,16 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 
 ## Neovim
 
-- `init.lua` (options, keymaps, autocmds, lazy bootstrap) plus one spec
+- `init.lua` (options, keymaps, autocmds, ordered plugin list) plus one file
   per plugin in `config/nvim/lua/plugins/`; no kickstart tutorial code
-- Lazy.nvim for plugin management, Mason + mason-tool-installer for
-  LSP/tools; servers enabled with native `vim.lsp.enable` (no
-  mason-lspconfig)
+- Built-in `vim.pack` for plugins (`nvim-pack-lock.json`); `lua/later.lua`
+  defers plugins to their first event (no lazy loading in vim.pack).
+  nvim-treesitter on `main` (listed parsers always installed, others on
+  first open). Mason + mason-tool-installer for LSP/tools; servers
+  enabled with native `vim.lsp.enable` (no mason-lspconfig)
 - Snacks.nvim handles picker, explorer, indent guides, notifier, UI
-- Noice.nvim handles cmdline/message UI
+- Neovim's built-in ui2 (experimental) handles cmdline/message UI; `init.lua`
+  floats its cmdline window (no ui2 option for that) with `cmdheight=0`
 - LSPs: basedpyright, ruff (Python), lua_ls, terraformls, sqls
 - Formatters via conform: stylua, ruff, sqlfluff
 

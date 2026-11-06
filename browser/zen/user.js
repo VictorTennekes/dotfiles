@@ -15,3 +15,8 @@ user_pref("zen.widget.macos.window-vibrancy", false);
 // Fewer animations
 user_pref("zen.view.compact.animate-sidebar", false);
 user_pref("zen.glance.enabled", false);
+
+// userChrome.css / userContent.css in the profile's chrome/ dir, and the
+// Browser Toolbox to inspect the UI while writing them.
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("devtools.chrome.enabled", true);

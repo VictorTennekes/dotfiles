@@ -1,4 +1,6 @@
 # macOS part of the Ghostty config (the shared part: config/ghostty/config).
+# Ghostty's bundled theme (its "resources" themes)
+theme = Catppuccin Mocha
 font-size = 13
 shell-integration = zsh
 

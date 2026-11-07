@@ -1,6 +1,7 @@
 # Shared by macOS and Linux. The OS-specific part is `platform`, next to this
 # file (from config-macos/ or config-linux/), loaded last so it can override.
-theme = catppuccin-mocha.conf
+# The theme lives there too: Ghostty's bundled Catppuccin Mocha on macOS,
+# Noctalia's generated palette on Linux.
 background-opacity = 0.95
 cursor-style = block
 

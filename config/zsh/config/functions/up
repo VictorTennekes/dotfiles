@@ -15,6 +15,6 @@ case $OSTYPE:$1 in
   linux*:check)    dnf check ;;
   linux*:dry-run)  dnf check-upgrade --refresh; return 0 ;;  # exits 100 when there are updates
   # The repo: .zshrc's real path is <repo>/config/zsh/.zshrc
-  *:)              make -C ${${:-$ZDOTDIR/.zshrc}:A:h:h:h} update ;;
+  *:)              make --no-print-directory -C ${${:-$ZDOTDIR/.zshrc}:A:h:h:h} update ;;
   *)               up help; return 1 ;;
 esac

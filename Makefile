@@ -8,6 +8,8 @@ REPO   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 OS     := $(shell uname -s)
 # bash, not sh: the Fedora dump target uses process substitution
 SHELL  := /bin/bash
+# Recursive makes ($(MAKE) update-packages) would announce every directory
+MAKEFLAGS += --no-print-directory
 
 # packages/fedora.txt without comments, one name per line (a shell pipeline;
 # scripts/setup's pkglist is the same)
@@ -76,14 +78,16 @@ update-packages:
 	@$(MAKE) brew
 	@brew cleanup -q --prune=all >/dev/null
 else
-# Install what's missing from the list and mark it all user-installed (see
+# Install what's missing from the list and mark user-installed what isn't (see
 # scripts/setup). Firmware (BIOS, touchpad, ...) via LVFS: report, never flash.
+# dnf -q still says "Nothing to do." when there's nothing to upgrade.
 update-packages:
 	@echo "📦 Updating packages (dnf + Terra)..."
-	@sudo dnf upgrade -y -q --refresh
+	@set -o pipefail; sudo dnf upgrade -y -q --refresh | { grep -vx 'Nothing to do.' || true; }
 	@rpm -q --whatprovides $$($(FEDORA_PKGS)) 2>&1 | sed -n 's/^no package provides //p' | \
 		xargs -r sudo dnf install -y --setopt=install_weak_deps=False
-	@$(FEDORA_PKGS) | xargs sudo dnf mark user -y -q >/dev/null
+	@$(FEDORA_PKGS) | xargs dnf repoquery --installed --qf '%{name} %{reason}\n' 2>/dev/null | \
+		awk '$$2 != "User" { print $$1 }' | xargs -r sudo dnf mark user -y -q
 	@fwupdmgr refresh >/dev/null 2>&1; fwupdmgr get-updates >/dev/null 2>&1 && \
 		echo "⚠️  Firmware updates available: run 'fwupdmgr update'" || true
 endif

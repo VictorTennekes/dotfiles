@@ -1,7 +1,8 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   // Max Theorum logo as shape-matched ASCII; `ff` swaps in logo.png (logo.svg
-  // filled with Mocha text #cdd6f4: `sips -s format png -Z 512`) in local Ghostty
+  // filled with Mocha text #cdd6f4: `sips -s format png -Z 512`) in local Ghostty.
+  // Logo and box in the terminal's default text colour
   "logo": {
     "type": "file",
     "source": "~/.config/fastfetch/logo.txt",
@@ -10,7 +11,7 @@
   },
   "display": {
     "separator": " ",
-    "color": { "keys": "90" }
+    "color": { "keys": "39" }
   },
   // Catnap-style box (preset examples/13); 16 rows, the logo floats in the middle
   "modules": [

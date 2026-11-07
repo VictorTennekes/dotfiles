@@ -1,19 +1,20 @@
 export EDITOR=nvim
-export BAT_THEME="Catppuccin Mocha"
+# Colours by ANSI index, not hex, so the terminal palette decides them: Noctalia's
+# on Linux, Catppuccin Mocha in macOS Ghostty
+export BAT_THEME="base16"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
 export FZF_DEFAULT_OPTS=" \
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
-  --color=selected-bg:#45475a \
+  --color=fg:-1,bg:-1,fg+:-1,bg+:black,selected-bg:black \
+  --color=hl:yellow,hl+:yellow,pointer:yellow,spinner:yellow \
+  --color=prompt:cyan,marker:cyan,info:bright-black,header:blue,border:bright-black \
   --tmux center \
   --height=60% --layout=reverse --border"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
 export T3CODE_TELEMETRY_ENABLED=false
 
-# ls_colors is `vivid generate catppuccin-mocha` output, committed so neither
-# machine needs vivid; regenerate it with a throwaway vivid (`cargo install vivid`).
+# ls_colors is GNU dircolors' built-in database (`TERM=xterm-256color dircolors
+# -b` with no file): 16-colour codes only, so `ls` and eza follow the palette too.
 # Overrides the distro default (Fedora's /etc/profile.d/colorls.sh sets one).
 [[ -r "$ZDOTDIR/ls_colors" ]] && export LS_COLORS="$(<$ZDOTDIR/ls_colors)"
 

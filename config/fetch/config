@@ -4,12 +4,12 @@
 # the 3D one came out white. logo.txt is the same Max Theorum art without the
 # $1 placeholders; a logo of its own gets two colours by surface. The value
 # lands verbatim in "ESC[1;<value>m", so a name (red ... white), an SGR number
-# (94) or a truecolor triple (38;2;R;G;B) all work. Faces in Catppuccin Mocha
-# text (the flat logo's colour); sides in overlay2, a darker step of the same
-# grey, since the outline has so few side cells that a second hue reads as
-# stray pixels.
-logo_inner=38;2;205;214;244
-logo_outer=38;2;147;153;178
+# (94) or a truecolor triple (38;2;R;G;B) all work. Faces in the default text
+# colour (the flat logo's colour); sides in ANSI white, a darker step of the
+# same tone in both palettes (Noctalia's and Catppuccin), since the outline has
+# so few side cells that a second hue reads as stray pixels.
+logo_inner=39
+logo_outer=37
 # Fields, in order: once this file exists only the listed ones show, and the
 # logo is drawn in the rows the info block takes, so an empty list also
 # squeezes the logo to two rows. Same modules as fastfetch's config.jsonc.

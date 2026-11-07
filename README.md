@@ -134,8 +134,9 @@ copies. Ghostty is the exception: one shared config that loads a per-OS
 - **Not packaged (Fedora).** Bitwarden desktop is the official AppImage in
   `~/.local/opt` (updates itself), installed by setup after checking its
   release's sha512; oh-my-pi (`omp`) is the release binary in `~/.local/bin`,
-  sha256-checked and updated by setup. `ls` colors are
-  vivid's Catppuccin output, committed as `config/zsh/ls_colors`.
+  sha256-checked and updated by setup. `ls` colors are GNU dircolors'
+  built-in 16-colour set, committed as `config/zsh/ls_colors`, so they
+  follow the terminal palette like fzf, bat, delta and btop.
 
 ---
 

@@ -64,10 +64,9 @@
 	navigate = true
 	side-by-side = true
 	line-numbers = true
-	features = catppuccin-mocha
-
-[include]
-	path = ./catppuccin.gitconfig
+	# Syntax colours by ANSI index (like BAT_THEME), so diffs follow the
+	# terminal palette; base16 also uses the bright colours (dim comments)
+	syntax-theme = base16
 
 [merge]
 	conflictstyle = zdiff3

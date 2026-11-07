@@ -148,8 +148,10 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
 
 ## Conventions
 
-- Catppuccin Mocha for the shared CLI configs and macOS; the Linux desktop
-  takes its colours from the wallpaper (Noctalia)
+- Shared CLI configs (fzf, bat, delta, btop, ls colors, fastfetch) use ANSI
+  colour indices, so the terminal palette decides: Catppuccin Mocha in macOS
+  Ghostty, a Noctalia palette (`config-linux/noctalia/palettes/`) on Linux,
+  which its templates push to foot, ghostty, Neovim, Qt, GTK, Zen and Umbriel
 - XDG Base Directory compliance
 - Bitwarden for passwords. Git uses one key file per machine
   (`~/.ssh/id_ed25519`, auth + signing, no passphrase) so remote

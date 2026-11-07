@@ -301,31 +301,49 @@ check_resolv() { [[ "$(readlink -f /etc/resolv.conf)" == "$RESOLV_STUB" ]]; }
 fix_resolv()   { sudo ln -sf "$RESOLV_STUB" /etc/resolv.conf; }
 
 # Login screen: sddm-astronaut-theme (not packaged for Fedora: a git clone, plus
-# its fonts) with the jake_the_dog variant, as its own theme dir of symlinks so
-# theme updates don't reset the chosen variant. Pinned to a reviewed commit:
-# its QML runs in the login screen. To update, review upstream and bump.
+# its fonts) with this repo's preset (system-linux/sddm/hail_mary.conf: the
+# Noctalia palette and Departure Mono) over the wallpaper. Its own theme dir:
+# symlinks into the checkout, so theme updates don't reset it, plus real files
+# for the metadata, the preset and a copy of the wallpaper (the greeter runs as
+# sddm, which can't read $HOME; re-run setup after changing `current`). Pinned
+# to a reviewed commit: its QML runs in the login screen. To update, review
+# upstream and bump.
 ASTRONAUT=/usr/share/sddm/themes/sddm-astronaut-theme
 ASTRONAUT_REV=abb3163c724935af888ba5ea9ac0c4f22afd8048
 ASTRONAUT_FONTS=/usr/share/fonts/sddm-astronaut
-JAKE=/usr/share/sddm/themes/astronaut-jake
+SDDM_THEME=/usr/share/sddm/themes/astronaut-hailmary
+SDDM_PRESET="$ROOT/system-linux/sddm/hail_mary.conf"
+# The preset with Background pointing at the wallpaper copy
+sddm_preset() {
+  local src; src=$(readlink -f "$WALLPAPER")
+  sed "s|^Background=.*|Background=\"background.${src##*.}\"|" "$SDDM_PRESET"
+}
 check_sddm_theme() {
+  local src; src=$(readlink -f "$WALLPAPER")
   # Detached checkout: HEAD is the commit itself (git as this user would
   # refuse the root-owned repo)
   [[ "$(cat "$ASTRONAUT/.git/HEAD" 2>/dev/null)" == "$ASTRONAUT_REV" && -d "$ASTRONAUT_FONTS" ]] &&
-    grep -q '^ConfigFile=Themes/jake_the_dog.conf' "$JAKE/metadata.desktop" 2>/dev/null
+    grep -q '^ConfigFile=hail_mary.conf' "$SDDM_THEME/metadata.desktop" 2>/dev/null &&
+    cmp -s <(sddm_preset) "$SDDM_THEME/hail_mary.conf" &&
+    cmp -s "$src" "$SDDM_THEME/background.${src##*.}"
 }
 fix_sddm_theme() {
+  local src; src=$(readlink -f "$WALLPAPER")
+  [[ -f "$src" ]] || { bad "no wallpaper at $WALLPAPER for the login screen"; return 1; }
   [[ -d "$ASTRONAUT/.git" ]] ||
     sudo git clone -q --depth 1 https://github.com/Keyitdev/sddm-astronaut-theme "$ASTRONAUT" || return 1
   sudo git -C "$ASTRONAUT" fetch -q --depth 1 origin "$ASTRONAUT_REV" &&
     sudo git -C "$ASTRONAUT" checkout -q --detach "$ASTRONAUT_REV" || return 1
   sudo mkdir -p "$ASTRONAUT_FONTS" && sudo cp -r "$ASTRONAUT/Fonts/." "$ASTRONAUT_FONTS/"
   sudo fc-cache -f "$ASTRONAUT_FONTS" >/dev/null
-  sudo mkdir -p "$JAKE"
-  local f; for f in "$ASTRONAUT"/*; do sudo ln -sfn "$f" "$JAKE/"; done
-  sudo rm -f "$JAKE/metadata.desktop"
-  sed -e 's|^ConfigFile=.*|ConfigFile=Themes/jake_the_dog.conf|' -e 's|^Name=.*|Name=Astronaut (Jake)|' \
-    "$ASTRONAUT/metadata.desktop" | sudo tee "$JAKE/metadata.desktop" >/dev/null
+  sudo rm -rf "$SDDM_THEME" /usr/share/sddm/themes/astronaut-jake
+  sudo mkdir -p "$SDDM_THEME"
+  local f; for f in "$ASTRONAUT"/*; do sudo ln -sfn "$f" "$SDDM_THEME/"; done
+  sudo rm -f "$SDDM_THEME/metadata.desktop"
+  sed -e 's|^ConfigFile=.*|ConfigFile=hail_mary.conf|' -e 's|^Name=.*|Name=Astronaut (Hail Mary)|' \
+    "$ASTRONAUT/metadata.desktop" | sudo tee "$SDDM_THEME/metadata.desktop" >/dev/null
+  sddm_preset | sudo tee "$SDDM_THEME/hail_mary.conf" >/dev/null
+  sudo install -m644 "$src" "$SDDM_THEME/background.${src##*.}"
 }
 
 # gnome-keyring through its systemd user socket: that socket is the control
@@ -346,7 +364,8 @@ fix_dark_mode() {
 }
 
 # Wallpapers (images aren't in the repo): Noctalia's picker lists this folder,
-# and `current` is its default until one is picked.
+# and `current` is the theme's wallpaper (Noctalia's default, and the login
+# screen's background) unless one is picked.
 WALLPAPER="$HOME/Pictures/Wallpapers/current"
 check_wallpaper() { [[ -e "$WALLPAPER" ]]; }
 fix_wallpaper() {
@@ -564,10 +583,10 @@ else
   step "Bluetooth off at boot"    check_bt_off_at_boot  fix_bt_off_at_boot
   step "Tailscale on demand"      check_ts_on_demand    fix_ts_on_demand
   step "DNS via systemd-resolved" check_resolv          fix_resolv
-  step "Login screen theme"       check_sddm_theme      fix_sddm_theme
   step "Dark mode (GTK, portal)"  check_dark_mode       fix_dark_mode
   step "Keyring unlocked at login" check_keyring_socket fix_keyring_socket
   step "Wallpaper"                check_wallpaper       fix_wallpaper
+  step "Login screen theme"       check_sddm_theme      fix_sddm_theme
 fi
 
 section "Git key"

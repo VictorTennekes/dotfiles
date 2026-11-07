@@ -14,10 +14,13 @@ and GNU Stow. XDG Base Directory compliant throughout.
   Tailscale repo and a COPR (fetch) on
   Fedora (`packages/fedora.txt`).
 - **Terminal:** [Ghostty](https://ghostty.org/) (shared config + per-OS `platform` file), plus
-  [foot](https://codeberg.org/dnkl/foot) on Linux. Catppuccin Mocha.
+  [foot](https://codeberg.org/dnkl/foot) on Linux. Catppuccin Mocha on macOS;
+  Noctalia's palette on Linux (terminals and Neovim).
 - **Desktop (Linux):** [Umbriel](https://github.com/noctalia-dev/umbriel) with
   [Noctalia](https://noctalia.dev) (bar, launcher, notifications, OSD, lock,
-  idle, wallpaper, in one process), colours from the wallpaper; SDDM.
+  idle, wallpaper, in one process), colours from a hand-made palette
+  (`config-linux/noctalia/palettes/`); SDDM with the astronaut theme and a
+  preset in the same colours (`system-linux/sddm/`).
 - **Languages:** node, python3, uv and go from Homebrew / dnf (no version
   manager); projects pin Python with uv.
 - **Coding agent:** Claude Code (`home/.claude`, skills in `home/.agents`).

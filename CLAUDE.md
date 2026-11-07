@@ -13,8 +13,10 @@ Stow; packages via Homebrew (`packages/Brewfile`) on macOS and dnf
   `platform`)
 - `system-linux/` — `/etc` files that `scripts/setup` installs on Fedora
   (zram, sysctl, journald, dnf without weak deps or countme, the Tailscale repo, SDDM,
-  NetworkManager Wi-Fi backend = iwd) and
-  the polkit rule that lets the bar's Tailscale toggle start/stop tailscaled.
+  NetworkManager Wi-Fi backend = iwd, a tmpfiles.d entry creating rpm's keyring
+  lock so non-root `rpm -q` doesn't error),
+  the polkit rule that lets the bar's Tailscale toggle start/stop tailscaled,
+  and the login screen's sddm-astronaut preset (`system-linux/sddm/`).
   Setup keeps a manifest and removes files deleted here from `/etc`, so never
   put a package-owned file here
 - `home/` — home-level dotfiles stowed to `~/` (.zshenv, the desktop entries

@@ -139,9 +139,10 @@ TRIM=('abrt*' rsyslog ModemManager NetworkManager-wwan at gssproxy nfs-utils
       nvidia-gpu-firmware intel-gpu-firmware intel-audio-firmware
       intel-npu-firmware atheros-firmware brcmfmac-firmware tiwilink-firmware
       nxpwireless-firmware cirrus-audio-firmware qcom-wwan-firmware)
-trimmed() { local p; for p in "${TRIM[@]}"; do rpm -qa "$p" | grep . >/dev/null && echo "$p"; done; }
+# One rpm pass for all patterns (each pass reads the whole rpmdb).
+trimmed() { rpm -qa --qf '%{name}\n' "${TRIM[@]}"; }
 check_trim() { [[ -z "$(trimmed)" ]]; }
-fix_trim()   { trimmed | xargs sudo dnf remove -y; }
+fix_trim()   { trimmed | xargs -r sudo dnf remove -y; }
 
 # Units this laptop doesn't use: portable home directories, and the weekly
 # RAID check (mdadm itself stays: udisks2, which mounts USB drives, needs it).
@@ -234,7 +235,8 @@ fix_zsh_plugins() {
 }
 
 # /etc files tracked in system-linux/etc (zram, sysctl, journald, dnf without
-# weak deps or countme, Tailscale and COPR repos, SDDM, Wi-Fi backend); the
+# weak deps or countme, Tailscale and COPR repos, SDDM, Wi-Fi backend, rpm's
+# keyring lock so user queries don't error); the
 # tailscaled polkit rule has its own step below. Takes full effect after a
 # reboot; nothing is restarted here (it could drop the network). Runs before
 # the packages: the repos and dnf's settings must be in place when they install.

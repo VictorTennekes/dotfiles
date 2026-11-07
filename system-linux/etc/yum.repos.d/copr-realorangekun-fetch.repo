@@ -1,10 +1,12 @@
 # COPR for fetch (github.com/areofyl/fetch, the 3D spinning logo next to
 # fastfetch): the upstream-documented repo, realorangekun/fetch. Packages are
 # verified against the COPR's key; the metadata is not signed (COPR default).
+# Pinned to the fedora-44 chroot: the COPR builds no fedora-45 one (Nov 2026),
+# and $releasever 404s. Back to $releasever once the project lists fedora-45.
 
 [copr:copr.fedorainfracloud.org:realorangekun:fetch]
 name=Copr repo for fetch owned by realorangekun
-baseurl=https://download.copr.fedorainfracloud.org/results/realorangekun/fetch/fedora-$releasever-$basearch/
+baseurl=https://download.copr.fedorainfracloud.org/results/realorangekun/fetch/fedora-44-$basearch/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=1

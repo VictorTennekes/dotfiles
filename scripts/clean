@@ -5,30 +5,32 @@ set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+# Status lines in setup's style (Unicode markers in ANSI colours)
+step() { printf '\033[1;34m→ %s\033[0m\n' "$*"; }
 
 case "$(uname -s)" in
     Darwin) OS_CONFIG=config-macos ;;
     Linux)  OS_CONFIG=config-linux ;;
-    *)      echo "❌ Unsupported OS: $(uname -s)"; exit 1 ;;
+    *)      printf '\033[31m✗ Unsupported OS: %s\033[0m\n' "$(uname -s)"; exit 1 ;;
 esac
 
-echo "🧹 Removing config symlinks..."
+step "Removing config symlinks"
 stow -d "$PROJECT_ROOT" -t "$HOME/.config" -D config "$OS_CONFIG"
 
-echo "🧹 Removing home symlinks..."
+step "Removing home symlinks"
 stow -d "$PROJECT_ROOT" -t "$HOME" -D home
 
-echo "🧹 Removing agent skill links..."
+step "Removing agent skill links"
 for link in "$HOME"/.claude/skills/*; do
     if [ -L "$link" ]; then
         case "$(readlink "$link")" in "$PROJECT_ROOT"/*) rm "$link" ;; esac
     fi
 done
 
-echo "🧹 Removing Zen user.js links..."
+step "Removing Zen user.js links"
 for link in "$HOME/Library/Application Support/zen"/Profiles/*/user.js \
             "${XDG_CONFIG_HOME:-$HOME/.config}"/zen/*/user.js "$HOME"/.zen/*/user.js; do
     [ "$(readlink "$link")" = "$PROJECT_ROOT/browser/zen/user.js" ] && rm "$link"
 done
 
-echo "✅ Clean complete."
+printf '\033[32m✓ %s\033[0m\n' "Clean complete"

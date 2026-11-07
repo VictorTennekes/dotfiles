@@ -55,11 +55,11 @@ fi
 # ANSI palette indices (0-15) only, so everything follows the terminal theme;
 # gum's confirm buttons otherwise use fixed 256-color pink/grey.
 export GUM_CONFIRM_PROMPT_FOREGROUND=4 \
-  GUM_CONFIRM_SELECTED_FOREGROUND=0 GUM_CONFIRM_SELECTED_BACKGROUND=5 \
+  GUM_CONFIRM_SELECTED_FOREGROUND=0 GUM_CONFIRM_SELECTED_BACKGROUND=4 \
   GUM_CONFIRM_UNSELECTED_FOREGROUND=7 GUM_CONFIRM_UNSELECTED_BACKGROUND=8
 ok()      { gum style --foreground 2 "  ✓ $*"; }
 bad()     { gum style --foreground 1 "  ✗ $*"; }
-section() { echo; gum style --bold --foreground 5 "$*"; }
+section() { echo; gum style --bold --foreground 4 "$*"; }
 
 # Show manual instructions and wait until the user confirms they're done.
 manual() {
@@ -549,7 +549,7 @@ fix_swiftbar() {
 }
 
 # --- Run -------------------------------------------------------------------------
-gum style --border double --border-foreground 5 --padding "0 2" \
+gum style --border double --border-foreground 4 --padding "0 2" \
   "dotfiles setup" "$( (( CHECK_ONLY )) && echo 'check only, no changes' || echo 'guided install')"
 
 section "Base"

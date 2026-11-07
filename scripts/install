@@ -5,11 +5,14 @@ set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+# Status lines in setup's style (Unicode markers in ANSI colours)
+ok()   { printf '\033[32m✓ %s\033[0m\n' "$*"; }
+warn() { printf '\033[33m! %s\033[0m\n' "$*"; }
 
 case "$(uname -s)" in
     Darwin) OS_CONFIG=config-macos ;;
     Linux)  OS_CONFIG=config-linux ;;
-    *)      echo "❌ Unsupported OS: $(uname -s)"; exit 1 ;;
+    *)      printf '\033[31m✗ Unsupported OS: %s\033[0m\n' "$(uname -s)"; exit 1 ;;
 esac
 
 # --- 1. Drop links left dangling by configs that moved or left the repo ---
@@ -20,7 +23,7 @@ esac
     while read -r link; do [ -e "$link" ] || echo "$link"; done |
     while read -r link; do
         case "$(readlink "$link")" in
-            *"$(basename "$PROJECT_ROOT")"/*) echo "🧹 Removing stale link $link"; rm "$link" ;;
+            *"$(basename "$PROJECT_ROOT")"/*) echo "  Removing stale link $link"; rm "$link" ;;
         esac
     done
 
@@ -46,7 +49,7 @@ for skill in "$PROJECT_ROOT"/home/.agents/skills/*/; do
     skill=${skill%/}
     dest="$HOME/.claude/skills/$(basename "$skill")"
     if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-        echo "⚠️  $dest is a real directory; move it away to use the repo's copy"
+        warn "$dest is a real directory; move it away to use the repo's copy"
         continue
     fi
     ln -sfn "$skill" "$dest"
@@ -66,10 +69,10 @@ zen_profiles() {
 zen_profiles | while read -r profile; do
     dest="$profile/user.js"
     if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-        echo "⚠️  $dest is a real file; move it away to use the repo's copy"
+        warn "$dest is a real file; move it away to use the repo's copy"
         continue
     fi
     ln -sfn "$PROJECT_ROOT/browser/zen/user.js" "$dest"
 done
 
-echo "🔗 Configs linked ($OS_CONFIG)."
+ok "Configs linked ($OS_CONFIG)"

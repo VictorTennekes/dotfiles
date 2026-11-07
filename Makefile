@@ -16,6 +16,12 @@ MAKEFLAGS += --no-print-directory
 FEDORA_PKGS = sed 's/\#.*//' packages/fedora.txt | awk 'NF { print $$1 }'
 # Work tap (Brewfile, ~/.work-laptop): brew refuses untrusted taps' formulae
 BREW_TRUST  = brew trust -q hashicorp/tap can1357/tap areofyl/fetch >/dev/null || true
+# Status lines in setup's style: Unicode markers in ANSI colours (follow the
+# terminal palette; emoji don't, and some render double-width)
+STEP = printf '\033[1;34m→ %s\033[0m\n'
+DONE = printf '\033[32m✓ %s\033[0m\n'
+WARN = printf '\033[33m! %s\033[0m\n'
+FAIL = printf '\033[31m✗ %s\033[0m\n'
 
 # ==============================================================================
 # MAIN TARGETS
@@ -43,7 +49,7 @@ brew: packages/Brewfile
 
 # Sync installed packages to exactly match Brewfile (installs + removes).
 brew-sync: brew
-	@echo "🧹 Pruning packages not in Brewfile..."
+	@$(STEP) "Pruning packages not in Brewfile"
 	@brew bundle cleanup --force --file ./packages/Brewfile
 
 # ==============================================================================
@@ -53,7 +59,7 @@ brew-sync: brew
 # `up` (zsh) runs this. Quiet by design: each step prints what changed, not
 # what it checked.
 update:
-	@echo "⬇️  Pulling latest dotfiles and nvim config..."
+	@$(STEP) "Pulling dotfiles and nvim config"
 	@# config/nvim is its own repo; nvim-update.lua expects its current layout.
 	@# Its lockfile is rewritten by vim.pack.update below, so local bumps are
 	@# disposable; dropping them keeps the autostash from conflicting upstream's.
@@ -61,23 +67,23 @@ update:
 	@# A conflicting autostash pop still exits 0: check for unmerged paths.
 	@for r in $(REPO) $(REPO)/config/nvim; do [ -e "$$r/.git" ] || continue; \
 		old=$$(git -C "$$r" rev-parse HEAD) && git -C "$$r" pull -q --rebase --autostash && \
-		{ [ -z "$$(git -C "$$r" ls-files -u)" ] || { echo "❌ Autostash conflict in $$r: resolve, then git stash drop." >&2; false; }; } && \
+		{ [ -z "$$(git -C "$$r" ls-files -u)" ] || { $(FAIL) "Autostash conflict in $$r: resolve, then git stash drop" >&2; false; }; } && \
 		git -C "$$r" log --oneline "$$old..HEAD" | sed 's/^/  /' || exit 1; done
 	@$(MAKE) update-packages
-	@echo "📦 Updating zsh plugins..."
+	@$(STEP) "Updating zsh plugins"
 	@for d in "$${XDG_DATA_HOME:-$$HOME/.local/share}"/zsh-plugins/*/; do \
 		[ -d "$$d" ] && git -C "$$d" pull -q; done; true
-	@echo "📦 Updating Neovim plugins and Mason tools..."
+	@$(STEP) "Updating Neovim plugins and Mason tools"
 	@nvim --headless "+luafile $(REPO)/scripts/nvim-update.lua" +qa
 	@bash $(INSTALL_SCRIPT)
-	@echo "✅ Update complete!"
+	@$(DONE) "Update complete"
 
 ifeq ($(OS),Darwin)
 # --greedy: also casks that update themselves (Ghostty, gcloud-cli,
 # claude-code@latest); plain upgrade skips them.
 # `brew update -q` still announces itself on stderr; drop that one line.
 update-packages:
-	@echo "📦 Updating brew packages..."
+	@$(STEP) "Updating brew packages"
 	@set -o pipefail; NONINTERACTIVE=1 brew update -q 2>&1 | { grep -v '^==> Updating Homebrew' || true; } && \
 		NONINTERACTIVE=1 brew upgrade -q --greedy -y
 	@$(MAKE) brew
@@ -87,14 +93,14 @@ else
 # scripts/setup). Firmware (BIOS, touchpad, ...) via LVFS: report, never flash.
 # dnf -q still says "Nothing to do." when there's nothing to upgrade.
 update-packages:
-	@echo "📦 Updating packages (dnf + Terra)..."
+	@$(STEP) "Updating packages (dnf + Terra)"
 	@set -o pipefail; sudo dnf upgrade -y -q --refresh | { grep -vx 'Nothing to do.' || true; }
 	@rpm -q --whatprovides $$($(FEDORA_PKGS)) 2>&1 | sed -n 's/^no package provides //p' | \
 		xargs -r sudo dnf install -y --setopt=install_weak_deps=False
 	@$(FEDORA_PKGS) | xargs dnf repoquery --installed --qf '%{name} %{reason}\n' 2>/dev/null | \
 		awk '$$2 != "User" { print $$1 }' | xargs -r sudo dnf mark user -y -q
 	@fwupdmgr refresh >/dev/null 2>&1; fwupdmgr get-updates >/dev/null 2>&1 && \
-		echo "⚠️  Firmware updates available: run 'fwupdmgr update'" || true
+		$(WARN) "Firmware updates available: run 'fwupdmgr update'" || true
 endif
 
 # Both lists are curated (grouped, commented, Brewfile's work block), so dump
@@ -103,12 +109,12 @@ ifeq ($(OS),Darwin)
 # `brew bundle cleanup` without --force only lists (brew-sync removes them).
 dump:
 	@$(BREW_TRUST)
-	@echo "📋 Installed but not in packages/Brewfile:"
+	@$(STEP) "Installed but not in packages/Brewfile:"
 	@brew bundle cleanup --file ./packages/Brewfile || true
 else
 # "By hand": install reason "User", not a dependency or the installer's group.
 dump:
-	@echo "📋 Installed by hand but not in packages/fedora.txt:"
+	@$(STEP) "Installed by hand but not in packages/fedora.txt:"
 	@comm -23 <(dnf repoquery --installed --qf '%{name} %{reason}\n' 2>/dev/null | \
 		awk '$$2 == "User" { print $$1 }' | sort -u) <($(FEDORA_PKGS) | sort)
 endif
@@ -124,7 +130,7 @@ JSONC_CHECK = import json, re, sys; s = open(sys.argv[1]).read(); \
 export JSONC_CHECK
 
 lint:
-	@echo "🔍 Validating configs..."
+	@$(STEP) "Validating configs"
 	@for f in $(wildcard config/zsh/.zshrc home/.zshenv config/zsh/config/*.zsh config/zsh/config/functions/*); do \
 		zsh -n "$$f" || exit 1; done && echo "  ✓ Zsh configs OK"
 	@for f in config/fastfetch/config.jsonc home/.claude/settings.json; do \
@@ -136,7 +142,7 @@ lint:
 	@g=$$(command -v ghostty || ls /Applications/Ghostty.app/Contents/MacOS/ghostty 2>/dev/null); \
 	if [ -n "$$g" ]; then "$$g" +validate-config >/dev/null && echo "  ✓ Ghostty config OK (stowed)" || exit 1; fi
 	@shellcheck -S warning $(INSTALL_SCRIPT) $(CLEAN_SCRIPT) scripts/setup scripts/tpm-enroll scripts/macos-defaults config-linux/foot/reload config-linux/noctalia/plugins/tailscale/toggle config-macos/swiftbar/*.sh && echo "  ✓ Scripts OK (shellcheck)" || exit 1
-	@echo "✅ All configs valid."
+	@$(DONE) "All configs valid"
 
 # ==============================================================================
 # PHONY TARGETS

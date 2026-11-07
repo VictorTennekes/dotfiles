@@ -17,6 +17,7 @@ user_pref("zen.view.compact.animate-sidebar", false);
 user_pref("zen.glance.enabled", false);
 
 // userChrome.css / userContent.css in the profile's chrome/ dir, and the
-// Browser Toolbox to inspect the UI while writing them.
-user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+// Browser Toolbox to inspect the UI while writing them. Noctalia's zen-browser
+// template appends these two in this order (it rewrites them on every run).
 user_pref("devtools.chrome.enabled", true);
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);

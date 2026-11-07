@@ -46,6 +46,8 @@ qt6-qtmultimedia
 
 # --- Fonts ---
 jetbrainsmono-nerd-fonts  # (terra)
+departuremono-nerd-fonts  # (terra) pixel font for big text: clocks, lock screen, login
+polarsys-b612-fonts       # Airbus cockpit font, for the shell's UI text
 google-noto-sans-fonts
 google-noto-color-emoji-fonts
 

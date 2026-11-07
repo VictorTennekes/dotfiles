@@ -5,26 +5,30 @@
 # and wins, so move settled choices into this file. `noctalia config
 # validate` checks it (make lint). Reference: https://docs.noctalia.dev/noctalia/
 
-# Palette from the wallpaper, Material tonal-spot: pastel accents on a neutral
-# surface, the most minimal of the schemes ("vibrant"/"faithful" tint the
-# surfaces with the image instead); widgets use
-# palette role names (surface_container, primary, ...) so they follow it.
-# Catppuccin stays available as `source = "builtin"`.
+# Palette: palettes/HailMary.json, hand-made from the Project Hail Mary
+# wallpaper (hull teal surfaces, Astrophage amber primary, steel teal
+# secondary, Petrova-line rust tertiary; text pairs pass WCAG AA). Widgets use
+# palette role names (surface_container, primary, ...) so they follow it; a
+# palette per theme, swapped with the wallpaper. `source = "wallpaper"`
+# generates one from the wallpaper instead.
 [theme]
 mode = "dark"
-source = "wallpaper"
-wallpaper_scheme = "m3-tonal-spot"
+source = "custom"
+custom_palette = "HailMary"
 shell_mode = "follow"
 sync_color_scheme = true
 
 # Apps re-themed on every palette change: foot/ghostty themes, Umbriel's
-# colour file (umbriel/noctalia.toml), Qt, Claude Code, Neovim. The outputs
-# are generated, not committed (.gitignore)
+# colour file (umbriel/noctalia.toml), Qt, GTK (gtk.css imports; also selects
+# adw-gtk3-dark, as setup does), Claude Code, Neovim, and Zen's interface
+# (userChrome/userContent imports in the profile; it also rewrites the two
+# stylesheet prefs at the end of browser/zen/user.js, kept in its order). The
+# outputs are generated, not committed (.gitignore)
 [theme.templates]
 enable_builtin_templates = true
-builtin_ids = ["umbriel", "qt"]
+builtin_ids = ["umbriel", "qt", "gtk3", "gtk4"]
 enable_community_templates = true
-community_ids = ["claude-code", "neovim"]
+community_ids = ["claude-code", "neovim", "zen-browser"]
 
 # foot as a user template instead of the built-in one, so the hook can swap
 # in a fresh `foot --server` (foot/reload): the built-in only writes the file.
@@ -42,6 +46,13 @@ post_hook = "bash /usr/share/noctalia/assets/templates/ghostty/reload.sh"
 input_path = "/usr/share/noctalia/assets/templates/foot/foot"
 output_path = "$XDG_CONFIG_HOME/foot/themes/noctalia"
 post_hook = "~/.config/foot/reload"
+
+# Fonts: B612 (Airbus cockpit displays) for the shell's text; Departure Mono,
+# a pixel font, for the bar and the lock screen clock. No popup shadows,
+# matching Umbriel's windows.
+[shell]
+font_family = "B612"
+popup_shadows = false
 
 # Screenshots (Alt+Shift+3/4/5 in the compositor configs): macOS names in
 # ~/Screenshots, copied to the clipboard too; the region picker and annotator
@@ -71,8 +82,9 @@ global = true
 [shell.launcher.providers.emoji]
 global = false
 
-# --- Bar: the widgets only ---
+# --- Bar: the widgets, in Departure Mono ---
 [bar.default]
+font_family = "DepartureMono Nerd Font"
 start = ["workspaces", "btn", "active_window"]
 center = ["clock"]
 end = ["tray", "tailscale", "network", "bluetooth", "volume", "battery", "power_profile", "notifications", "control-center"]
@@ -101,6 +113,11 @@ tooltip_format = "{:%A, %B %d}"
 [widget.tailscale]
 type = "victor/tailscale:status"
 
+# A planet (this machine is Erid) instead of the Noctalia logo
+[widget.control-center]
+type = "control-center"
+glyph = "planet"
+
 # Icons only; details live in the tooltips and the control center
 [widget.network]
 type = "network"
@@ -125,7 +142,7 @@ enabled = false
 [desktop_widgets]
 enabled = false
 
-# Lock screen: a Tiny5 Mono clock up top and a compact, transparent login box
+# Lock screen: a Departure Mono clock up top and a compact login box on a dark panel
 # at the bottom (positions in eDP-1's 1800x1200 logical space). The "if found"
 # label with a phone number, and the widget order that includes it, stay in
 # the GUI state file (~/.local/state/noctalia/settings.toml): this repo is
@@ -152,7 +169,7 @@ type = "login_box"
 
 [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
 background_color = "surface_container"
-background_opacity = 0.0
+background_opacity = 0.75
 background_radius = 12.0
 center_password_text = false
 input_opacity = 1.0
@@ -184,11 +201,32 @@ background = false
 background_opacity = 0.0
 center_text = true
 clock_style = "digital"
-font_family = "Tiny5 Mono"
+font_family = "DepartureMono Nerd Font"
 shadow = true
 
-# The picker (Super+Shift+W, or "Wallpaper" in the launcher)
-# lists `directory`; the symlink is the fallback until one is picked
+# Project Hail Mary line under the clock, in the palette's amber
+[lockscreen_widgets.widget.rocky_watch]
+box_height = 50.0
+box_width = 560.0
+cx = 900.0
+cy = 440.0
+output = "eDP-1"
+placement_height = 1200.0
+placement_width = 1800.0
+rotation = 0.0
+type = "label"
+
+[lockscreen_widgets.widget.rocky_watch.settings]
+title = ""
+description = "GRACE SLEEP. ROCKY WATCH."
+font_family = "DepartureMono Nerd Font"
+color = "primary"
+background = false
+shadow = true
+
+# The picker (Super+Shift+W, or "Wallpaper" in the launcher) lists `directory`.
+# `current` is the theme's wallpaper (setup also copies it to the login screen);
+# a pick overrides it in the GUI state file until that entry is removed
 [wallpaper]
 fill_mode = "crop"
 directory = "/home/victor/Pictures/Wallpapers"

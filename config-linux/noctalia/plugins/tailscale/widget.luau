@@ -1,4 +1,4 @@
--- Shield in Catppuccin green while connected, Overlay0 grey otherwise.
+-- Shield in the palette's accent while connected, muted otherwise.
 -- tailscaled only runs while connected (see ./toggle), so a
 -- failing `tailscale status` simply means off.
 local status_cmd = [[tailscale status --json 2>/dev/null | jq -r '[.BackendState, (.Self.TailscaleIPs[0] // ""), ([.Peer[]? | select(.Online) | (.DNSName | split(".")[0])] | join(", "))] | join("\n")']]
@@ -7,11 +7,11 @@ local toggle_cmd = "~/.config/noctalia/plugins/tailscale/toggle"
 local function show(state, ip, peers)
   if state == "Running" then
     barWidget.setGlyph("shield-check")
-    barWidget.setGlyphColor("#a6e3a1")
+    barWidget.setGlyphColor("primary")
     barWidget.setTooltip("Tailscale: connected (" .. ip .. ")\nOnline: " .. (peers ~= "" and peers or "none"))
   else
     barWidget.setGlyph("shield-off")
-    barWidget.setGlyphColor("#6c7086")
+    barWidget.setGlyphColor("on_surface_variant")
     barWidget.setTooltip("Tailscale: " .. state .. " (click to connect)")
   end
 end
@@ -33,7 +33,7 @@ end
 
 function onClick()
   barWidget.setGlyph("shield")
-  barWidget.setGlyphColor("#f9e2af")
+  barWidget.setGlyphColor("secondary")
   noctalia.runAsync(toggle_cmd, function() update() end)
 end
 

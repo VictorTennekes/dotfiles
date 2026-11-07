@@ -87,8 +87,8 @@ center_focused = "never"
 
 # --- Look ---
 # Colours come from noctalia.toml (above). No blur (low power; Noctalia's
-# panels draw their own background); a small, even shadow halo; short
-# animations, none on bars/menus.
+# panels draw their own background); no shadows, the 2px border separates
+# windows; short animations, none on bars/menus.
 [appearance]
 prefer_no_csd = true
 border_width = 2
@@ -104,10 +104,7 @@ enabled = false
 backdrop = "#000000FF"
 
 [appearance.shadow]
-enabled = true
-softness = 8
-offset_x = 0
-offset_y = 0
+enabled = false
 
 [animation]
 enabled = true

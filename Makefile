@@ -55,8 +55,13 @@ brew-sync: brew
 update:
 	@echo "⬇️  Pulling latest dotfiles and nvim config..."
 	@# config/nvim is its own repo; nvim-update.lua expects its current layout.
+	@# Its lockfile is rewritten by vim.pack.update below, so local bumps are
+	@# disposable; dropping them keeps the autostash from conflicting upstream's.
+	@[ ! -e $(REPO)/config/nvim/.git ] || git -C $(REPO)/config/nvim checkout -q -- nvim-pack-lock.json
+	@# A conflicting autostash pop still exits 0: check for unmerged paths.
 	@for r in $(REPO) $(REPO)/config/nvim; do [ -e "$$r/.git" ] || continue; \
 		old=$$(git -C "$$r" rev-parse HEAD) && git -C "$$r" pull -q --rebase --autostash && \
+		{ [ -z "$$(git -C "$$r" ls-files -u)" ] || { echo "❌ Autostash conflict in $$r: resolve, then git stash drop." >&2; false; }; } && \
 		git -C "$$r" log --oneline "$$old..HEAD" | sed 's/^/  /' || exit 1; done
 	@$(MAKE) update-packages
 	@echo "📦 Updating zsh plugins..."
